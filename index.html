@@ -450,6 +450,8 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .mtx{display:flex;flex-direction:column;gap:2px;min-width:0}
 .mtx b{font-size:14px;font-weight:900}
 .mtx span{font-size:16px;font-family:var(--f-jp);font-weight:700;overflow-wrap:anywhere}
+.showopts{display:block;margin:0 auto}
+.mtx b small{font-weight:600;color:var(--muted);font-size:11px}
 .cmdhint{font-size:12px;color:var(--muted);text-align:center;margin-top:-4px}
 .said{font-size:13px;font-weight:700;opacity:.85}
 .mictest{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:600}
@@ -2054,8 +2056,24 @@ async function listen(lang,ms,alive){
   if(last.err&&["network","audio-capture","start"].includes(last.err)){ VOICE.fails++; if(VOICE.fails>=2) VOICE.denied=true; }
   return last;
 }
+/* слушаем сколько угодно — пока человек реально что-то не скажет (или не нажмёт кнопку) */
+const AK_NUDGE=["Я жду, сладкий. Не торопись.","Ну? Я всё ещё тут.","Не спеши, я подожду. Но не вечно, сука.","Работай-работай, я подожду ответ."];
+async function listenUntil(lang,alive){
+  AK.listenCancel=false; let lastNudge=Date.now();
+  while(true){
+    if(!alive()) return {dead:true,alts:[]};
+    if(AK.listenCancel) return {cancel:true,alts:[]};
+    const h=await listen(lang,20000,()=>alive()&&!AK.listenCancel);
+    if(!alive()) return {dead:true,alts:[]};
+    if(AK.listenCancel) return {cancel:true,alts:[]};
+    if(h.alts&&h.alts.filter(Boolean).length) return h;
+    if(VOICE.denied) return h;
+    if(Date.now()-lastNudge>45000){ lastNudge=Date.now(); const nl=pick(AK_NUDGE); AK.heardTxt=nl; const el=document.getElementById("micTxt"); if(el) el.textContent=nl; await speakP(nl,"ru"); }
+  }
+}
+function cancelListen(){ AK.listenCancel=true; stopListen(); }
 const toHira=s=>String(s).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
-const KJ_RAW="大丈夫:だいじょうぶ|行ってらっしゃい:いってらっしゃい|行って来ます:いってきます|行ってきます:いってきます|御馳走様:ごちそうさま|ご馳走様:ごちそうさま|宜しくお願いします:よろしくおねがいします|宜しく:よろしく|有難う:ありがとう|有り難う:ありがとう|頂きます:いただきます|御免:ごめん|今日は:こんにちは|今晩は:こんばんは|御早う:おはよう|お早う:おはよう|初めまして:はじめまして|始めまして:はじめまして|十九歳:じゅうきゅうさい|19歳:じゅうきゅうさい|七時:しちじ|7時:しちじ|五分:ごふん|5分:ごふん|一回:いっかい|1回:いっかい|一口:ひとくち|二人:ふたり|2人:ふたり|名前:なまえ|今日:きょう|明日:あした|昨日:きのう|週末:しゅうまつ|土曜日:どようび|日曜日:にちようび|土曜:どよう|今度:こんど|今:いま|後で:あとで|暇:ひま|忙しい:いそがしい|駅:えき|何時:なんじ|何歳:なんさい|何才:なんさい|何して:なにして|何で:なんで|何:なに|夜:よる|仕事:しごと|学生:がくせい|趣味:しゅみ|音楽:おんがく|映画:えいが|友達:ともだち|家族:かぞく|妹:いもうと|兄:あに|好き:すき|大好き:だいすき|嫌い:きらい|私:わたし|僕:ぼく|俺:おれ|君:きみ|鳥:とり|猫:ねこ|犬:いぬ|花:はな|空:そら|雨:あめ|天気:てんき|暑い:あつい|寒い:さむい|綺麗:きれい|奇麗:きれい|可愛い:かわいい|凄い:すごい|凄く:すごく|見て:みて|見ない:みない|此処:ここ|写真:しゃしん|撮ろう:とろう|帰ろう:かえろう|送る:おくる|待った:まった|待って:まって|来た所:きたところ|来たところ:きたところ|来た:きた|来ました:きました|痛っ:いたっ|痛い:いたい|危ない:あぶない|疲れた:つかれた|休もう:やすもう|喉:のど|渇いた:かわいた|乾いた:かわいた|行こう:いこう|行く:いく|行って:いって|下さい:ください|水:みず|お水:おみず|御水:おみず|お茶:おちゃ|食べる:たべる|乾杯:かんぱい|美味しい:おいしい|不味い:まずい|辛い:からい|甘い物:あまいもの|甘い:あまい|幾ら:いくら|お腹:おなか|御腹:おなか|空いた:すいた|会計:かいけい|お勧め:おすすめ|御勧め:おすすめ|笑顔:えがお|嬉しい:うれしい|楽しみ:たのしみ|楽しい:たのしい|寂しい:さびしい|淋しい:さびしい|恥ずかしい:はずかしい|格好いい:かっこいい|優しい:やさしい|嘘:うそ|冗談:じょうだん|彼女:かのじょ|彼氏:かれし|似合う:にあう|服:ふく|付き合って:つきあって|家:いえ|部屋:へや|お風呂:おふろ|御風呂:おふろ|洗濯:せんたく|料理:りょうり|眠い:ねむい|晩御飯:ばんごはん|晩ご飯:ばんごはん|朝御飯:あさごはん|朝ご飯:あさごはん|御飯:ごはん|ご飯:ごはん|電気:でんき|只今:ただいま|お帰り:おかえり|御帰り:おかえり|起きて:おきて|出来た:できた|手伝って:てつだって|出して:だして|沸いた:わいた|先に:さきに|太った:ふとった|欲しい:ほしい|返事:へんじ|遅い:おそい|遅れる:おくれる|大事:だいじ|別に:べつに|勿論:もちろん|誕生日:たんじょうび|買って:かって|上げる:あげる|許して:ゆるして|許す:ゆるす|上司:じょうし|電車:でんしゃ|大変:たいへん|悲しい:かなしい|酷い:ひどい|頑張って:がんばって|頑張る:がんばる|偉い:えらい|無理:むり|側:そば|傍:そば|最悪:さいあく|話して:はなして|話そう:はなそう|怒られた:おこられた|怒ってる:おこってる|怒ってない:おこってない|怒る:おこる|悪くない:わるくない|作ろう:つくろう|聞く:きく|聴く:きく|馬鹿:ばか|心配:しんぱい|電話:でんわ|忘れた:わすれた|本当:ほんとう|本と:ほんと|仲直り:なかなおり|飲んでた:のんでた|言って:いって|信じて:しんじて|愛してる:あいしてる|働いてる:はたらいてる|勉強中:べんきょうちゅう|勉強:べんきょう|上手:じょうず|日本語:にほんご|元気:げんき|交換:こうかん|会おう:あおう|会いたい:あいたい|会う:あう|予定:よてい|お休み:おやすみ|御休み:おやすみ|一緒:いっしょ|散歩:さんぽ|隣:となり|何処:どこ|雪:ゆき|少し:すこし|話せます:はなせます|又:また|皆:みんな|御免ね:ごめんね|御免なさい:ごめんなさい|早く:はやく|着替えて:きがえて|分かった:わかった|分からない:わからない|知らない:しらない|夢:ゆめ|夏:なつ|未だ:まだ|反省:はんせい|何でも:なんでも";
+const KJ_RAW="大丈夫:だいじょうぶ|行ってらっしゃい:いってらっしゃい|行って来ます:いってきます|行ってきます:いってきます|御馳走様:ごちそうさま|ご馳走様:ごちそうさま|宜しくお願いします:よろしくおねがいします|宜しく:よろしく|有難う:ありがとう|有り難う:ありがとう|頂きます:いただきます|御免:ごめん|今日は:こんにちは|今晩は:こんばんは|御早う:おはよう|お早う:おはよう|初めまして:はじめまして|始めまして:はじめまして|十九歳:じゅうきゅうさい|19歳:じゅうきゅうさい|七時:しちじ|7時:しちじ|五分:ごふん|5分:ごふん|一回:いっかい|1回:いっかい|一口:ひとくち|二人:ふたり|2人:ふたり|名前:なまえ|今日:きょう|明日:あした|昨日:きのう|週末:しゅうまつ|土曜日:どようび|日曜日:にちようび|土曜:どよう|今度:こんど|今:いま|後で:あとで|暇:ひま|忙しい:いそがしい|駅:えき|何時:なんじ|何歳:なんさい|何才:なんさい|何して:なにして|何で:なんで|何:なに|夜:よる|仕事:しごと|学生:がくせい|趣味:しゅみ|音楽:おんがく|映画:えいが|友達:ともだち|家族:かぞく|妹:いもうと|兄:あに|好き:すき|大好き:だいすき|嫌い:きらい|私:わたし|渡し:わたし|綿氏:わたし|和田氏:わたし|拝:はい|灰:はい|肺:はい|云:うん|運:うん|雲:うん|君:きみ|黄身:きみ|気味:きみ|僕:ぼく|俺:おれ|君:きみ|鳥:とり|猫:ねこ|犬:いぬ|花:はな|空:そら|雨:あめ|天気:てんき|暑い:あつい|寒い:さむい|綺麗:きれい|奇麗:きれい|可愛い:かわいい|凄い:すごい|凄く:すごく|見て:みて|見ない:みない|此処:ここ|写真:しゃしん|撮ろう:とろう|帰ろう:かえろう|送る:おくる|待った:まった|待って:まって|来た所:きたところ|来たところ:きたところ|来た:きた|来ました:きました|痛っ:いたっ|痛い:いたい|危ない:あぶない|疲れた:つかれた|休もう:やすもう|喉:のど|渇いた:かわいた|乾いた:かわいた|行こう:いこう|行く:いく|行って:いって|下さい:ください|水:みず|お水:おみず|御水:おみず|お茶:おちゃ|食べる:たべる|乾杯:かんぱい|美味しい:おいしい|不味い:まずい|辛い:からい|甘い物:あまいもの|甘い:あまい|幾ら:いくら|お腹:おなか|御腹:おなか|空いた:すいた|会計:かいけい|お勧め:おすすめ|御勧め:おすすめ|笑顔:えがお|嬉しい:うれしい|楽しみ:たのしみ|楽しい:たのしい|寂しい:さびしい|淋しい:さびしい|恥ずかしい:はずかしい|格好いい:かっこいい|優しい:やさしい|嘘:うそ|冗談:じょうだん|彼女:かのじょ|彼氏:かれし|似合う:にあう|服:ふく|付き合って:つきあって|家:いえ|部屋:へや|お風呂:おふろ|御風呂:おふろ|洗濯:せんたく|料理:りょうり|眠い:ねむい|晩御飯:ばんごはん|晩ご飯:ばんごはん|朝御飯:あさごはん|朝ご飯:あさごはん|御飯:ごはん|ご飯:ごはん|電気:でんき|只今:ただいま|お帰り:おかえり|御帰り:おかえり|起きて:おきて|出来た:できた|手伝って:てつだって|出して:だして|沸いた:わいた|先に:さきに|太った:ふとった|欲しい:ほしい|返事:へんじ|遅い:おそい|遅れる:おくれる|大事:だいじ|別に:べつに|勿論:もちろん|誕生日:たんじょうび|買って:かって|上げる:あげる|許して:ゆるして|許す:ゆるす|上司:じょうし|電車:でんしゃ|大変:たいへん|悲しい:かなしい|酷い:ひどい|頑張って:がんばって|頑張る:がんばる|偉い:えらい|無理:むり|側:そば|傍:そば|最悪:さいあく|話して:はなして|話そう:はなそう|怒られた:おこられた|怒ってる:おこってる|怒ってない:おこってない|怒る:おこる|悪くない:わるくない|作ろう:つくろう|聞く:きく|聴く:きく|馬鹿:ばか|心配:しんぱい|電話:でんわ|忘れた:わすれた|本当:ほんとう|本と:ほんと|仲直り:なかなおり|飲んでた:のんでた|言って:いって|信じて:しんじて|愛してる:あいしてる|働いてる:はたらいてる|勉強中:べんきょうちゅう|勉強:べんきょう|上手:じょうず|日本語:にほんご|元気:げんき|交換:こうかん|会おう:あおう|会いたい:あいたい|会う:あう|予定:よてい|お休み:おやすみ|御休み:おやすみ|一緒:いっしょ|散歩:さんぽ|隣:となり|何処:どこ|雪:ゆき|少し:すこし|話せます:はなせます|又:また|皆:みんな|御免ね:ごめんね|御免なさい:ごめんなさい|早く:はやく|着替えて:きがえて|分かった:わかった|分からない:わからない|知らない:しらない|夢:ゆめ|夏:なつ|未だ:まだ|反省:はんせい|何でも:なんでも";
 const KJ=KJ_RAW.split("|").map(x=>x.split(":")).sort((a,b)=>b[0].length-a[0].length);
 const jaNorm=s=>{ let x=toHira(plain(String(s))); for(const [k,v] of KJ) if(x.includes(k)) x=x.split(k).join(v); return x.replace(/[\s、。！？!?…・ー〜~,.「」『』]/g,""); };
 const isKanji=c=>/[一-鿿々]/.test(c);
@@ -2079,12 +2097,18 @@ function jaMatch1(said,target){
   if(kana<Math.ceil(m*.5)) return 0; // хотя бы половина ответа должна быть распознана каной
   return 1-D[n][m]/m;
 }
-const jaOk=(alts,target)=>{ const m=jaNormT(target).length, thr=m<=3?.99:m<=6?.8:.82; return alts.some(s=>jaMatch(s,target)>=thr); };
-const ruWords=s=>{ const all=String(s).toLowerCase().replace(/ё/g,"е").replace(/\(.*?\)/g," ").replace(/[^а-яa-z0-9\s]/g," ").split(/\s+/).filter(Boolean); const f=all.filter(w=>!STOPW.has(w)); return f.length?f:all; };
+/* междометия, которые распознаватель пишет как попало */
+const JA_SOUNDS={"うん":["うん","ん","うーん","うむ","ウン","うんうん","はい"],"ううん":["ううん","うーうん","ううーん","んーん","いいえ","いや"]};
+const jaOk=(alts,target,loose)=>{
+  const b=jaNormT(target); const snd=JA_SOUNDS[b]; if(snd&&alts.some(s=>snd.map(x=>jaNorm(x)).includes(jaNorm(s)))) return true;
+  const m=b.length, thr=m<=2?.99:loose?.62:m<=4?.74:m<=6?.8:.82; return alts.some(s=>jaMatch(s,target)>=thr); };
+const RU_SYN=[["ага","угу","да","ок","окей","конечно"],["неа","нет","не","ноу"]];
+const ruWords=s=>{ const all=String(s).toLowerCase().replace(/(\S)-(\S)/g,"$1$2").replace(/ё/g,"е").replace(/\(.*?\)/g," ").replace(/[^а-яa-z0-9\s]/g," ").split(/\s+/).filter(Boolean); const f=all.filter(w=>!STOPW.has(w)); return f.length?f:all; };
 const RUDE=/ху[йяеи]|пизд|бля|еба|ёба|член|сука|нахер|говн|жоп|мудак|долбо/i;
 const RUDE_BACK=["Сам иди нахуй, умник. Отвечай нормально.","Ой, какие мы дерзкие. Это неправильно, дебил.","Член тебе в ответ. Нет, это не японский.","Я тебя сейчас сама пошлю. Правильно будет вот так.","Ещё раз нахамишь — уйду к адекватному челу."];
 const stemRu=w=>w.slice(0,Math.max(3,Math.min(5,w.length-1)));
 function ruOk(alts,target){
+  const tw=ruWords(target); if(tw.length===1){ const g=RU_SYN.find(g=>g.includes(tw[0])); if(g&&alts.some(s=>{const w=ruWords(s); return w.length&&w.every(x=>g.includes(x));})) return true; }
   const variants=[target,...target.split(/[\/,]/)];
   return alts.some(said=>{ const A=new Set(ruWords(said).map(stemRu)); return variants.some(v=>{ const T=ruWords(v); if(!T.length) return false; return T.filter(w=>A.has(stemRu(w))).length/T.length>=.6; }); });
 }
@@ -2092,6 +2116,7 @@ function voiceCmd(alts){
   const s=alts.join(" | ").toLowerCase(), h=toHira(s);
   if(/назад|верн[её]м|вернись|предыдущ/.test(s)||/もどって|もどる/.test(h)||/なざ/.test(h)) return "back";
   if(/повтори|ещ[её] раз|не расслышал|не понял вопрос/.test(s)||/もう(一|いっ)かい|もう一度|もういちど/.test(h)||/ぱふ?たり|ぽふ?とり|いしょ ?らず/.test(h)) return "repeat";
+  if(/пропусти|пропуск|скип|дальше давай|следующ/.test(s)) return "forgot";
   if(/не помню|забыл|не знаю|без понятия|хз/.test(s)||/わからない|わすれた|しらない/.test(h)||/ぽむにゅ|ざび/.test(h)) return "forgot";
   return null;
 }
@@ -2285,11 +2310,11 @@ function akRender(){
   let bubble="";
   if(v.kind==="talk") bubble=`<div class="speech"><span class="akru">${esc(v.ru)}</span></div>`;
   else if(v.kind==="teach"||v.kind==="repeat"){ const ch=v.chunk||v.p[0], part=ch!==v.p[0];
-    bubble=`<div class="speech">${v.note?`<span class="aknote">${esc(v.note)}</span>`:""}<span class="jp akjp">${rb(ch)}</span>${part?`<span class="jp akfull">${rb(v.p[0])}</span>`:""}<span class="hint">${esc(v.p[1])}</span>${v.kind==="repeat"&&v.cue?`<span class="akrep">🗣 ${esc(v.cue)}</span>`:""}<button class="mini akspk" id="akspk">🔊 ещё раз</button></div>`; }
+    bubble=`<div class="speech">${v.heard?`<span class="said">ты сказал: «${esc(v.heard)}»</span>`:""}${v.note?`<span class="aknote">${esc(v.note)}</span>`:""}<span class="jp akjp">${rb(ch)}</span>${part?`<span class="jp akfull">${rb(v.p[0])}</span>`:""}<span class="hint">${esc(v.p[1])}</span>${v.kind==="repeat"&&v.cue?`<span class="akrep">🗣 ${esc(v.cue)}</span>`:""}<button class="mini akspk" id="akspk">🔊 ещё раз</button></div>`; }
   else if(v.kind==="check"||v.kind==="reveal"||v.kind==="build") bubble=`<div class="speech">${v.promptHtml||""}</div>`;
   else if(v.kind==="react") bubble=`<div class="speech ${v.bad?"ru-speech":""}">${v.said?`<span class="said">ты сказал: «${esc(v.said)}»</span>`:""}<span class="akru">${esc(v.ru)}</span></div>`;
   let below="";
-  if(v.opts&&!(AK.listening&&v.kind==="check")&&(v.kind==="check"||v.kind==="reveal"||v.kind==="react")){
+  if(v.opts&&!(AK.listening&&v.kind==="check"&&!AK.showOpts)&&(v.kind==="check"||v.kind==="reveal"||v.kind==="react")){
     below=`<div class="hfopts">${v.opts.map((o,i)=>{const st=(v.kind!=="check")?(o.ok?"ok":(AK.tap===i?"no":"dim2")):(AK.tap===i?"sel":"");const listen=v.kind!=="check";return `<button class="hfo akopt ${st} ${listen?"listen":""}" data-i="${i}" ${!listen&&AK.tap!=null?"disabled":""}><span class="num">${listen&&o.ok?"🔊":i+1}</span>${o.jp!=null?`<span class="jp">${rb(o.jp)}</span>`:`<span class="ru">${esc(o.ru)}</span>`}</button>`}).join("")}</div>`;
   }
   if(v.kind==="build"){
@@ -2307,7 +2332,7 @@ function akRender(){
     <button class="aktog slim" id="akShortT" aria-pressed="${!!S.akShort}"><span class="dot"></span>${S.akShort?"Пиздёж: выкл · коротко":"Пиздёж: вкл · с историями"}<i>${S.akShort?"включить":"выключить"}</i></button>
     <div class="stage bg-${c.bg}">${sceneDeco(c.bg)}${E?`<div class="callbadge">📞 ${E.final?"финальный созвон":"созвон"} · ${fmtClock(Date.now()-E.t0)}</div>`:""}${bubble}<div class="girlwrap ${v.kind==="react"&&v.bad?"shake":""}">${girlSVG(AK.mood)}</div><div class="lovebar lbl"><span>${esc(label)}</span></div></div>
     ${S.voice&&VOICE.denied&&!E?`<div class="micerr">🎤 Голос не работает: ${esc(voiceNote())} <b>Исправь и нажми «Голосом» ещё раз.</b></div>`:""}
-    ${AK.listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${AK.listening==="ja"?"Скажи по-японски":"Скажи перевод по-русски"}</b><span id="micTxt">${esc(AK.heardTxt||"слушаю…")}</span></span></div><div class="cmdhint">варианты покажу, если промолчишь · команды: «повтори» · «назад» · «не помню»${AK.listening==="ja"?" · もう一回 · わからない":""}</div>`:""}
+    ${AK.listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${AK.listening==="rep"?"Повтори вслух — я слушаю":AK.listening==="ja"?"Скажи по-японски":"Скажи перевод по-русски"} <small>· жду сколько угодно</small></b><span id="micTxt">${esc(AK.heardTxt||"слушаю…")}</span></span></div>${AK.listening!=="rep"&&v.opts&&!AK.showOpts?`<button class="mini showopts" id="showOpts">👀 Показать варианты</button>`:""}<div class="cmdhint">команды: «пропусти» · «повтори» · «назад» · «не помню»${AK.listening==="ja"?" · もう一回 · わからない":""}</div>`:""}
     ${timer}${below}
     ${v.skippable?`<button class="big" id="akskip" ${pinkBtn}>Повторил, дальше →</button>`:""}
     ${v.kind==="react"&&v.wait?`<button class="big" id="akgo" ${pinkBtn}>Дальше →</button>`:""}
@@ -2319,7 +2344,8 @@ function akRender(){
   document.getElementById("pause").onclick=()=>{ if(AK.paused){AK.paused=false;wakeOn();(AK.exam?akExamRun:akRun)(AK.resume);} else {AK.paused=true;HF.token++;try{speechSynthesis.cancel()}catch(e){};stopListen();AK.listening=null;wakeOff();akRender();} };
   app.querySelectorAll(".akopt").forEach(b=>b.onclick=()=>{ if(AK.view.kind!=="check"){ const o=AK.view.opts&&AK.view.opts[+b.dataset.i]; if(o){ b.classList.remove("ping"); void b.offsetWidth; b.classList.add("ping"); sayQ(o.jp!=null?o.jp:o.ru,o.jp!=null?"ja":"ru"); } return; } if(AK.tap!=null)return; AK.tap=+b.dataset.i; akRender(); if(full||AK.listening) akGo(); });
   const g=document.getElementById("akgo"); if(g) g.onclick=akGo;
-  const sk=document.getElementById("akskip"); if(sk) sk.onclick=()=>{AK.skip=true;sk.disabled=true;};
+  const sk=document.getElementById("akskip"); if(sk) sk.onclick=()=>{AK.skip=true;sk.disabled=true;cancelListen();};
+  const so=document.getElementById("showOpts"); if(so) so.onclick=()=>{AK.showOpts=true;akRender();};
   document.getElementById("akShortT").onclick=akToggleShort;
   app.querySelectorAll(".ansb").forEach(b=>b.onclick=()=>akSetAnswerMode(b.dataset.am));
   const sp=document.getElementById("akspk"); if(sp) sp.onclick=()=>sayQ(AK.view.chunk||AK.view.p[0],"ja");
@@ -2376,6 +2402,27 @@ async function akRun(resume){
   const pauseFor=async(n,view)=>{ AK.skip=false; for(let t=n;t>0;t--){ if(AK.skip)break; AK.view=Object.assign({},view,{sec:t,total:n,skippable:full}); akRender(); await sleep(1000); if(!alive())return false; } AK.view=Object.assign({},view); return true; };
   const setLabel=p=>{ AK.cur={ci:p.ci}; AK.lbl=(AK.review||p.ci!==AK.ch||!AK.items.includes(p))?"Повтор · "+COURSE[p.ci].t:null; };
 
+  const voiceOn=()=>S.voice&&SR&&!VOICE.denied;
+  /* «повтори» с микрофоном: ждём, пока реально скажешь, проверяем похожесть */
+  async function echo(target,view,anySpeech,fallbackSec){
+    if(!voiceOn()) return pauseFor(fallbackSec,view);
+    for(let tries=0;tries<3;tries++){
+      AK.view=Object.assign({},view,{skippable:true}); AK.listening="rep"; AK.heardTxt=""; akRender();
+      VOICE.onInterim=tx=>{ AK.heardTxt=tx; const el=document.getElementById("micTxt"); if(el) el.textContent=tx||"слушаю…"; };
+      AK.skip=false;
+      const h=await listenUntil("ja",()=>alive()&&!AK.skip);
+      AK.listening=null; VOICE.onInterim=null;
+      if(!alive())return false;
+      if(AK.skip||h.cancel||VOICE.denied) { AK.view=Object.assign({},view); akRender(); return true; }
+      const alts=(h.alts||[]).filter(Boolean);
+      const cmd=voiceCmd(alts);
+      if(cmd==="forgot"){ return true; }
+      if(cmd!=="repeat"&&(anySpeech||jaOk(alts,target,true))){ AK.view=Object.assign({},view,{heard:alts[0]}); akRender(); await speakP(pick(["Норм.","Похоже.","Да.","Красиво.","Ага."]),"ru"); return alive(); }
+      if(cmd!=="repeat"){ AK.view=Object.assign({},view,{heard:alts[0]}); akRender(); await speakP(pick(["Не похоже. Слушай ещё раз.","Неа, не то. Ещё раз.","Ты что-то своё сказал. Слушай."]),"ru"); if(!alive())return false; }
+      await speakP(target,"ja",.65); if(!alive())return false;
+    }
+    await speakP("Ладно, потом дожмём.","ru"); return alive();
+  }
   async function intro(task){
     const p=task.p; setLabel(p);
     const story=S.akShort?(/[.!?…)]$/.test(p[1])?p[1]:p[1]+"."):p[2];
@@ -2389,7 +2436,7 @@ async function akRun(resume){
         AK.view={kind:"teach",p,chunk:ch[k],note:`кусочек ${k+1}`}; akRender();
         await speakP(ch[k],"ja",.65); if(!alive())return false;
         if(k===0){ await speakP("Повтори.","ru"); if(!alive())return false; }
-        if(!await pauseFor(Math.max(2,repP()),{kind:"repeat",p,chunk:ch[k],cue:"повтори кусочек"}))return false;
+        if(!await echo(ch[k],{kind:"repeat",p,chunk:ch[k],cue:"повтори кусочек"},true,Math.max(2,repP())))return false;
       }
       AK.view={kind:"teach",p,chunk:p[0],note:"целиком"}; akRender();
       await speakP("Теперь целиком.","ru"); if(!alive())return false;
@@ -2398,11 +2445,11 @@ async function akRun(resume){
     const cue=S.akShort?pick(AK_SHORT_REP):pick(AK_REPEAT);
     AK.view={kind:"repeat",p,chunk:p[0],cue}; akRender();
     await speakP(cue,"ru"); if(!alive())return false;
-    if(!await pauseFor(repP()+1,{kind:"repeat",p,chunk:p[0],cue}))return false;
+    if(!await echo(p[0],{kind:"repeat",p,chunk:p[0],cue},false,repP()+1))return false;
     AK.view={kind:"teach",p,chunk:p[0],note:"в живом темпе"}; akRender();
     await speakP(S.akShort?"Быстрее.":"И ещё раз, в живом темпе.","ru"); if(!alive())return false;
     await speakP(p[0],"ja",.95); if(!alive())return false;
-    if(!await pauseFor(repP(),{kind:"repeat",p,chunk:p[0],cue:"повтори быстро"}))return false;
+    if(!await echo(p[0],{kind:"repeat",p,chunk:p[0],cue:"повтори быстро"},false,repP()))return false;
     srsSeen(p[0],true);
     return true;
   }
@@ -2427,11 +2474,12 @@ async function akRun(resume){
       const lang=jr?"ru":"ja";
       AK.listening=lang; AK.heardTxt=""; akRender();
       VOICE.onInterim=tx=>{ AK.heardTxt=tx; const el=document.getElementById("micTxt"); if(el) el.textContent=tx||"слушаю…"; };
-      const ms=(bg?Math.max(T,6):9)*1000;
-      const heard=await Promise.race([listen(lang,ms,alive),new Promise(res=>{AK.waitResolve=()=>{stopListen();res({tapped:true});};})]);
-      AK.waitResolve=null; AK.listening=null; VOICE.onInterim=null;
+      AK.showOpts=false;
+      const heard=await Promise.race([listenUntil(lang,alive),new Promise(res=>{AK.waitResolve=()=>{cancelListen();res({tapped:true});};})]);
+      AK.waitResolve=null; AK.listening=null; VOICE.onInterim=null; AK.showOpts=false;
       if(!alive())return false;
       if(VOICE.denied){ AK.view={kind:"talk",ru:"Микрофон не работает, так что отвечай кнопками. Причину написала сверху."}; akRender(); await speakP("Микрофон не работает, отвечай кнопками.","ru"); if(!alive())return false; AK.view={kind:"check",p,opts,promptHtml}; akRender(); }
+      else if(heard.cancel){ vres="forgot"; }
       else if(!heard.tapped){
         const alts=(heard.alts||[]).filter(Boolean); said=alts[0]||"";
         if(alts.length){
@@ -2460,7 +2508,7 @@ async function akRun(resume){
         await speakP(p[0],"ja",.8); if(!alive())return false;
         if(bg){ await sleep(400); await speakP(p[0],"ja",.95); if(!alive())return false; }
         if(withRepeat){ await speakP(S.akShort?"Повтори.":pick(["Повтори.","Скажи вслух.","Повторяй."]),"ru"); if(!alive())return false;
-          if(!await pauseFor(Math.max(2,repP()),{kind:"reveal",p,opts,promptHtml}))return false; }
+          if(!await echo(p[0],{kind:"reveal",p,opts,promptHtml},false,Math.max(2,repP())))return false; }
       }
       return true;
     };
