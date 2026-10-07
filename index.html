@@ -1,0 +1,2087 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Кана, блять">
+<meta name="theme-color" content="#17183A">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Кана, блять</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;500&family=Zen+Maru+Gothic:wght@500;700&family=Rubik:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one-screen mobile app, 480px column. Top bar → mascot speech → task → answer grid; feedback slides up as a bottom sheet like a hanko stamp. */
+:root{
+  --bg:#ECEEF8; --surface:#FFFFFF; --surface2:#DDE0F2; --ink:#17183A; --muted:#5D6191;
+  --accent:#FF3D2E; --accent-ink:#FFFFFF; --good:#0F9D4E; --bad:#E0213A; --gold:#F2A900;
+  --line:#C9CDE6; --pink:#E8338A;
+  --f-jp:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif;
+  --f-display:"Dela Gothic One","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-kana:"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  --f-body:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E0F2C; --surface:#1A1C46; --surface2:#25285C; --ink:#F2F2FF; --muted:#A3A7DA;
+  --accent:#FF5847; --accent-ink:#FFFFFF; --good:#2BD27A; --bad:#FF4D66; --gold:#FFC53D; --line:#33377A; --pink:#FF5FAE; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E0F2C; --surface:#1A1C46; --surface2:#25285C; --ink:#F2F2FF; --muted:#A3A7DA;
+  --accent:#FF5847; --accent-ink:#FFFFFF; --good:#2BD27A; --bad:#FF4D66; --gold:#FFC53D; --line:#33377A; --pink:#FF5FAE; color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-inline:16px;padding-block:12px 20px}
+.screen{display:flex;flex-direction:column;gap:16px;flex:1}
+
+/* ---------- HOME ---------- */
+.brand{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:6px}
+.brand h1{font-family:var(--f-display);font-weight:400;font-size:clamp(34px,10vw,46px);line-height:.95;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.brand h1 span{color:var(--accent)}
+.brand .kanji{font-family:var(--f-display);font-size:15px;color:var(--muted);writing-mode:vertical-rl;letter-spacing:.2em}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.stat small{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.stat.fire b{color:var(--accent)}
+.nag{background:var(--ink);color:var(--bg);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.nag .face{font-size:18px;white-space:nowrap;font-weight:700}
+.nag p{margin:0;font-size:14px;line-height:1.35;font-weight:500}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:4px 0 -6px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:4px;transition:transform .1s}
+.mode:active{transform:scale(.97)}
+.mode .k{font-family:var(--f-display);font-size:24px;line-height:1}
+.mode .t{font-weight:700;font-size:14px}
+.mode .d{font-size:12px;color:var(--muted)}
+.mode[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.mastery{background:var(--surface);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.mastery .row{display:flex;justify-content:space-between;font-size:13px;font-weight:500}
+.bar{height:10px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--good);border-radius:99px;transition:width .4s}
+.big{display:block;width:100%;background:var(--accent);color:var(--accent-ink);font-weight:900;font-size:18px;letter-spacing:.04em;padding:18px;border-radius:16px;box-shadow:0 5px 0 color-mix(in srgb,var(--accent) 55%,#000);transition:transform .08s,box-shadow .08s;text-transform:uppercase}
+.big:active{transform:translateY(4px);box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.ghost{display:block;width:100%;background:var(--surface);border:2px solid var(--line);font-weight:700;padding:14px;border-radius:14px}
+.foot{font-size:12px;color:var(--muted);text-align:center;margin-top:auto;padding-top:8px}
+
+/* ---------- LESSON ---------- */
+.top{display:flex;align-items:center;gap:12px}
+.x{width:36px;height:36px;border-radius:10px;font-size:22px;color:var(--muted);flex:none}
+.prog{flex:1;height:14px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--good);border-radius:99px;transition:width .35s}
+.hearts{font-weight:900;color:var(--bad);font-variant-numeric:tabular-nums;white-space:nowrap}
+.combo{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);min-height:16px;text-align:center}
+.sensei{display:flex;gap:10px;align-items:flex-start}
+.sensei .face{flex:none;background:var(--surface);border-radius:14px;padding:10px 8px;font-size:15px;font-weight:700;min-width:96px;text-align:center}
+.bubble{background:var(--surface);border-radius:14px;padding:10px 12px;font-size:14px;line-height:1.35;font-weight:500;position:relative}
+.prompt{font-size:13px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);text-align:center}
+.card{background:var(--surface);border-radius:22px;padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.card .glyph{font-family:var(--f-display);font-size:clamp(96px,32vw,140px);line-height:1.05}
+.card .roma{font-weight:900;font-size:clamp(54px,18vw,76px);line-height:1.1;letter-spacing:.02em}
+.card .tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:var(--surface2);padding:4px 10px;border-radius:99px;color:var(--muted)}
+.say{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:12px;background:var(--surface2);font-size:18px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:16px 8px;font-size:24px;font-weight:700;min-height:74px;transition:transform .08s}
+.opt.kana{font-family:var(--f-display);font-weight:400;font-size:38px}
+.opt:active{transform:translateY(2px)}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface))}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--surface))}
+.opt:disabled{cursor:default}
+.typebox{display:flex;flex-direction:column;gap:10px}
+.typebox input{width:100%;font:inherit;font-size:28px;font-weight:700;text-align:center;padding:14px;border-radius:16px;border:2px solid var(--line);background:var(--surface);color:var(--ink);text-transform:lowercase}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.pop{animation:pop .35s}
+@keyframes pop{40%{transform:scale(1.08)}}
+
+/* ---------- FEEDBACK SHEET ---------- */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(110%);transition:transform .22s ease-out}
+.sheet.show{transform:none}
+.sheet.good{background:color-mix(in srgb,var(--good) 22%,var(--bg))}
+.sheet.bad{background:color-mix(in srgb,var(--bad) 22%,var(--bg))}
+.sheet .in{max-width:448px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.sheet h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:28px;line-height:1.05;text-transform:uppercase}
+.sheet.good h2{color:var(--good)}.sheet.bad h2{color:var(--bad)}
+.sheet p{margin:0;font-weight:500;font-size:15px}
+.sheet p .k{font-family:var(--f-display);font-size:22px}
+.sheet .big.g{background:var(--good);box-shadow:0 5px 0 color-mix(in srgb,var(--good) 55%,#000)}
+.sheet .big.b{background:var(--bad);box-shadow:0 5px 0 color-mix(in srgb,var(--bad) 55%,#000)}
+.stamp{position:fixed;z-index:6;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-12deg) scale(2.4);opacity:0;pointer-events:none;font-family:var(--f-display);font-size:64px;border:6px solid currentColor;border-radius:14px;padding:0 14px;line-height:1.2}
+.stamp.go{animation:stamp .7s forwards}
+@keyframes stamp{0%{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(2.4)}25%{opacity:.95;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}75%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
+
+/* ---------- RESULT ---------- */
+.res{display:flex;flex-direction:column;gap:14px;align-items:stretch;text-align:center;padding-top:20px}
+.res .face{font-size:30px;font-weight:700}
+.res h2{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,9vw,40px);margin:0;line-height:1.05;text-wrap:balance}
+.res p{margin:0;color:var(--muted);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chip{font-family:var(--f-display);font-size:22px;background:var(--surface);border:2px solid var(--bad);border-radius:12px;padding:4px 10px}
+
+/* ---------- CHEAT SHEET ---------- */
+.sh-h{display:flex;align-items:center;gap:10px}
+.sh-h h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:26px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.cell{background:var(--surface);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid transparent}
+.cell .g{font-family:var(--f-display);font-size:30px;line-height:1.1}
+.cell .r{font-size:12px;font-weight:700;color:var(--muted)}
+.cell.m1{border-color:var(--gold)}.cell.m2{border-color:var(--good)}.cell.weak{border-color:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);font-weight:500}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.legend .l1::before{background:var(--bad)}.legend .l2::before{background:var(--gold)}.legend .l3::before{background:var(--good)}
+.note{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.45}
+.note b{font-family:var(--f-display);font-weight:400}
+
+/* ---------- ПИКАП ---------- */
+.pu-entry{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--pink);color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 5px 0 color-mix(in srgb,var(--pink) 55%,#000);transition:transform .08s}
+.pu-entry:active{transform:translateY(4px);box-shadow:0 1px 0 color-mix(in srgb,var(--pink) 55%,#000)}
+.pu-entry .k{font-family:var(--f-display);font-size:40px;line-height:1}
+.pu-entry b{display:block;font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:.03em}
+.pu-entry small{font-size:13px;opacity:.92}
+.pu-head{display:flex;align-items:center;gap:10px}
+.pu-head h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:24px;flex:1;line-height:1.05}
+.tog{background:var(--surface);border:2px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.tog[aria-pressed="true"]{border-color:var(--pink);color:var(--pink)}
+.ch{background:var(--surface);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ch .hd{display:flex;gap:12px;align-items:flex-start}
+.ch .n{font-family:var(--f-display);font-size:26px;color:var(--pink);line-height:1;min-width:28px}
+.ch h3{margin:0;font-size:17px;font-weight:900}
+.ch p{margin:2px 0 0;font-size:13px;color:var(--muted);line-height:1.35}
+.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stg{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:8px 4px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.15}
+.stg i{font-style:normal;font-size:11px;color:var(--muted);font-weight:500}
+.stg.done{border-color:var(--good)}.stg.done i{color:var(--good);font-weight:700}
+.ph{display:flex;gap:10px;align-items:center;background:var(--surface);border-radius:14px;padding:12px}
+.ph .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.jp{font-family:var(--f-jp);font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
+.ph .jp{font-size:20px}
+.rm{font-size:13px;color:var(--muted);font-style:italic}
+.ph .ru{font-size:14px;font-weight:500}
+.spk{flex:none;width:40px;height:40px;border-radius:12px;background:var(--surface2);font-size:17px}
+.card .jpbig{word-break:keep-all;overflow-wrap:anywhere;font-family:var(--f-jp);font-weight:700;font-size:clamp(26px,8vw,34px);text-align:center;line-height:1.3;padding-inline:36px}
+.card .rubig{font-weight:900;font-size:clamp(22px,7vw,30px);text-align:center;line-height:1.2;padding-inline:8px}
+.opts1{display:flex;flex-direction:column;gap:8px}
+.ropt{background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:14px;padding:12px 14px;text-align:left;display:flex;flex-direction:column;gap:2px;transition:transform .08s}
+.ropt:active{transform:translateY(2px)}
+.ropt .jp{font-size:19px}
+.ropt .ru{font-size:16px;font-weight:700}
+.ropt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface))}
+.ropt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--surface))}
+.slot{min-height:64px;border-bottom:2px dashed var(--line);display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding-bottom:10px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:48px}
+.tile{font-family:var(--f-jp);font-weight:700;font-size:19px;background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;padding:8px 12px}
+.tile.ghosted{visibility:hidden}
+.meter{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:14px;padding:8px 12px}
+.meter .f{font-weight:700;white-space:nowrap;font-size:15px}
+.meter .bar{flex:1}.meter .bar i{background:var(--pink)}
+.meter b{font-variant-numeric:tabular-nums;font-size:14px;min-width:40px;text-align:right}
+.narr{font-size:13px;color:var(--muted);text-align:center;font-weight:500;line-height:1.4;padding-inline:8px}
+.chat{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:86%;padding:10px 12px;border-radius:16px;display:flex;flex-direction:column;gap:3px}
+.msg .jp{font-size:18px}
+.msg.her{align-self:flex-start;background:var(--surface);border-bottom-left-radius:4px}
+.msg.me{align-self:flex-end;background:var(--pink);color:#fff;border-bottom-right-radius:4px}
+.msg.me .rm{color:#fff;opacity:.85}
+.msg.me.x{opacity:.45;text-decoration:line-through}
+.msg .who{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.msg .acts{display:flex;gap:6px;margin-top:2px}
+.mini{font-size:12px;font-weight:700;background:var(--surface2);border-radius:99px;padding:4px 10px}
+.msg .ru{font-size:14px;font-weight:500;color:var(--muted)}
+.ask{font-size:13px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--pink);text-align:center;margin-top:4px}
+.motiv{background:var(--surface);border-left:0;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:500;line-height:1.4}
+.motiv b{color:var(--pink)}
+
+/* ---------- ЖИВОЕ ОБЩЕНИЕ ---------- */
+.livegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.live{position:relative;text-align:left;border-radius:16px;padding:12px;min-height:118px;display:flex;flex-direction:column;gap:3px;color:#1B1530;overflow:hidden;transition:transform .08s}
+.live:active{transform:scale(.97)}
+.live .k{font-family:var(--f-display);font-size:30px;line-height:1;opacity:.85}
+.live b{font-weight:900;font-size:15px;line-height:1.15}
+.live small{font-size:12px;line-height:1.3;opacity:.8}
+.live i{font-style:normal;font-size:11px;font-weight:700;margin-top:auto;opacity:.75}
+.live.bg-scold,.live.bg-day{color:#fff}
+.bg-cafe{background:linear-gradient(#F3D9B8,#E6BE92)}
+.bg-park{background:linear-gradient(#9FD8FF,#D8F1FF)}
+.bg-home{background:linear-gradient(#D9CCF2,#C4B4EA)}
+.bg-whims{background:linear-gradient(#FFB3D1,#FF8DBD)}
+.bg-day{background:linear-gradient(#F59E6B,#6A3F8E)}
+.bg-scold{background:linear-gradient(#7A0F22,#C2223B)}
+.bg-game{background:linear-gradient(#FFE97A,#FFC93D)}
+.gate{background:var(--ink);color:var(--bg);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.gate b{font-family:var(--f-display);font-weight:400;font-size:22px;line-height:1.1}
+.gate span{font-weight:700;color:var(--pink)}
+.live-screen{gap:12px}
+.stage{position:relative;height:min(52vh,380px);min-height:300px;border-radius:22px;overflow:hidden;display:flex;justify-content:center;align-items:flex-end;transition:filter .4s}
+.stage.small{height:220px;min-height:0}
+.stage .deco{position:absolute;inset:0;width:100%;height:100%}
+.girlwrap{position:relative;width:min(62%,250px);margin-bottom:-6px;animation:bob 3.2s ease-in-out infinite}
+.girlwrap svg{display:block;width:100%;height:auto}
+.stage.gone .girlwrap{animation:leave 1.6s ease-in forwards}
+@keyframes bob{50%{transform:translateY(-5px)}}
+@keyframes leave{to{transform:translateX(140%) rotate(6deg);opacity:0}}
+.girl .eye{animation:blink 4.2s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+.girl .tear{animation:tear 1.4s ease-in infinite}
+@keyframes tear{from{transform:translateY(0);opacity:1}to{transform:translateY(16px);opacity:0}}
+.speech{position:absolute;top:12px;left:12px;right:12px;z-index:2;background:#fff;color:#1B1530;border-radius:18px;padding:12px 14px;box-shadow:0 4px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;gap:4px;animation:pop .3s}
+.speech::after{content:"";position:absolute;bottom:-9px;left:50%;border:10px solid transparent;border-top-color:#fff;border-bottom:0;margin-left:-10px}
+.speech .jp{font-size:22px}
+.speech .hint{font-size:13px;color:#6B6890;font-weight:500}
+.ru-speech{background:#E0213A;color:#fff;font-weight:900;font-size:19px;line-height:1.25}
+.ru-speech::after{border-top-color:#E0213A}
+.lovebar{position:absolute;left:12px;bottom:12px;z-index:2;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.88);border-radius:99px;padding:5px 10px;width:min(170px,45%);color:#1B1530;font-size:13px;font-weight:700}
+.lovebar .bar{flex:1;height:8px;background:#EAD9E4}.lovebar .bar i{background:#E8338A}
+.toast{position:absolute;right:10px;bottom:56px;z-index:3;background:var(--gold);color:#1B1530;font-weight:900;font-size:13px;padding:6px 10px;border-radius:10px;transform:rotate(-4deg);animation:pop .4s}
+.liverow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.coach{background:var(--surface);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.coach small{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.coach .jp{font-size:21px}
+.coachjp{text-align:left;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.coach .ru{font-weight:500}
+ruby{ruby-position:over}
+rt{font-size:.5em;font-weight:500;letter-spacing:0}
+
+/* ---------- БЕЗ РУК ---------- */
+.hf-entry{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--ink);color:var(--bg);border-radius:16px;padding:14px 16px;box-shadow:0 5px 0 color-mix(in srgb,var(--ink) 60%,#000);transition:transform .08s}
+.hf-entry:active{transform:translateY(4px);box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 60%,#000)}
+.hf-entry .k{font-family:var(--f-display);font-size:40px;line-height:1;color:var(--gold)}
+.hf-entry b{display:block;font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:.03em}
+.hf-entry small{font-size:13px;opacity:.85}
+.hfpick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hfcard{background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:18px;padding:14px 12px;text-align:left;display:flex;flex-direction:column;gap:6px}
+.hfcard .ic{font-size:44px;line-height:1}
+.hfcard b{font-weight:900;font-size:16px}
+.hfcard small{font-size:12px;color:var(--muted);line-height:1.35}
+.hf .hfmode{flex:1;font-weight:700;font-size:13px;color:var(--muted);text-align:right}
+.hfstage{background:var(--surface);border-radius:22px;padding:20px 14px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative}
+.hfq{text-align:center;line-height:1.2}
+.hfq.jp{font-family:var(--f-jp);font-weight:700;font-size:clamp(28px,9vw,38px);word-break:keep-all;overflow-wrap:anywhere}
+.hfq.ru{font-weight:900;font-size:clamp(24px,8vw,32px)}
+.hfq.kana{font-family:var(--f-display);font-size:110px;line-height:1.05}
+.hfq.listen,.hfq.ears{font-size:84px;line-height:1.1}
+.hfsub{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.timer{width:100%;height:10px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.timer i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width 1s linear}
+.sec{font-family:var(--f-display);font-size:44px;line-height:1;color:var(--accent)}
+.sec.ok{color:var(--good)}
+.hfopts{display:flex;flex-direction:column;gap:8px}
+.hfopts.dim{opacity:.85}
+.hfo{display:flex;align-items:center;gap:12px;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:12px 14px;transition:background .3s,border-color .3s,opacity .3s}
+.hfo .num{flex:none;width:34px;height:34px;border-radius:10px;background:var(--surface2);display:grid;place-items:center;font-weight:900}
+.hfo .kana{font-family:var(--f-display);font-size:40px;line-height:1}
+.hfo .jp{font-family:var(--f-jp);font-weight:700;font-size:20px;word-break:keep-all;overflow-wrap:anywhere}
+.hfo .ru{font-weight:700;font-size:17px}
+.hfo.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 20%,var(--surface))}
+.hfo.ok .num{background:var(--good);color:#fff}
+.hfo.no{opacity:.4}
+.hfmodes{grid-template-columns:repeat(2,1fr)}
+.hfmodes1{display:grid;grid-template-columns:1fr}
+.timerset{background:var(--surface);border-radius:16px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.tsrow{display:flex;flex-direction:column;gap:6px}
+.tsl{font-size:13px;font-weight:700}
+.tschips{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}
+.tsc{background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:8px 0;font-weight:900;font-variant-numeric:tabular-nums}
+.tsc[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tsrun{display:flex;align-items:center;justify-content:center;gap:12px;font-weight:700;font-size:14px}
+.tsrun .mini{font-size:18px;padding:4px 14px}
+.minebar{display:grid;grid-template-columns:1fr auto;gap:8px}
+.mode.wide{flex-direction:row;align-items:center;gap:12px}
+.mode.wide .k{font-size:30px}
+.mode.wide>span:last-child{display:flex;flex-direction:column;gap:2px}
+.cfg{width:auto;padding-inline:14px;font-size:14px}
+.pickbtns{display:flex;flex-wrap:wrap;gap:6px}
+.pickbtns .mini{font-size:13px;padding:7px 12px}
+.switch{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border-radius:14px;padding:12px 14px;cursor:pointer}
+.switch input{width:22px;height:22px;accent-color:var(--accent);flex:none;margin:2px 0 0}
+.switch span{display:flex;flex-direction:column;gap:2px}
+.switch small{font-size:12px;color:var(--muted);line-height:1.35}
+.cell.pick{position:relative}
+.cell.pick.on{background:var(--accent);color:var(--accent-ink)}
+.cell.pick.on .r{color:var(--accent-ink);opacity:.9}
+.cell .md{font-family:var(--f-display);font-size:11px;font-weight:400;letter-spacing:.02em}
+.pickgo{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:3}
+.big:disabled{opacity:.5;cursor:default}
+.hfctl{display:grid;grid-template-columns:1fr;gap:8px;margin-top:auto}
+
+
+/* учебные буквы — обычный чёткий шрифт, не жирный */
+.card .glyph,.opt.kana,.chip,.cell .g,.cell .md,.hfq.kana,.hfo .kana,.sheet p .k{font-family:var(--f-kana);font-weight:500}
+.cell .md{font-weight:400;font-size:12px}
+.card .glyph{font-weight:400}
+
+/* ---------- АЛЬТУХА УЧИТ ---------- */
+.ak-entry{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:linear-gradient(120deg,var(--pink),var(--accent));color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 5px 0 color-mix(in srgb,var(--pink) 50%,#000);transition:transform .08s}
+.ak-entry:active{transform:translateY(4px);box-shadow:0 1px 0 color-mix(in srgb,var(--pink) 50%,#000)}
+.ak-entry .k{font-family:var(--f-display);font-size:40px;line-height:1}
+.ak-entry b{display:block;font-weight:900;font-size:17px;text-transform:uppercase;letter-spacing:.02em;line-height:1.15}
+.ak-entry small{font-size:13px;opacity:.92}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.segb{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px;font-weight:900;font-size:15px;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.segb small{font-weight:500;font-size:12px;color:var(--muted)}
+.segb[aria-pressed="true"]{border-color:var(--pink);box-shadow:0 0 0 2px var(--pink) inset}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.stepb{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:8px 10px;text-align:left;display:flex;flex-direction:column;gap:1px;line-height:1.2}
+.stepb b{font-family:var(--f-display);font-weight:400;font-size:18px;color:var(--pink)}
+.stepb span{font-size:13px;font-weight:700}
+.stepb i{font-style:normal;font-size:11px;font-weight:700;color:var(--good)}
+.stepb.done{border-color:var(--good)}
+.akru{font-size:16px;font-weight:700;line-height:1.35}
+.akjp{font-size:28px!important}
+.akrep{font-size:13px;font-weight:900;color:#E8338A;text-transform:uppercase;letter-spacing:.04em}
+.aktimer{display:flex;align-items:center;gap:10px}
+.aktimer b{font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--accent);min-width:24px;text-align:center}
+.hfo.sel{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 15%,var(--surface))}
+.hfo.dim2{opacity:.4}
+.hfo.listen{cursor:pointer}
+.hfo.listen.ok::after{content:"послушать";margin-left:auto;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;padding-left:8px}
+.hfo.ping{animation:pop .3s}
+.seg3{grid-template-columns:repeat(3,1fr)}
+.seg3 .segb{font-size:14px;padding:10px}
+.hfctl.hide{display:none}
+.akspk{align-self:flex-start;margin-top:2px;color:#1B1530;background:#ECE8F7}
+.hfo.akopt.no{opacity:1;border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--surface))}
+.hfo.akopt.no .num{background:var(--bad);color:#fff}
+.akopt{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.akrow{display:flex;justify-content:space-between;gap:12px;padding-block:4px;border-bottom:1px solid var(--line)}
+.akrow:last-child{border-bottom:0}
+.akrow .jp{font-size:17px}
+.stage .lovebar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* мимика, когда она говорит */
+.girl .e-talk,.girl .m-talk{display:none}
+.talking .girl .e-talk,.talking .girl .m-talk{display:inline}
+.talking .girl .e-mood,.talking .girl .m-static{display:none}
+.girl .m-talk ellipse{transform-box:fill-box;transform-origin:center;animation:yap .18s ease-in-out infinite alternate}
+@keyframes yap{0%{transform:scaleY(.2) scaleX(1.1)}60%{transform:scaleY(.9)}100%{transform:scaleY(.45) scaleX(.95)}}
+.talking .stage:not(.gone) .girlwrap{animation:talkbob .9s ease-in-out infinite}
+@keyframes talkbob{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-3px) rotate(-1.2deg)}70%{transform:translateY(-1px) rotate(1deg)}}
+
+.exam{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.exh{display:flex;flex-direction:column;gap:2px}
+.exh b{font-weight:900;font-size:14px}
+.exh small{font-size:12px;color:var(--muted)}
+.exam.open .exh b{color:var(--pink)}
+.exbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.exb{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center}
+.exb b{font-weight:900;font-size:13px}
+.exb small{font-size:11px;color:var(--muted)}
+.exb i{font-style:normal;font-size:11px;font-weight:700;color:var(--muted)}
+.exb.pass{border-color:var(--good)}.exb.pass i{color:var(--good)}
+.exbtns.big3 .exb{padding:16px 6px}.exbtns.big3 .exb b{font-size:16px}
+.aktog{display:flex;align-items:center;gap:8px;width:100%;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13px;font-weight:700;text-align:left}
+.aktog .dot{width:12px;height:12px;border-radius:50%;background:var(--good);flex:none}
+.aktog[aria-pressed="true"] .dot{background:var(--muted)}
+.aktog i{margin-left:auto;font-style:normal;font-size:12px;color:var(--pink);font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.lovebar.lbl{width:auto;max-width:80%}
+.akhearts{color:var(--bad);letter-spacing:1px}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+<div class="sheet" id="sheet"><div class="in" id="sheetIn"></div></div>
+<div class="stamp" id="stamp"></div>
+
+<script>
+/* ===== DATA: только твои буквы + все модификации ===== */
+const RAW = {
+  h:  "う:u|え:e|け:ke|さ:sa|せ:se|た:ta|ち:chi,ti|と:to|な:na|ぬ:nu|ね:ne|の:no|は:ha|ひ:hi|へ:he|ほ:ho|ま:ma|む:mu|め:me|も:mo|ら:ra|れ:re|ろ:ro|を:wo,o",
+  hm: "ゔ:vu|げ:ge|ざ:za|ぜ:ze|だ:da|ぢ:ji,di,dzi|ど:do|ば:ba|ぱ:pa|び:bi|ぴ:pi|べ:be|ぺ:pe|ぼ:bo|ぽ:po",
+  k:  "ア:a|ウ:u|エ:e|ケ:ke|サ:sa|シ:shi,si|ス:su|セ:se|タ:ta|チ:chi,ti|ト:to|ナ:na|ヌ:nu|ネ:ne|ノ:no|ハ:ha|ヒ:hi|ヘ:he|ホ:ho|マ:ma|ム:mu|メ:me|モ:mo|ヤ:ya|ラ:ra|レ:re|ロ:ro|ヲ:wo,o",
+  km: "ヴ:vu|ゲ:ge|ザ:za|ジ:ji,zi|ズ:zu|ゼ:ze|ダ:da|ヂ:ji,di,dzi|ド:do|バ:ba|パ:pa|ビ:bi|ピ:pi|ベ:be|ペ:pe|ボ:bo|ポ:po"
+};
+const ITEMS=[];
+for(const [key,str] of Object.entries(RAW)){
+  for(const p of str.split("|")){
+    const [kana,rs]=p.split(":"); const r=rs.split(",");
+    let disp=r[0]; if(kana==="ぢ"||kana==="ヂ") disp="ji (di)";
+    ITEMS.push({k:kana,r,disp,s:key[0],mod:key.length>1});
+  }
+}
+const BYK=Object.fromEntries(ITEMS.map(i=>[i.k,i]));
+// пара хирагана↔катакана по звуку
+ITEMS.forEach(i=>{ i.twin = ITEMS.find(j=>j.s!==i.s && j.r[0]===i.r[0] && j.mod===i.mod && !(j.k==="ヂ"&&i.k!=="ぢ") && !(i.k==="ヂ"&&j.k!=="ぢ") && !(j.k==="ジ")&&!(i.k==="ジ")) || null; });
+// похожие по форме — их подсовываем как ловушки
+const CONF=[["ぬ","め"],["ね","れ"],["は","ほ"],["さ","ち"],["ア","マ"],["ス","ヌ"],["ノ","メ"],["ウ","ワ"],["シ","ン"],["ケ","ク"],["ロ","コ"],["ナ","メ"],["ハ","ヘ"],["れ","ね"],["む","す"],["ろ","る"],["ら","ち"],["た","な"],["ぬ","ね"],["め","ぬ"],["ヲ","ヨ"],["ホ","ネ"],["チ","テ"],["セ","サ"],["ば","ぱ"],["バ","パ"],["ビ","ピ"],["び","ぴ"],["ボ","ポ"],["ぼ","ぽ"],["ベ","ペ"],["べ","ぺ"],["ザ","サ"],["ジ","シ"],["ヂ","ジ"],["ぢ","ち"]];
+const CONFMAP={}; CONF.forEach(([a,b])=>{(CONFMAP[a]=CONFMAP[a]||[]).push(b);(CONFMAP[b]=CONFMAP[b]||[]).push(a);});
+
+/* ===== МАТ ===== */
+const WRONG=["ПИЗДЕЦ, ДОЛБАЁБ","ЕБАТЬ ТЫ ТРУБА","ЕБЛАН","ИДИОТ","ЛОШАРА","ГЛАЗА РАЗУЙ, САМУРАЙ ХУЕВ","ХУЙНЮ НАЖАЛ, БРО","ТЫ ЯПОНЦЕВ ПОЗОРИШЬ","СЭНСЭЙ ПЛАЧЕТ КРОВЬЮ","НУ ТЫ И ТАПОК","МАМА, ЗАБЕРИ МЕНЯ ОТСЮДА","БЛЯ, НУ ТЫ СЕРЬЁЗНО?","ДАЖЕ МОЯ БАБКА ЗНАЕТ","МИМО, ДОЛБОЁБИНА"];
+const WRONG_SUB=["Запоминай, хуйло:","Смотри и рыдай:","Правильно было вот так, гений:","Записывай, клоун:","Учи, лошпед:"];
+const RIGHT=["ЗАЕБИСЬ!","КРАСАВА","ДА ОХУЕННО","НЕ ПРОЕБИ СЕРИЮ","ЕБАТЬ ТЫ ГЕНИЙ","В ЯБЛОЧКО, СУКА","ТОКИО ГОРДИТСЯ","МОЩНО, БЛЯТЬ","ВОТ ЭТО ДРУГОЕ ДЕЛО","ДЕРЖИ ПЯТЬ, СЭМПАЙ"];
+const SLOW=["Ну пойдёт","Ну пойдёт. Медленно, как черепаха","Ну пойдёт. Думал как будто ипотеку берёшь"];
+const COMBO={3:"ТРИ ПОДРЯД, ЕБАТЬ",5:"ТЫ ЧЁ, ЯПОНЕЦ?",8:"НЕ ПРОЕБИ СЕРИЮ, СУКА",10:"САМУРАЙ НАХУЙ",15:"ИМПЕРАТОР КАНЫ",20:"ТЫ ВООБЩЕ ЧЕЛОВЕК?"};
+const BROKE="СЕРИЮ ПРОЕБАЛ, КЛОУН";
+const FACE={idle:"(•̀ᴗ•́)و",ok:"(ﾉ◕ヮ◕)ﾉ",bad:"(╬ Ò﹏Ó)",dead:"(×_×)",think:"(¬_¬ )",king:"(⌐■_■)"};
+const TAUNTS=["Ну давай, удиви меня","Если ошибёшься — я узнаю","Не тупи, всё на глазах","Сосредоточься, раздолбай","Это ж элементарно, бля","Я в тебя верю. Почти.","Покажи, что ты не овощ"];
+const _lastPick=new WeakMap();
+const pick=a=>{if(a.length<2)return a[0];let x,g=0;do{x=a[Math.floor(Math.random()*a.length)]}while(x===_lastPick.get(a)&&++g<20);_lastPick.set(a,x);return x;};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ===== ХРАНИЛКА ===== */
+const LS="kana-blyat-v1";
+let S={xp:0,streak:0,last:null,best:0,stats:{},mode:"all",lessons:0};
+try{const d=JSON.parse(localStorage.getItem(LS)||"null"); if(d) S=Object.assign(S,d);}catch(e){}
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
+const dayKey=(d=new Date())=>d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return dayKey(d)};
+function liveStreak(){ return (S.last===dayKey()||S.last===yesterday())?S.streak:0; }
+const st=k=>S.stats[k]||(S.stats[k]={c:0,w:0});
+const level=k=>{const s=S.stats[k]; if(!s||s.c+s.w===0) return 0; const acc=s.c/(s.c+s.w); if(s.c>=4&&acc>=.8) return 2; if(s.w>s.c) return -1; return 1;};
+
+/* ===== ЗВУК / ВИБРА / ОЗВУЧКА ===== */
+let AC=null;
+function beep(ok){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;const notes=ok?[660,880]:[220,150];notes.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ok?"triangle":"sawtooth";o.frequency.value=f;g.gain.setValueAtTime(.0001,t+i*.09);g.gain.exponentialRampToValueAtTime(.18,t+i*.09+.01);g.gain.exponentialRampToValueAtTime(.0001,t+i*.09+.16);o.connect(g).connect(AC.destination);o.start(t+i*.09);o.stop(t+i*.09+.18)})}catch(e){}}
+function buzz(){try{navigator.vibrate&&navigator.vibrate([60,40,90])}catch(e){}}
+function speak(text){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(ttsClean(text));u.lang="ja-JP";u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+/* чёткая озвучка буквы: медленно два раза по-японски + слог по-русски */
+const CYR={a:"а",u:"у",e:"э",ke:"кэ",sa:"са",shi:"си",su:"су",se:"сэ",ta:"та",chi:"ти",to:"то",na:"на",nu:"ну",ne:"нэ",no:"но",ha:"ха",hi:"хи",he:"хэ",ho:"хо",ma:"ма",mu:"му",me:"мэ",mo:"мо",ya:"я",ra:"ра",re:"рэ",ro:"ро",wo:"о",vu:"ву",ge:"гэ",za:"дза",ji:"дзи",zu:"дзу",ze:"дзэ",da:"да",do:"до",ba:"ба",pa:"па",bi:"би",pi:"пи",be:"бэ",pe:"пэ",bo:"бо",po:"по"};
+const kanaRu=k=>{const it=BYK[k];return it?CYR[it.r[0]]:null;};
+if(S.ruEcho===undefined) S.ruEcho=true;
+async function kanaSayP(k){ await speakP(k+"。 "+k,"ja",.55); if(S.ruEcho){const c=kanaRu(k); if(c) await speakP(c,"ru",.8);} }
+function speakKana(k){ try{speechSynthesis.cancel()}catch(e){} kanaSayP(k); }
+
+/* ===== УРОК ===== */
+const MODES={
+  hira:{t:"Хирагана",k:"ひ",d:"только ひらがな",f:i=>i.s==="h"},
+  kata:{t:"Катакана",k:"カ",d:"только カタカナ",f:i=>i.s==="k"},
+  mods:{t:"Точки и кружки",k:"ガ",d:"゛ и ゜ — дакутэн",f:i=>i.mod},
+  all:{t:"Всё нахуй",k:"全",d:"полный замес",f:()=>true},
+  mine:{t:"Мои буквы",k:"我",d:"что не ебу",f:i=>inMine(i),hidden:true},
+};
+let L=null;
+const app=document.getElementById("app");
+
+function weightOf(i){const s=S.stats[i.k]; if(!s) return 3; return Math.max(.4, 1.5 + s.w*1.5 - s.c*.35);}
+function pickItems(pool,n){
+  const res=[],avail=pool.slice();
+  while(res.length<n&&avail.length){
+    const tot=avail.reduce((a,i)=>a+weightOf(i),0); let r=Math.random()*tot, idx=0;
+    for(;idx<avail.length;idx++){r-=weightOf(avail[idx]); if(r<=0)break;}
+    res.push(avail.splice(Math.min(idx,avail.length-1),1)[0]);
+  }
+  return res;
+}
+const clash=(a,b)=>a.r.some(x=>b.r.includes(x));
+function distractors(item,script,n,exclude){
+  const pool=ITEMS.filter(j=>j.s===script && j!==exclude && !clash(j,item));
+  const conf=(CONFMAP[exclude?exclude.k:item.k]||[]).map(k=>BYK[k]).filter(j=>j&&pool.includes(j));
+  const out=shuffle(conf).slice(0,2);
+  for(const j of shuffle(pool)){ if(out.length>=n)break; if(!out.includes(j)) out.push(j); }
+  return out.slice(0,n);
+}
+function makeQ(item,forceType){
+  let types=["read","read","find","find","type"]; if(item.twin) types.push("twin","twin");
+  let t=forceType||pick(types);
+  if(t==="twin"&&!item.twin) t="read";
+  const q={item,type:t};
+  if(t==="read"){ // кана → ромадзи
+    const ds=distractors(item,item.s,3).filter((j,ix,a)=>a.findIndex(z=>z.disp===j.disp)===ix && j.disp!==item.disp);
+    q.opts=shuffle([item,...ds].slice(0,4)).map(j=>({label:j.disp,ok:j===item}));
+  } else if(t==="find"){ // ромадзи → кана
+    q.opts=shuffle([item,...distractors(item,item.s,3)]).map(j=>({label:j.k,ok:j===item,kana:true}));
+  } else if(t==="twin"){ // хирагана ↔ катакана
+    const tw=item.twin;
+    q.opts=shuffle([tw,...distractors(tw,tw.s,3,tw)]).map(j=>({label:j.k,ok:j===tw,kana:true}));
+  }
+  return q;
+}
+function startLesson(){
+  const pool=ITEMS.filter(MODES[S.mode].f);
+  if(!pool.length){ return pickerScreen(); }
+  const items=pickItems(pool,12);
+  L={queue:items.map(i=>makeQ(i)),total:items.length,done:0,hearts:5,combo:0,maxCombo:0,right:0,wrong:0,missed:new Set(),xp:0,cur:null,t0:0,locked:false};
+  next();
+}
+function next(){
+  hideSheet();
+  if(L.hearts<=0) return result(true);
+  if(!L.queue.length) return result(false);
+  L.cur=L.queue.shift(); L.locked=false; L.t0=performance.now();
+  renderQ();
+}
+function promptText(q){
+  const sc=q.item.s==="h"?"хирагана":"катакана";
+  return {read:"Как это читается, а?",find:`Найди ${sc==="хирагана"?"хирагану":"катакану"}`,twin:`Найди брата-${q.item.s==="h"?"катакану":"хирагану"}`,type:"Напиши ромадзи, грамотей"}[q.type];
+}
+function renderQ(face=FACE.idle,bub=pick(TAUNTS)){
+  const q=L.cur,i=q.item,pct=Math.round(L.done/L.total*100);
+  const showKana = q.type!=="find";
+  const tag = (i.s==="h"?"хирагана":"катакана")+(i.mod?" · модифицированная":"");
+  let ans="";
+  if(q.type==="type"){
+    ans=`<form class="typebox" id="tf" autocomplete="off"><input id="ti" inputmode="latin" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ka, shi, wo…" aria-label="Ромадзи"><button class="big" type="submit">Проверить, блять</button></form>`;
+  } else {
+    ans=`<div class="opts">${q.opts.map((o,ix)=>`<button class="opt ${o.kana?"kana":""}" data-ix="${ix}">${o.label}</button>`).join("")}</div>`;
+  }
+  app.innerHTML=`<section class="screen">
+    <div class="top"><button class="x" id="quit" aria-label="Выйти">✕</button><div class="prog"><i style="width:${pct}%"></i></div><div class="hearts" aria-label="Жизни">♥ ${L.hearts}</div></div>
+    <div class="combo">${L.combo>=2?`серия ×${L.combo}`:""}</div>
+    <div class="sensei"><div class="face" id="face">${face}</div><div class="bubble" id="bub">${bub}</div></div>
+    <div class="prompt">${promptText(q)}</div>
+    <div class="card" id="card">
+      ${showKana?`<button class="say" id="say" aria-label="Озвучить">🔊</button><div class="glyph">${i.k}</div>`:`<div class="roma">${i.disp}</div>`}
+      <span class="tag">${q.type==="find"?(i.s==="h"?"ищем хирагану":"ищем катакану"):tag}</span>
+    </div>
+    ${ans}
+  </section>`;
+  document.getElementById("quit").onclick=()=>home();
+  const sb=document.getElementById("say"); if(sb) sb.onclick=()=>speakKana(i.k);
+  if(q.type==="type"){
+    const f=document.getElementById("tf"),inp=document.getElementById("ti");
+    setTimeout(()=>inp.focus(),50);
+    f.onsubmit=e=>{e.preventDefault(); if(L.locked)return; const v=inp.value.trim().toLowerCase(); if(!v){inp.classList.remove("shake");void inp.offsetWidth;inp.classList.add("shake");return;} answer(i.r.includes(v),v);};
+  } else {
+    app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      if(L.locked)return; const o=q.opts[+b.dataset.ix];
+      app.querySelectorAll(".opt").forEach((bb,ix)=>{bb.disabled=true; if(q.opts[ix].ok) bb.classList.add("ok");});
+      if(!o.ok) b.classList.add("no");
+      answer(o.ok,o.label);
+    });
+  }
+}
+function answer(ok){
+  L.locked=true;
+  const q=L.cur,i=q.item,s=st(i.k),slow=(performance.now()-L.t0)>6000;
+  const card=document.getElementById("card"),face=document.getElementById("face"),bub=document.getElementById("bub");
+  if(ok){
+    s.c++; L.right++; L.done++; L.combo++; L.maxCombo=Math.max(L.maxCombo,L.combo);
+    const gain=10+Math.min(L.combo,10); L.xp+=gain;
+    let title=slow?pick(SLOW):pick(RIGHT); if(COMBO[L.combo]) title=COMBO[L.combo];
+    face.textContent=L.combo>=5?FACE.king:FACE.ok; bub.textContent=slow?"Мог бы и побыстрее, тормоз":"Вот это я понимаю";
+    card.classList.add("pop"); beep(true); stampIt(L.combo>=5?"神":"良",true);
+    const extra = q.type==="twin" ? `<span class="k">${i.k}</span> ↔ <span class="k">${i.twin.k}</span> = ${i.disp}` : `<span class="k">${i.k}</span> = ${i.disp}`;
+    showSheet(true,title,`${extra} · +${gain} XP`,slow?"ДАЛЬШЕ, ЧЕРЕПАХА":"ПОГНАЛИ ДАЛЬШЕ");
+  } else {
+    s.w++; L.wrong++; L.hearts--; L.missed.add(i.k);
+    const broke=L.combo>=5; L.combo=0;
+    face.textContent=L.hearts<=0?FACE.dead:FACE.bad; bub.textContent=broke?BROKE:"Я разочарован в тебе";
+    card.classList.add("shake"); beep(false); buzz(); stampIt("駄",false);
+    const right = q.type==="twin" ? `<span class="k">${i.k}</span> ↔ <span class="k">${i.twin.k}</span> (${i.disp})` : `<span class="k">${i.k}</span> = ${i.disp}`;
+    L.queue.push(makeQ(i, q.type==="type"?"read":undefined)); // вернётся в конце урока
+    showSheet(false,broke?BROKE:pick(WRONG),`${pick(WRONG_SUB)} ${right}`, L.hearts<=0?"СДОХ. ДАЛЬШЕ":"ПОНЯЛ, Я ДОЛБОЁБ");
+  }
+  save();
+}
+function stampIt(ch,ok){const el=document.getElementById("stamp");el.textContent=ch;el.style.color=ok?"var(--good)":"var(--bad)";el.classList.remove("go");void el.offsetWidth;el.classList.add("go");}
+function showSheet(ok,title,sub,btn,cb){
+  const sh=document.getElementById("sheet"),inn=document.getElementById("sheetIn");
+  sh.className="sheet "+(ok?"good":"bad");
+  inn.innerHTML=`<h2>${title}</h2><p>${sub}</p><button class="big ${ok?"g":"b"}" id="nx">${btn}</button>`;
+  requestAnimationFrame(()=>sh.classList.add("show"));
+  const nx=document.getElementById("nx"); nx.onclick=cb||next; setTimeout(()=>nx.focus({preventScroll:true}),60);
+}
+function hideSheet(){document.getElementById("sheet").classList.remove("show");}
+
+/* ===== ИТОГ ===== */
+function result(dead){
+  hideSheet();
+  const acc=Math.round(L.right/Math.max(1,L.right+L.wrong)*100);
+  let face,title,sub;
+  if(dead){face=FACE.dead;title="ТЫ ОБОСРАЛСЯ";sub="Жизни кончились. Иди глянь шпаргалку и возвращайся, лошара.";}
+  else if(acc===100){face=FACE.king;title="ИМПЕРАТОР ЯПОНИИ";sub="Ни одной ошибки. Я аж прослезился, сука.";}
+  else if(acc>=80){face=FACE.ok;title="КРАСАВА";sub="Но не зазнавайся, пару раз ты всё-таки обосрался.";}
+  else if(acc>=55){face=FACE.think;title="НУ ПОЙДЁТ";sub="Сойдёт для сельской местности. Завтра лучше.";}
+  else {face=FACE.bad;title="ПИЗДЕЦ";sub="Половину просрал. Шпаргалка ждёт тебя, еблан.";}
+  if(!dead){
+    S.xp+=L.xp; S.lessons++;
+    const today=dayKey(); if(S.last!==today){ S.streak=(S.last===yesterday())?S.streak+1:1; S.last=today; }
+    S.best=Math.max(S.best,L.maxCombo); save();
+  }
+  const missed=[...L.missed];
+  app.innerHTML=`<section class="screen res">
+    <div class="face">${face}</div>
+    <h2>${title}</h2><p>${sub}</p>
+    <div class="stats"><div class="stat"><b>${acc}%</b><small>точность</small></div><div class="stat"><b>+${dead?0:L.xp}</b><small>XP</small></div><div class="stat fire"><b>×${L.maxCombo}</b><small>макс. серия</small></div></div>
+    ${dead?"":`<p>Огонёк: <b style="color:var(--accent)">${S.streak} ${plural(S.streak)}</b> подряд. Завтра не приходишь — обнулю, клянусь.</p>`}
+    ${missed.length?`<div class="label" style="text-align:left">На чём ты обосрался</div><div class="chips">${missed.map(k=>`<span class="chip">${k} <small style="font-family:var(--f-body);font-size:13px;color:var(--muted)">${BYK[k].disp}</small></span>`).join("")}</div>`:""}
+    <button class="big" id="again">${dead?"РЕВАНШ, СУКА":"ЕЩЁ РАЗОК"}</button>
+    <button class="ghost" id="back">На главную</button>
+  </section>`;
+  document.getElementById("again").onclick=startLesson;
+  document.getElementById("back").onclick=home;
+}
+const plural=n=>{const a=n%10,b=n%100; if(a===1&&b!==11)return"день"; if(a>=2&&a<=4&&(b<10||b>=20))return"дня"; return"дней";};
+
+/* ===== ШПАРГАЛКА ===== */
+function sheetScreen(){
+  const block=(title,f)=>`<div class="label">${title}</div><div class="grid">${ITEMS.filter(f).map(i=>{const l=level(i.k);return `<button class="cell ${l===2?"m2":l===1?"m1":l===-1?"weak":""}" data-k="${i.k}" aria-label="${i.k} ${i.disp}"><span class="g">${i.k}</span><span class="r">${i.disp}</span></button>`}).join("")}</div>`;
+  app.innerHTML=`<section class="screen">
+    <div class="sh-h"><button class="x" id="back" aria-label="Назад">←</button><h2>Шпаргалка</h2></div>
+    <div class="legend"><span class="l1">ты тут тупишь</span><span class="l2">в процессе</span><span class="l3">выучено</span></div>
+    <div class="note">Тапни по букве — озвучу. <b>゛</b> (две точки, дакутэн) делает звук звонким: к→г, с→з, т→д, х→б. <b>゜</b> (кружок, хандакутэн) только у ха-ряда: х→п. А <b>へ</b> и <b>ヘ</b> почти одинаковые, не еби себе мозг.</div>
+    ${block("Хирагана",i=>i.s==="h"&&!i.mod)}
+    ${block("Хирагана с ゛ ゜",i=>i.s==="h"&&i.mod)}
+    ${block("Катакана",i=>i.s==="k"&&!i.mod)}
+    ${block("Катакана с ゛ ゜",i=>i.s==="k"&&i.mod)}
+    <button class="big" id="go">ХВАТИТ ПЯЛИТЬСЯ, УЧИСЬ</button>
+  </section>`;
+  document.getElementById("back").onclick=home;
+  document.getElementById("go").onclick=startLesson;
+  app.querySelectorAll(".cell").forEach(c=>c.onclick=()=>speakKana(c.dataset.k));
+}
+
+
+/* ===== МОИ БУКВЫ ===== */
+if(!S.myKana) S.myKana=[];
+if(S.myMods===undefined) S.myMods=true;
+const baseOf=k=>k.normalize("NFD")[0];
+function inMine(i){const sel=new Set(S.myKana); return i.mod ? (S.myMods&&sel.has(baseOf(i.k))) : sel.has(i.k);}
+const myPool=()=>ITEMS.filter(inMine);
+function pickerScreen(from){
+  hideSheet();
+  const sel=new Set(S.myKana);
+  const modsOf=k=>ITEMS.filter(i=>i.mod&&baseOf(i.k)===k).map(i=>i.k);
+  const block=(title,s)=>`<div class="label">${title}</div><div class="grid">${ITEMS.filter(i=>i.s===s&&!i.mod).map(i=>{const l=level(i.k),md=modsOf(i.k);return `<button class="cell pick ${sel.has(i.k)?"on":""} ${l===2?"m2":l===-1?"weak":""}" data-k="${i.k}" aria-pressed="${sel.has(i.k)}"><span class="g">${i.k}</span>${md.length?`<span class="r md">${S.myMods?"+"+md.join(""):"&nbsp;"}</span>`:`<span class="r md">&nbsp;</span>`}</button>`}).join("")}</div>`;
+  const n=myPool().length;
+  app.innerHTML=`<section class="screen">
+    <div class="sh-h"><button class="x" id="back" aria-label="Назад">←</button><h2>Мои буквы</h2></div>
+    <div class="note">Тыкай буквы, которые <b>не ебёшь</b>. Гонять будем только их. Подсказок под буквами нет специально — отмечай честно. Зелёная рамка: уже выучено, красная: ты на ней тупишь.</div>
+    <div class="pickbtns">
+      <button class="mini" id="pAll">Все</button><button class="mini" id="pNone">Сбросить</button><button class="mini" id="pWeak">Всё невыученное</button><button class="mini" id="pBad">Только где туплю</button>
+    </div>
+    <label class="switch"><input type="checkbox" id="pMods" ${S.myMods?"checked":""}><span><b>+ подзвуки ゛゜</b><small>к отмеченным добавятся げ ざ だ ば ぱ… (け→げ, は→ば/ぱ)</small></span></label>
+    <label class="switch"><input type="checkbox" id="pEcho" ${S.ruEcho?"checked":""}><span><b>Русский дубль звука</b><small>после японского голоса скажет «пэ», «кэ», «дзи» — чтобы не путать ペ и テ</small></span></label>
+    ${block("Хирагана","h")}
+    ${block("Катакана","k")}
+    <div class="pickgo"><button class="big" id="go" ${n?"":"disabled"}>${n?`Гонять ${n} букв, сука`:"Сначала отметь буквы"}</button></div>
+  </section>`;
+  const rerender=()=>{save();const y=window.scrollY;pickerScreen(from);window.scrollTo(0,y);};
+  document.getElementById("back").onclick=from==="hf"?hfMenu:home;
+  app.querySelectorAll(".cell.pick").forEach(c=>c.onclick=()=>{const k=c.dataset.k;S.myKana=sel.has(k)?S.myKana.filter(x=>x!==k):[...S.myKana,k];rerender();});
+  const bases=ITEMS.filter(i=>!i.mod);
+  document.getElementById("pAll").onclick=()=>{S.myKana=bases.map(i=>i.k);rerender();};
+  document.getElementById("pNone").onclick=()=>{S.myKana=[];rerender();};
+  document.getElementById("pWeak").onclick=()=>{S.myKana=bases.filter(i=>level(i.k)!==2).map(i=>i.k);rerender();};
+  document.getElementById("pBad").onclick=()=>{S.myKana=bases.filter(i=>level(i.k)===-1).map(i=>i.k);rerender();};
+  document.getElementById("pMods").onchange=e=>{S.myMods=e.target.checked;rerender();};
+  document.getElementById("pEcho").onchange=e=>{S.ruEcho=e.target.checked;save();};
+  document.getElementById("go").onclick=()=>{ if(!myPool().length)return; if(from==="hf"){HF.content="mine";hfMenu();} else {S.mode="mine";save();startLesson();} };
+  if(!from) window.scrollTo(0,0);
+}
+/* ===== ГЛАВНАЯ ===== */
+function home(){
+  hideSheet();
+  const streak=liveStreak(), doneToday=S.last===dayKey();
+  const learned=ITEMS.filter(i=>level(i.k)===2).length;
+  const nags = doneToday
+    ? [[FACE.ok,"Сегодня ты уже позанимался. Можешь ещё, если не ссыкло."],[FACE.king,"Норм, огонёк живой. Но лишний урок жопу не натрёт."]]
+    : streak>0
+      ? [[FACE.bad,`Серия ${streak} ${plural(streak)} висит на волоске. Не занимаешься сегодня — проебёшь.`],[FACE.think,"Огонёк скоро потухнет. Ты же не хочешь быть лохом?"]]
+      : [[FACE.think,"Огонька нет. Начни сегодня, ленивая жопа."],[FACE.idle,"Пять минут в день — и ты читаешь кану. Ну или нет, ты ж еблан."]];
+  const [nf,nt]=pick(nags);
+  app.innerHTML=`<section class="screen">
+    <div class="brand"><h1>Кана,<br><span>блять</span></h1><div class="kanji">仮名道場</div></div>
+    <div class="stats">
+      <div class="stat fire"><b>${streak}</b><small>${plural(streak)} подряд</small></div>
+      <div class="stat"><b>${S.xp}</b><small>XP</small></div>
+      <div class="stat"><b>×${S.best}</b><small>рекорд серии</small></div>
+    </div>
+    <div class="nag"><span class="face">${nf}</span><p>${nt}</p></div>
+    <div class="mastery"><div class="row"><span>Выучено букв</span><span style="font-variant-numeric:tabular-nums">${learned} / ${ITEMS.length}</span></div><div class="bar"><i style="width:${learned/ITEMS.length*100}%"></i></div></div>
+    <div class="label">Что дрочим сегодня</div>
+    <div class="modes">${Object.entries(MODES).filter(([k,m])=>!m.hidden).map(([k,m])=>`<button class="mode" data-m="${k}" aria-pressed="${S.mode===k}"><span class="k">${m.k}</span><span class="t">${m.t}</span><span class="d">${m.d} · ${ITEMS.filter(m.f).length}</span></button>`).join("")}</div>
+    <div class="minebar"><button class="mode wide" data-m="mine" aria-pressed="${S.mode==="mine"}"><span class="k">我</span><span><span class="t">Мои буквы</span><span class="d">${myPool().length?`${myPool().length} букв · только то, что не ебу`:"отметь буквы, которые не знаешь"}</span></span></button><button class="ghost cfg" id="pickK">Настроить</button></div>
+    <button class="big" id="go">Погнали, сука</button>
+    <button class="ghost" id="cheat">Шпаргалка (для слабаков)</button>
+    <button class="ak-entry" id="ak"><span class="k">教</span><span><b>Попроси альтуху обучить тебя</b><small>Главы и ступеньки: она рассказывает, ты повторяешь, потом проверка</small></span></button>
+    <button class="hf-entry" id="hf"><span class="k">手</span><span><b>Учить без рук нахуй</b><small>В наушниках или глазами: сама спрашивает, сама отвечает</small></span></button>
+    <button class="pu-entry" id="pu"><span class="k">恋</span><span><b>Пикапим альтух</b><small>Японский для свиданий: от こんにちは до つきあって</small></span></button>
+    <div class="foot">12 букв за урок · 5 жизней · ошибки возвращаются в конец</div>
+  </section>`;
+  app.querySelectorAll(".mode").forEach(b=>b.onclick=()=>{ if(b.dataset.m==="mine"&&!myPool().length){S.mode="mine";save();return pickerScreen();} S.mode=b.dataset.m;save();app.querySelectorAll(".mode").forEach(x=>x.setAttribute("aria-pressed",x===b));});
+  document.getElementById("pickK").onclick=pickerScreen;
+  document.getElementById("go").onclick=startLesson;
+  document.getElementById("cheat").onclick=sheetScreen;
+  document.getElementById("pu").onclick=puHub;
+  document.getElementById("hf").onclick=hfMenu;
+  document.getElementById("ak").onclick=akMenu;
+}
+
+/* =================================================================
+   ПИКАПИМ АЛЬТУХ
+   Разметка кандзи: {今日|きょう} → кандзи с фуриганой сверху
+   ================================================================= */
+const rb=t=>esc(t).replace(/\{([^|}]+)\|([^}]+)\}/g,"<ruby>$1<rt>$2</rt></ruby>");
+const plain=t=>t.replace(/\{([^|}]+)\|([^}]+)\}/g,"$1");
+/* текст для голоса: без кавычек, слэшей, скобок и эмодзи, чтобы она их не зачитывала */
+const ttsClean=t=>plain(String(t)).replace(/[«»"“”„‘’'`]/g,"").replace(/\s*\/\s*/g,", ").replace(/[()\[\]]/g,"").replace(/\s[—–-]\s/g,", ").replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu,"").replace(/\s{2,}/g," ").trim();
+let _talkT=null;
+function sayQ(text,lang){ try{ if(!window.speechSynthesis)return; const txt=ttsClean(text); const u=new SpeechSynthesisUtterance(txt); u.lang=lang==="ja"?"ja-JP":"ru-RU"; const fv=femaleVoice(lang); if(fv) u.voice=fv; u.rate=lang==="ja"?.75:1; u.pitch=1.2; speechSynthesis.speak(u);}catch(e){} }
+function setTalk(on){ try{ clearTimeout(_talkT); const el=document.getElementById("app")||document.getElementById("kb-app"); if(el) el.classList.toggle("talking",!!on); }catch(e){} }
+const esc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const V=(jp,ru)=>({jp,ru});
+
+/* ---------- ГОЛОС ---------- */
+let VOICES=[];
+function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
+try{loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
+function femaleVoice(lang){
+  const v=VOICES.filter(x=>x.lang&&x.lang.toLowerCase().startsWith(lang));
+  return v.find(x=>/female|kyoko|haruka|ayumi|nanami|sayaka|o-ren|milena|irina|svetlana|dariya|alena|google/i.test(x.name))||v[0]||null;
+}
+function say(text,lang="ja"){
+  try{ if(!window.speechSynthesis) return; speechSynthesis.cancel();
+    const txt=ttsClean(text); const u=new SpeechSynthesisUtterance(txt); u.lang=lang==="ja"?"ja-JP":"ru-RU";
+    const fv=femaleVoice(lang); if(fv) u.voice=fv; u.pitch=1.25; u.rate=lang==="ja"?.9:1.05;
+    setTalk(true); u.onend=u.onerror=()=>setTalk(false); _talkT=setTimeout(()=>setTalk(false),1500+txt.length*(lang==="ja"?200:90));
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- СЮЖЕТ: 6 ГЛАВ ---------- */
+const PU=[
+ {t:"Знакомство",d:"Подходишь к ней в кафе и не обсираешься",
+  v:[V("こんにちは","Привет / Здравствуйте"),V("はじめまして","Приятно познакомиться"),V("デニスです","Я Денис"),V("ユキです","Я Юки"),V("おなまえは？","Как тебя зовут?"),V("よろしく おねがいします","Рад знакомству"),V("どこから きたの？","Откуда ты?"),V("ベラルーシから きました","Я из Беларуси")],
+  intro:"Кафе в Токио. Она сидит одна и пьёт матчу. Ты подходишь, потеешь.",
+  end:["Она лыбится. Знакомство засчитано. Ебать ты мактрахер прям.","Она надела наушники и отвернулась. Лошара."],
+  L:[
+   ["こんにちは！","Привет!",[
+     ["はじめまして、デニスです","Приятно познакомиться, я Денис","Поздоровался и представился. База."],
+     ["すきです","Ты мне нравишься","Вы знакомы пять секунд, маньяк."],
+     ["またね","Пока","Подошёл, чтобы сразу съебаться? Гениально."]]],
+   ["ユキです。よろしくね！","Я Юки. Приятно познакомиться!",[
+     ["よろしく おねがいします","Рад знакомству","Вежливо и по-японски. Красава."],
+     ["つきあって ください","Давай встречаться","Ты ебанулся? Она только имя сказала."],
+     ["ごめんね","Прости","За что извиняешься, за то, что родился?"]]],
+   ["どこから きたの？","Откуда ты?",[
+     ["ベラルーシから きました","Я из Беларуси","Драники и картошка в чат. Всё правильно."],
+     ["アニメが すきです","Я люблю аниме","Она спросила, откуда ты, а не про твоих вайфу."],
+     ["いいよ","Давай","Что «давай»? Ты вообще слушаешь?"]]]]},
+ {t:"Подкат",d:"Комплименты, хобби и как взять её ЛАЙН",
+  v:[V("ありがとう","Спасибо"),V("にほんごが すこし はなせます","Немного говорю по-японски"),V("しゅみは なに？","Какое у тебя хобби?"),V("アニメが すきです","Я люблю аниме"),V("ほんと？","Правда?"),V("うれしい","Мне приятно / Я рад"),V("えがおが すてき","У тебя классная улыбка"),V("かわいいね","Ты милая"),V("ライン こうかん しない？","Обменяемся ЛАЙНом?")],
+  intro:"Разговор пошёл. Не проеби момент.",
+  end:["У тебя её ЛАЙН. Ебать ты жук.","Она ушла, ЛАЙН не дала. Иди тренируйся на кошке."],
+  L:[
+   ["にほんご じょうずだね！","Ты классно говоришь по-японски!",[
+     ["ありがとう。にほんごが すこし はなせます","Спасибо. Немного говорю по-японски","Скромно и мило. Японцы такое любят."],
+     ["うん、おれ てんさい だから","Ага, я ж гений","Самовлюблённый долбоёб detected."],
+     ["おなか すいた？","Проголодалась?","При чём тут жрачка, обжора?"]]],
+   ["しゅみは なに？","Какое у тебя хобби?",[
+     ["アニメが すきです","Я люблю аниме","Вот теперь про аниме можно. Тайминг!"],
+     ["ラーメン たべに いこう","Пошли есть рамен","Рано на свидание тащишь, торопыга."],
+     ["いつ ひま？","Когда ты свободна?","Ответь на вопрос сначала, сталкер."]]],
+   ["わたしも アニメ すき！","Я тоже люблю аниме!",[
+     ["ほんと？うれしい！","Правда? Как круто!","Общие интересы, она уже лыбится."],
+     ["ごめんね","Прости","Извиняешься за общее хобби? Ну ты кадр."],
+     ["きを つけて","Береги себя","Это прощание, а она вообще-то с тобой болтает."]]],
+   ["ふふっ","(хихикает)",[
+     ["えがおが すてき","У тебя классная улыбка","Комплимент в тему. Ризз пошёл."],
+     ["どこから きたの？","Откуда ты?","Ты это уже спрашивал, золотая рыбка."],
+     ["かわいくない","Ты не милая","Нахуя ты ей это сказал, самоубийца?"]]],
+   ["あ、そろそろ いかなきゃ","Ой, мне уже пора",[
+     ["ライン こうかん しない？","Обменяемся ЛАЙНом?","Контакт взял. Мужик."],
+     ["またね","Пока","Отпустил без контакта. Ну и сиди один, лох."],
+     ["すきです","Ты мне нравишься","Слишком рано, она испугается и убежит."]]]]},
+ {t:"Зовём гулять",d:"Переписка в ЛАЙНе: зовёшь на свидание",
+  v:[V("こんばんは","Добрый вечер"),V("げんき？","Как дела?"),V("げんき だよ","Всё отлично"),V("こんど いっしょに さんぽ しない？","Давай как-нибудь погуляем?"),V("いつ ひま？","Когда ты свободна?"),V("どようびは どう？","Как насчёт субботы?"),V("えきで まちあわせ しよう","Встретимся на станции"),V("たのしみ！","Жду не дождусь!")],
+  intro:"Прошло два дня. Ты пишешь ей в ЛАЙН. Пальцы трясутся.",
+  end:["Свидание в субботу. Не проспи, долбоёб.","Она «занята» все выходные до 2030 года."],
+  L:[
+   ["こんばんは！げんき？","Добрый вечер! Как дела?",[
+     ["げんき だよ！こんど いっしょに さんぽ しない？","Норм! Давай как-нибудь погуляем?","Ответил и сразу позвал. Уверенно, бля."],
+     ["つきあって ください","Давай встречаться","Вы даже не гуляли, куда гонишь?"],
+     ["ごめんね","Прости","Она спросила, как дела, а ты извиняешься. Странный."]]],
+   ["いいね！","Звучит круто!",[
+     ["いつ ひま？","Когда ты свободна?","Конкретика. Девушки любят план."],
+     ["ベラルーシから きました","Я из Беларуси","Она уже знает, бульбаш. Не повторяйся."],
+     ["またね","Пока","Позвал гулять и слился? Ахуеть стратегия."]]],
+   ["しゅうまつ なら ひまだよ","На выходных свободна",[
+     ["どようびは どう？","Как насчёт субботы?","Предложил день. Чётко."],
+     ["いま きた ところ","Только пришёл","Куда ты пришёл, в переписку? Еблан."],
+     ["すきです","Ты мне нравишься","Терпи до свидания, романтик хуев."]]],
+   ["いいよ！どこで あう？","Давай! Где встретимся?",[
+     ["えきで まちあわせ しよう","Встретимся на станции","Классика японских свиданий. Заебись."],
+     ["ラーメン たべに いこう","Пошли есть рамен","Она спросила ГДЕ, а не ЧТО жрать."],
+     ["はじめまして","Приятно познакомиться","Вы уже знакомы, у тебя амнезия?"]]],
+   ["たのしみ！","Жду не дождусь!",[
+     ["ぼくも！たのしみ！","Я тоже! Жду не дождусь!","Взаимный вайб. Она ждёт субботу."],
+     ["ふーん","Ну хз","Холодный, как батарея в общаге. Она передумает."],
+     ["ごめんね","Прости","Хватит извиняться, тряпка."]]]]},
+ {t:"Прогулка",d:"Свидание: встреча, рамен, проводить домой",
+  v:[V("ううん、いま きた ところ","Не, только пришёл"),V("おなか すいた？","Проголодалась?"),V("ラーメン たべに いこう","Пошли есть рамен"),V("おいしい！","Вкусно!"),V("たのしいね","Весело, да?"),V("おくって いくよ","Провожу тебя"),V("きを つけて","Береги себя")],
+  intro:"Суббота. Станция Сибуя. Ты пришёл на 20 минут раньше, потому что ссыкло.",
+  end:["Проводил до дома, она светится. Мужик.","Она вызвала такси и даже не попрощалась."],
+  L:[
+   ["ごめん、まった？","Прости, долго ждал?",[
+     ["ううん、いま きた ところ","Не, только пришёл","Джентльмен. Даже если ждал час."],
+     ["うん、いちじかん まった","Ага, час ждал","Душнила level 100. Она уже жалеет."],
+     ["しゅみは なに？","Какое у тебя хобби?","Вы это уже обсуждали, склеротик."]]],
+   ["{今日|きょう}は さむいね","Сегодня холодно, да?",[
+     ["おなか すいた？ラーメン たべに いこう","Проголодалась? Пошли есть рамен","Тёплый рамен в холод. Ебать ты стратег."],
+     ["ベラルーシは もっと さむい","В Беларуси холоднее","Меряешься морозами. Ей похуй, она мёрзнет."],
+     ["ごめんね","Прости","Ты не виноват в погоде, тряпка."]]],
+   ["おいしい！","Вкусно!",[
+     ["たのしいね","Весело, да?","Вайб поймал. Она кайфует."],
+     ["デニスです","Я Денис","Она знает, как тебя зовут, долбоёб."],
+     ["どこから きたの？","Откуда ты?","Третий раз спрашиваешь? Деменция?"]]],
+   ["もう おそいね…","Уже поздно…",[
+     ["おくって いくよ","Провожу тебя","Проводил — уже мужик. Плюс сто."],
+     ["またね","Пока","Бросил девушку ночью одну. Пиздец ты."],
+     ["もう いっけん いこう","Пошли ещё куда-нибудь","Она устала и сказала, что поздно. Слушай, что тебе говорят."]]]]},
+ {t:"Признание",d:"«Ты мне нравишься» и «давай встречаться»",
+  v:[V("{今日|きょう}は ありがとう","Спасибо за сегодня"),V("また あいたい","Хочу увидеться снова"),V("すきです","Ты мне нравишься"),V("つきあって ください","Давай встречаться"),V("いいよ","Давай / Хорошо"),V("またね","Пока, до встречи")],
+  intro:"Вы у её дома. Фонарь, тишина, сердце стучит как у кролика.",
+  end:["ВЫ ВСТРЕЧАЕТЕСЬ. Ебать ты мактрахер прям. Мама, я в телевизоре.","«Давай останемся друзьями». Френдзона, сука."],
+  L:[
+   ["{今日|きょう}は たのしかった！","Сегодня было весело!",[
+     ["{今日|きょう}は ありがとう。また あいたい","Спасибо за сегодня. Хочу увидеться снова","Поблагодарил и намекнул. Казанова."],
+     ["ごめんね","Прости","Ты опять извиняешься? Лечись."],
+     ["はじめまして","Приятно познакомиться","Вы весь день гуляли, ты чё, перезагрузился?"]]],
+   ["わたしも また あいたい","Я тоже хочу увидеться снова",[
+     ["ユキちゃん、すきです","Юки, ты мне нравишься","Вот он, момент. Признался — яйца есть."],
+     ["おなか すいた？","Проголодалась?","Вы только что ели рамен. Ты рамен-маньяк?"],
+     ["きを つけて","Береги себя","Она тебе про чувства, а ты прощаешься. Овощ."]]],
+   ["えっ…ほんと？","Ой… правда?",[
+     ["うん。つきあって ください","Да. Давай встречаться","Сказал прямо. Это сильно, бро."],
+     ["ううん、じょうだん","Не, шучу","Ты только что сломал ей сердце, клоун."],
+     ["いいよ","Давай","Это её реплика, а не твоя, гений."]]],
+   ["…いいよ！","…Давай!",[
+     ["ほんと？うれしい！","Правда? Я так рад!","Тебе сказали «да». Радуйся, заслужил."],
+     ["ふーん","Ну хз","Тебе сказали «да», а ты «ну хз». Пиздец."],
+     ["またね","Пока","Получил «да» и съебал. Легенда."]]]]},
+ {t:"Бонус: отказ",d:"Нет значит нет. Учимся не быть мудаком",
+  v:[V("ごめんね","Прости"),V("だいじょうぶ、ありがとう","Всё норм, спасибо"),V("ともだち","Друг / друзья"),V("かれし","Парень (бойфренд)"),V("かのじょ","Девушка (подруга)"),V("うん","Ага / да")],
+  intro:"Другая история. Ты признаёшься, но вселенная говорит нет. Проверим, ты самурай или нытик.",
+  end:["Принял отказ как самурай. Уважение — это тоже ризз.","Ты был токсичным нытиком. Учись отпускать."],
+  L:[
+   ["ごめんね、かれしが いるの","Прости, у меня есть парень",[
+     ["だいじょうぶ、ありがとう","Всё норм, спасибо","Принял красиво. Уважение к тебе +100."],
+     ["なんで？！","Почему?!","Ноешь как школьник. Кринж."],
+     ["つきあって ください","Давай встречаться","Тебе сказали нет. Нет — значит нет, долбоёб."]]],
+   ["ともだちで いようね","Давай останемся друзьями",[
+     ["うん、またね","Ага, до встречи","Ушёл с достоинством. Настоящий самурай."],
+     ["ライン ブロック する","Заблокирую тебя в ЛАЙНе","Обиженка. Детский сад, штаны на лямках."],
+     ["すきです","Ты мне нравишься","Она уже ответила. Не души."]]]]}
+];
+
+/* ---------- ЖИВОЕ ОБЩЕНИЕ: СЦЕНАРИИ ---------- */
+/* бит: [её реплика, перевод для подсказки, эмоция при правильном, [[ответ,перевод] правильный, неправильный, неправильный]] */
+const B=(h,hr,em,ok,b1,b2,mood="neutral")=>({h,hr,em,mood,o:[ok,b1,b2]});
+const LIVE=[
+ {id:"meet",t:"Знакомство",k:"会",bg:"cafe",d:"Кафе, она одна. Подкатывай",intro:"Кафе на Сибуе. Она одна, листает телефон.",
+  open:B("あの…なにか？","Эм… что-то нужно?","calm",["こんにちは！となり いい？","Привет! Можно рядом?"],["おなか すいた？","Проголодалась?"],["さようなら","Прощай"],"surprised"),
+  beats:[
+   B("うん、どうぞ。{名前|なまえ}は？","Да, садись. Как зовут?","happy",["デニスです。きみは？","Я Денис. А ты?"],["ラーメン です","Я рамен"],["いいえ","Нет"]),
+   B("ユキです。どこから きたの？","Я Юки. Откуда ты?","surprised",["ベラルーシから きた","Из Беларуси"],["{猫|ねこ} です","Я кот"],["いま きた ところ","Только что пришёл"]),
+   B("ベラルーシ？！どこ それ？","Беларусь?! Это где?","laugh",["ロシアの となり だよ","Рядом с Россией"],["しらない","Не знаю"],["ユキです","Я Юки"]),
+   B("にほんご じょうず だね！","Классно говоришь по-японски!","blush",["ありがとう！まだ べんきょう ちゅう","Спасибо! Ещё учу"],["うん、てんさい だから","Ага, я гений"],["ごめんね","Прости"]),
+   B("{何|なに} してる ひと？","А ты чем занимаешься?","happy",["ウェブの しごと してる","Работаю в вебе"],["ねこ です","Я кот"],["あした","Завтра"]),
+   B("しゅみは？","А хобби?","happy",["アニメと ゲーム かな","Аниме и игры, наверное"],["{今日|きょう}は さむい","Сегодня холодно"],["デニスです","Я Денис"]),
+   B("わたしも ゲーム すき！","Я тоже люблю игры!","laugh",["まじ？こんど いっしょに やろう","Серьёзно? Давай как-нибудь вместе"],["ふーん","Ну хз"],["かえって","Уходи"]),
+  ],
+  close:B("あ、もう いかなきゃ","Ой, мне пора","blush",["ライン こうかん しない？","Обменяемся ЛАЙНом?"],["バイバイ","Бай-бай"],["ねる","Я спать"])},
+ {id:"walk",t:"Прогулка",k:"歩",bg:"park",d:"Парк, птички, котики, кафешки",intro:"Суббота. Парк Ёёги. Она опоздала на десять минут.",
+  open:B("ごめん、まった？","Прости, долго ждал?","happy",["ううん、いま きた ところ","Не, только пришёл"],["うん、いちじかん","Ага, час"],["だれ？","Ты кто?"]),
+  beats:[
+   B("あ、みて！かわいい {鳥|とり}！","Смотри! Милая птичка!","happy",["ほんとだ、かわいいね","Правда, милая"],["おいしそう","Выглядит вкусно"],["きらい","Ненавижу"]),
+   B("{今日|きょう}は いい てんき だね","Сегодня отличная погода","happy",["うん、さんぽ びより だね","Ага, идеально для прогулки"],["あめ だよ","Дождь идёт"],["ねむい","Хочу спать"]),
+   B("ちょっと つかれた…","Я чуть устала…","calm",["あそこで やすもう か","Давай отдохнём вон там"],["がんばれ、あと 10キロ","Держись, ещё 10 км"],["しらない","Не знаю"],"sad"),
+   B("あ、{猫|ねこ}！","Ой, котик!","laugh",["なでたい！","Хочу погладить!"],["たべたい","Хочу съесть"],["こわい、にげよう","Страшно, бежим"]),
+   B("しゃしん とって くれる？","Сфоткаешь меня?","happy",["いいよ、はい チーズ！","Давай, скажи сыр!"],["いやだ","Не хочу"],["めんどくさい","Лень"]),
+   B("のど かわいた","Хочу пить","happy",["なにか のもう か","Давай что-нибудь выпьем"],["がまん して","Терпи"],["{猫|ねこ} かわいい","Котик милый"]),
+   B("あの おみせ、いって みたい！","Хочу зайти в ту кафешку!","laugh",["いこう いこう！","Пошли, пошли!"],["おかね ない","Денег нет"],["ひとりで いって","Иди одна"]),
+   B("デニスって やさしいね","А ты добрый","blush",["ユキちゃんと いると たのしい","С тобой весело"],["しってる","Я знаю"],["べつに","Да пофиг"],"blush"),
+  ],
+  close:B("そろそろ かえろう か","Пора, наверное, домой","blush",["えきまで おくるよ","Провожу до станции"],["じゃあね、バイバイ","Ну пока"],["まだ かえさない","Не отпущу"])},
+ {id:"home",t:"Дома",k:"家",bg:"home",d:"Быт: пожрать, бельё, мусор, ванна",intro:"Вы живёте вместе. Она пришла с работы.",
+  open:B("ただいま〜","Я дома~","happy",["おかえり！","С возвращением!"],["いってきます","Я ушёл"],["だれ？","Кто это?"]),
+  beats:[
+   B("おなか すいた〜。{何|なに} たべる？","Есть хочу~. Что поедим?","happy",["カレー つくろう か","Давай приготовлю карри"],["たべない","Не буду есть"],["ユキが つくって","Сама приготовь"]),
+   B("せんたくもの、たたんで くれる？","Сложишь бельё?","happy",["いいよ、まかせて","Конечно, доверь мне"],["あとで…ずっと あとで","Потом… сильно потом"],["いやだ","Не хочу"]),
+   B("テレビ {何|なに} みる？","Что посмотрим?","laugh",["アニメ みよう よ","Давай аниме"],["ねる","Я спать"],["うるさい","Отстань"]),
+   B("さむい…エアコン つけて","Холодно… включи кондиционер","calm",["はい、つけたよ","Вот, включил"],["がまん しろ","Терпи"],["あつい よ","Жарко же"],"sad"),
+   B("ゴミ だした？","Мусор вынес?","calm",["あ、いま だして くる","Ой, сейчас вынесу"],["ユキが だして","Сама выноси"],["ゴミ って なに？","А что такое мусор?"],"pout"),
+   B("あした なんじに おきる？","Во сколько завтра встаёшь?","calm",["7じ かな","Наверное, в 7"],["おきない","Не встаю"],["ラーメン","Рамен"]),
+   B("おふろ わいたよ","Ванна готова","happy",["ありがとう、さきに どうぞ","Спасибо, иди первая"],["はいらない","Не пойду"],["うるさい","Отстань"]),
+  ],
+  close:B("ねむい…おやすみ","Спать хочу… спокойной ночи","blush",["おやすみ、また あした","Спокойной ночи, до завтра"],["まだ ゲーム する","Я ещё поиграю"],["おはよう","Доброе утро"])},
+ {id:"whims",t:"Её капризы",k:"拗",bg:"whims",d:"«Я толстая?» «Ты меня не любишь»",intro:"Она лежит на диване и смотрит на тебя. Сейчас начнётся.",
+  open:B("ねえ…わたし、ふとった？","Слушай… я поправилась?","blush",["ぜんぜん！かわいいよ","Вообще нет! Ты милая"],["ちょっと ね","Немножко"],["うん","Ага"],"pout"),
+  beats:[
+   B("あの バッグ、ほしい〜","Хочу ту сумку~","happy",["たんじょうびに かって あげる","Куплю на день рождения"],["たかい、むり","Дорого, нет"],["じぶんで かって","Сама купи"],"pout"),
+   B("なんで ラインの へんじ おそいの？","Почему так долго отвечаешь в ЛАЙНе?","calm",["ごめん、しごと だった","Прости, был на работе"],["めんどくさい から","Потому что лень"],["よんで ない","Не читал"],"pout"),
+   B("わたしと ゲーム、どっちが だいじ？","Я или игры — что важнее?","blush",["もちろん ユキちゃん！","Конечно ты!"],["ゲーム","Игры"],["かんがえ させて","Дай подумать"],"pout"),
+   B("この ふく、にあう？","Мне идёт это платье?","blush",["すごく にあう！","Очень идёт!"],["まあまあ","Так себе"],["まえの ほうが いい","Прошлое было лучше"]),
+   B("あまい もの たべたい！いま！","Хочу сладкого! Сейчас!","laugh",["コンビニ いって くる よ","Сгоняю в комбини"],["ダイエット ちゅう でしょ","Ты ж на диете"],["ねて","Иди спи"],"pout"),
+   B("ぜんぜん かまって くれない…","Ты совсем на меня не обращаешь внимания…","blush",["ごめん、{今日|きょう}は ずっと いっしょに いる","Прости, сегодня весь день с тобой"],["いつも かまってる","Я всегда обращаю"],["ひとりで あそんで","Поиграй сама"],"sad"),
+   B("おこってないよ。べつに。","Я не злюсь. Ничего.","calm",["ほんとに？なにか あったら いって","Точно? Если что-то не так — скажи"],["そう、よかった","А, ну и отлично"],["ねる","Я спать"],"pout"),
+  ],
+  close:B("…ふふ、ゆるして あげる","…Хи-хи, так и быть, прощаю","blush",["ありがとう、だいすき","Спасибо, обожаю тебя"],["やっと か","Наконец-то"],["なにを？","Что прощаешь?"],"pout")},
+ {id:"day",t:"Её ебучий день",k:"疲",bg:"day",d:"Начальник, электричка, всё бесит",intro:"Вечер. Она вернулась вымотанная и падает на диван.",
+  open:B("はぁ…{今日|きょう}、さいあく だった","Ох… сегодня был пиздец","calm",["どうしたの？はなして","Что случилось? Расскажи"],["ふーん","Ну хз"],["ぼくも つかれた","Я тоже устал"],"sad"),
+  beats:[
+   B("じょうしに おこられた","Начальник наорал","calm",["ひどい…ユキちゃんは わるくない","Жесть… ты не виновата"],["ユキが わるい","Ты сама виновата"],["しかたない","Ну бывает"],"sad"),
+   B("でんしゃ、すごく こんでて…","В электричке было битком…","calm",["たいへん だったね","Тяжело тебе пришлось"],["でんしゃ すき","Люблю электрички"],["それで？","И чё?"],"sad"),
+   B("ランチ たべる じかん なかった","Не успела пообедать","happy",["なにか つくろう か？","Приготовить что-нибудь?"],["ダイエット に なる ね","Зато похудеешь"],["ぼくは たべた","А я поел"],"sad"),
+   B("ともだちに ドタキャン された","Подруга кинула в последний момент","calm",["それは かなしいね","Это обидно"],["ざまあ","Так тебе и надо"],["ともだち いらない","Друзья не нужны"],"sad"),
+   B("あめで くつが びしょびしょ…","Из-за дождя ботинки насквозь…","happy",["はやく きがえて、おちゃ いれる ね","Переодевайся скорей, я чай заварю"],["かさ わすれた の？ばか","Зонт забыла? Дура"],["くつ くさい","Ботинки воняют"],"sad"),
+   B("もう ぜんぶ やめたい…","Хочу всё бросить…","blush",["いつも がんばってて えらいよ","Ты всегда стараешься, ты молодец"],["やめれば？","Ну так брось"],["がんばれ","Держись"],"sad"),
+   B("きいて くれて ありがとう","Спасибо, что выслушал","blush",["いつでも きく よ","Всегда выслушаю"],["ながかった","Долго было"],["つぎ ぼくの ばん","Теперь моя очередь"]),
+  ],
+  close:B("ちょっと げんき でた！","Мне чуть полегчало!","happy",["よかった。ぎゅー する？","Хорошо. Обнимемся?"],["じゃあ ねる","Ну я спать"],["ふーん","Ну хз"])},
+ {id:"scold",t:"Ты накосячил",k:"怒",bg:"scold",d:"Выслушай, какой ты долбоёб, и извинись",intro:"Ты вчера пропал на всю ночь. Она стоит в дверях. ゴゴゴゴ…",
+  open:B("ちょっと！きのう どこに いたの？！","Так! Где ты был вчера?!","calm",["ごめん、ともだちと のんでた","Прости, с другом выпивал"],["かんけい ない だろ","Не твоё дело"],["どこにも","Нигде"],"angry"),
+  beats:[
+   B("なんで いって くれなかったの？","Почему не сказал?","calm",["ほんとうに ごめん。つぎは ちゃんと いう","Прости. В следующий раз скажу"],["わすれた","Забыл"],["いう ひつよう ある？","А надо было?"],"angry"),
+   B("でんわ、10かいも したのに！","Я тебе десять раз звонила!","sad",["しんぱい させて ごめんね","Прости, что заставил волноваться"],["10かい？すくない ね","Десять? Маловато"],["うるさい な","Чё орёшь"],"angry"),
+   B("あなたって ほんとう ばか！","Ты такой дурак!","laugh",["うん、ぼくは ばか です。ごめん","Да, я дурак. Прости"],["ユキの ほうが ばか","Сама дура"],["しってる","Знаю"],"angry"),
+   B("わたしの たんじょうび、おぼえてる？","Ты хоть помнишь мой день рождения?","calm",["もちろん おぼえてる よ","Конечно помню"],["いつ だっけ？","А когда он?"],["なつ？","Летом?"],"pout"),
+   B("もう しらない！","Знать тебя не хочу!","sad",["まって！ちゃんと はなそう","Подожди! Давай нормально поговорим"],["じゃあね","Ну пока"],["わかった","Понял"],"angry"),
+   B("…ほんとうに はんせい してる？","…Ты правда раскаиваешься?","blush",["してる。もう しない","Да. Больше не буду"],["ちょっと","Немного"],["なにを？","В чём?"],"pout"),
+  ],
+  close:B("…しかたない、ゆるす","…Ладно уж, прощаю","blush",["ありがとう！あいしてる","Спасибо! Люблю тебя"],["ようやく か","Ну наконец-то"],["で、ばんごはん は？","Так, а ужин?"],"pout")},
+ {id:"game",t:"Играем: сиритори",k:"遊",bg:"game",d:"Слово на последний слог её слова. На ん — проиграл",intro:"Сиритори: отвечаешь словом, которое начинается с последнего слога её слова. Слово на ん — проигрыш.",
+  open:B("ねえ、しりとり しよう！","Давай в сиритори!","happy",["いいよ！やろう","Давай! Играем"],["ルールが わからない","Не знаю правил"],["いやだ","Не хочу"]),
+  beats:[
+   B("りんご！","Яблоко!","laugh",["ごりら","Горилла"],["みかん","Мандарин"],["ねこ","Кошка"]),
+   B("らっぱ！","Труба!","happy",["パンダ","Панда"],["ほん","Книга"],["いぬ","Собака"]),
+   B("だんご！","Данго!","surprised",["ごま","Кунжут"],["ごはん","Рис"],["かさ","Зонт"]),
+   B("まくら！","Подушка!","laugh",["らっこ","Калан"],["ラーメン","Рамен"],["とり","Птица"]),
+   B("こたつ！","Котацу!","happy",["つくえ","Стол"],["ねずみ","Мышь"],["ねこ","Кошка"]),
+   B("すいか！","Арбуз!","surprised",["かめ","Черепаха"],["かばん","Сумка"],["とけい","Часы"]),
+   B("たぬき！","Тануки!","laugh",["きつね","Лиса"],["きりん…じゃなくて","Жираф… ой"],["うし","Корова"]),
+  ],
+  close:B("うわ、デニス つよい！","Ого, ты сильный!","blush",["もう いっかい やる？","Ещё разок?"],["ユキ よわい な","Ты слабая"],["つまんない","Скучно"])}
+];
+const LIVE_NOTE={game:"Правило: твоё слово начинается со слога, на котором закончилось её. Слово на ん — сразу проигрыш."};
+
+/* ---------- ФРАЗЫ ---------- */
+const PU_WRONG=["БЛЯДЬ, ДА С ТАКИМИ ОТВЕТАМИ ОНА ХУЙ ДАСТ ТЕБЕ","НУ Я В АХУЕ С ВАС","ОНА УЖЕ ПИШЕТ ПОДРУЖКЕ, ЧТО ТЫ КРИНЖ","СЕНЬОР КРИНЖЕЛАДЗЕ","АЛЬТУХА УШЛА К ДРУГОМУ","С ТАКИМ ПОДКАТОМ ТОЛЬКО К ХОЛОДИЛЬНИКУ","ТЫ КАК ДЕД НА ДИСКОТЕКЕ","ЕБАТЬ ТЫ ДУШНИЛА","ВИРГИН-ЭНЕРДЖИ НА МАКСИМУМ"];
+const PU_RIGHT=["ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ","КАЗАНОВА ХУЕВ","ОНА ПОПЛЫЛА","РИЗЗ ЛЕВЕЛ: БОГ","ТЫ ЧЁ, ГОСЛИНГ?","ЕБАТЬ ТЫ ОБАЯШКА","ЖЕНСКИЙ УГОДНИК, БЛЯТЬ","АЛЬТУХА В ШОКЕ (ПРИЯТНОМ)"];
+const TR_WRONG=["ТЫ САМ НЕ ПОНЯЛ, ЧТО СКАЗАЛ, ГЕНИЙ","ПИЗДИШЬ НА ЯЗЫКЕ, КОТОРОГО НЕ ЗНАЕШЬ","ПОПУГАЙ ХУЕВ: ПОВТОРЯЕШЬ, НЕ ПОНИМАЯ","ОНА ПОНЯЛА, А ТЫ НЕТ. ПОЗОР"];
+const TR_RIGHT=["ЕЩЁ И ПОНИМАЕШЬ, ЧТО НЕСЁШЬ","ПЕРЕВОДЧИК ОТ БОГА","ЧЁТКО, БЛЯТЬ","МОЗГ ВКЛЮЧЁН, РЕДКОСТЬ"];
+const HER_RU=[
+ ["Я в ахуе с тебя.","Эм… чё?","Ты серьёзно сейчас?","Ты вообще меня слушаешь?","Мама была права насчёт иностранцев.","Это сейчас что было?","Бля, ну ты и тормоз."],
+ ["Ты долбаёб?","Боже, какой ты конченый.","Чё ты несёшь, дебил?","Ты как мой бывший. Это не комплимент.","Ещё раз — и я ухожу, клянусь.","Ты специально, да? Еблан."]];
+const HER_LEAVE=["Всё. Ну тебя нахуй, пойду к адекватному челу.","Блядь, ну тебя нахуй. Пойду к адекватному челу.","Всё, я ушла. Удачи с таким японским, долбоёб."];
+const HER_REACT={happy:["ふふっ","うん！","でしょ？"],laugh:["あはは！","うける〜","まじ ウケる"],blush:["えへへ…","もう…♡","はずかしい…"],surprised:["えっ、ほんと？","すごい！","へぇ〜"],calm:["そっか","うん…","ありがとう"]};
+const MOTIV=["Учи японский — <b>альтухи сами себя не закадрят</b>.","Каждая выученная фраза — <b>+1 к ризз</b>.","Без словаря ты просто <b>кринжовый иностранец</b> с переводчиком.","Сначала слова, потом фразы, потом диалог. <b>Не перепрыгивай, торопыга.</b>","Кана уже должна отскакивать от зубов. <b>Латиницы тут не будет, слабак.</b>"];
+const herFace=s=>s>=80?"(˶ᵔ ᵕ ᵔ˶)":s>=50?"( ´ ▽ ` )":s>=35?"(￣ヘ￣)":"(눈_눈)";
+S.pu=S.pu||{}; S.live=S.live||{};
+let P=null;
+const ALLV=()=>PU.flatMap(c=>c.v).concat(LIVE.flatMap(liveVocab)).concat(AK_V());
+function liveVocab(sc){const all=[sc.open,...sc.beats,sc.close];return all.map(b=>V(b.o[0][0],b.o[0][1]));}
+const pinkBtn='style="background:var(--pink);box-shadow:0 5px 0 color-mix(in srgb,var(--pink) 55%,#000)"';
+
+/* ---------- ДЕВУШКА (SVG) ---------- */
+function girlSVG(mood){
+  const hair="#3A2547",skin="#FFE1D2",line="#2A1E35",iris="#6B44A8",mouthC="#B8395E",top="#F06FA8";
+  const E=(x,y,m=mood)=>{
+    if(m==="happy"||m==="laugh") return `<path d="M${x-10} ${y+3} Q${x} ${y-9} ${x+10} ${y+3}" stroke="${line}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+    const wide=m==="surprised", ry=wide?14:12, ir=wide?6:8;
+    const look=m==="blush"?-3:0;
+    return `<g class="eye"><ellipse cx="${x}" cy="${y}" rx="10" ry="${ry}" fill="#fff"/><ellipse cx="${x+look}" cy="${y+2}" rx="${ir}" ry="${ir+2}" fill="${iris}"/><ellipse cx="${x+look}" cy="${y+3}" rx="${ir-3}" ry="${ir-2}" fill="${line}"/><circle cx="${x+look-3}" cy="${y-2}" r="3" fill="#fff"/><path d="M${x-12} ${y-8} Q${x} ${y-17} ${x+12} ${y-8}" stroke="${line}" stroke-width="3.2" fill="none" stroke-linecap="round"/></g>`;
+  };
+  const brow={neutral:["M70 104 Q80 99 90 103","M110 103 Q120 99 130 104"],angry:["M69 100 L90 109","M131 100 L110 109"],pout:["M70 102 L90 107","M130 102 L110 107"],sad:["M70 108 L90 101","M130 108 L110 101"],surprised:["M70 98 Q80 92 90 97","M110 97 Q120 92 130 98"]};
+  const br=brow[mood]||brow.neutral;
+  const mouth={
+    neutral:`<path d="M92 156 Q100 161 108 156" stroke="${mouthC}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    calm:`<path d="M92 156 Q100 161 108 156" stroke="${mouthC}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    happy:`<path d="M88 152 Q100 168 112 152 Z" fill="${mouthC}"/>`,
+    laugh:`<path d="M85 150 Q100 175 115 150 Z" fill="${mouthC}"/><path d="M92 163 Q100 168 108 163" fill="#FF8FA8"/>`,
+    blush:`<path d="M91 157 q4.5 -4 9 0 q4.5 4 9 0" stroke="${mouthC}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    surprised:`<ellipse cx="100" cy="158" rx="6" ry="8" fill="${mouthC}"/>`,
+    angry:`<path d="M89 161 Q100 150 111 161" stroke="${mouthC}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+    sad:`<path d="M91 160 Q100 153 109 160" stroke="${mouthC}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    pout:`<path d="M94 157 L106 157" stroke="${mouthC}" stroke-width="3.5" stroke-linecap="round"/><path d="M106 157 q4 -2 3 -6" stroke="${mouthC}" stroke-width="2" fill="none"/>`
+  }[mood]||"";
+  const blushOn=["blush","happy","laugh","pout"].includes(mood);
+  const blushA=mood==="blush"?.85:mood==="pout"?.55:.4;
+  const extras=
+    (mood==="angry"?`<g transform="translate(160 66)" stroke="#E0213A" stroke-width="3.5" fill="none" stroke-linecap="round"><path d="M-8 -3 Q-3 -3 -3 -8"/><path d="M3 -8 Q3 -3 8 -3"/><path d="M8 3 Q3 3 3 8"/><path d="M-3 8 Q-3 3 -8 3"/></g>`:"")+
+    (mood==="sad"?`<path class="tear" d="M131 136 q5 9 0 13 q-5 -4 0 -13" fill="#7EC8F2"/>`:"")+
+    (mood==="blush"?`<text x="150" y="88" font-size="20" fill="#FF5F9E">♡</text>`:"")+
+    (mood==="surprised"?`<text x="146" y="86" font-size="22" font-weight="900" fill="${line}">!</text>`:"");
+  return `<svg class="girl mood-${mood}" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg" aria-label="Юки">
+    <path d="M38 125 Q36 48 100 42 Q164 48 162 125 L166 205 Q146 214 134 196 L66 196 Q54 214 34 205 Z" fill="${hair}"/>
+    <rect x="90" y="168" width="20" height="30" fill="${skin}"/>
+    <path d="M42 262 Q46 200 100 194 Q154 200 158 262 Z" fill="${top}"/>
+    <path d="M78 197 L100 224 L122 197" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M96 222 L100 236 L104 222 Z" fill="#E0213A"/>
+    <ellipse cx="100" cy="126" rx="48" ry="52" fill="${skin}"/>
+    ${blushOn?`<ellipse cx="72" cy="146" rx="10" ry="5.5" fill="#FF7FA0" opacity="${blushA}"/><ellipse cx="128" cy="146" rx="10" ry="5.5" fill="#FF7FA0" opacity="${blushA}"/>`:""}
+    <g class="e-mood">${E(80,128)}${E(120,128)}</g><g class="e-talk">${E(80,128,mood==="surprised"?"surprised":"neutral")}${E(120,128,mood==="surprised"?"surprised":"neutral")}</g>
+    <path d="${br[0]}" stroke="${hair}" stroke-width="3" fill="none" stroke-linecap="round"/><path d="${br[1]}" stroke="${hair}" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <g class="m-static">${mouth}</g><g class="m-talk"><ellipse cx="100" cy="157" rx="${mood==="angry"?8:6.5}" ry="6.5" fill="${mouthC}"/></g>
+    <path d="M51 120 Q48 66 100 64 Q152 66 149 120 Q141 98 128 103 Q122 86 108 97 Q100 82 90 97 Q77 86 71 103 Q59 98 51 120Z" fill="${hair}"/>
+    <g transform="translate(136 86) rotate(20)"><rect x="-10" y="-3" width="20" height="6" rx="3" fill="#FFD23F"/><circle cx="10" cy="0" r="4" fill="#FF5F9E"/></g>
+    ${extras}
+  </svg>`;
+}
+function sceneDeco(bg){
+  const d={
+    cafe:`<rect x="20" y="20" width="110" height="90" rx="6" fill="#BFE3F7" stroke="#8C5A3C" stroke-width="6"/><line x1="75" y1="20" x2="75" y2="110" stroke="#8C5A3C" stroke-width="5"/><rect x="0" y="230" width="400" height="70" fill="#A8714A"/><rect x="290" y="198" width="26" height="32" rx="4" fill="#fff"/><path d="M316 206 q12 4 0 16" stroke="#fff" stroke-width="4" fill="none"/><text x="300" y="60" font-size="34" fill="#8C5A3C" opacity=".5">珈琲</text>`,
+    park:`<circle cx="330" cy="50" r="28" fill="#FFE27A"/><rect x="0" y="215" width="400" height="90" fill="#7BC67E"/><circle cx="50" cy="170" r="48" fill="#4E9F57"/><rect x="44" y="190" width="12" height="40" fill="#7A5236"/><circle cx="355" cy="180" r="40" fill="#4E9F57"/><rect x="350" y="200" width="10" height="30" fill="#7A5236"/><path d="M250 70 q8 -8 16 0 q8 -8 16 0" stroke="#3A2547" stroke-width="3" fill="none"/>`,
+    home:`<rect x="250" y="25" width="110" height="95" rx="6" fill="#2D3270" stroke="#fff" stroke-width="6"/><circle cx="330" cy="55" r="12" fill="#FFF3B0"/><rect x="0" y="232" width="400" height="70" fill="#C9A27E"/><rect x="10" y="170" width="120" height="62" rx="16" fill="#E58FA9"/><path d="M60 40 L60 90 M40 90 h40 l-8 -24 h-24 z" stroke="#555" stroke-width="3" fill="#FFE9A8"/>`,
+    whims:`<text x="20" y="70" font-size="40" fill="#fff" opacity=".7">♡</text><text x="330" y="110" font-size="56" fill="#fff" opacity=".6">♡</text><text x="300" y="40" font-size="26" fill="#fff" opacity=".8">♡</text><text x="40" y="200" font-size="30" fill="#fff" opacity=".5">♡</text>`,
+    day:`<g fill="#2B2350">${[0,40,75,120,270,305,345].map((x,i)=>`<rect x="${x}" y="${120+((i*37)%60)}" width="${32+((i*13)%20)}" height="200"/>`).join("")}</g><g fill="#FFD36B" opacity=".8">${[[10,150],[85,170],[280,160],[355,175],[130,200]].map(([x,y])=>`<rect x="${x}" y="${y}" width="6" height="8"/>`).join("")}</g>`,
+    scold:`<text x="14" y="70" font-family="Dela Gothic One,sans-serif" font-size="40" fill="#fff" opacity=".35">ゴゴゴ</text><text x="270" y="200" font-family="Dela Gothic One,sans-serif" font-size="40" fill="#fff" opacity=".35">ゴゴゴ</text>`,
+    game:`${[[30,40,"#FF5F9E"],[90,90,"#3FA7FF"],[330,50,"#7BC67E"],[360,140,"#FF8A3D"],[50,190,"#7E5BEF"],[310,210,"#FF5F9E"]].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="10" height="10" fill="${c}" transform="rotate(30 ${x} ${y})"/>`).join("")}<text x="300" y="110" font-family="Dela Gothic One,sans-serif" font-size="36" fill="#7E5BEF" opacity=".4">しりとり</text>`
+  }[bg]||"";
+  return `<svg class="deco" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${d}</svg>`;
+}
+
+/* ---------- ХАБ ---------- */
+function puHub(){
+  hideSheet(); P=null;
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Пикапим альтух</h2></div>
+    <div class="motiv">${pick(MOTIV)}</div>
+    <div class="label">Живое общение с Юки</div>
+    <div class="livegrid">${LIVE.map((s,i)=>{const r=S.live[s.id];return `<button class="live bg-${s.bg}" data-i="${i}"><span class="k">${s.k}</span><b>${s.t}</b><small>${s.d}</small>${r!=null?`<i>рекорд ${r}%</i>`:""}</button>`}).join("")}</div>
+    <div class="label">Сюжет по главам</div>
+    ${PU.map((c,ci)=>{const d=S.pu[ci]||{};return `<div class="ch">
+      <div class="hd"><span class="n">${ci+1}</span><div><h3>${c.t}</h3><p>${c.d} · ${c.v.length} фраз</p></div></div>
+      <div class="stages">
+        <button class="stg ${d.w?"done":""}" data-c="${ci}" data-s="w">1. Слова<i>${d.w?"выучено":"зубрим"}</i></button>
+        <button class="stg ${d.b?"done":""}" data-c="${ci}" data-s="b">2. Фразы<i>${d.b?"собрано":"собери"}</i></button>
+        <button class="stg ${d.d!=null?"done":""}" data-c="${ci}" data-s="d">3. Диалог<i>${d.d!=null?"симпатия "+d.d+"%":"с альтухой"}</i></button>
+      </div></div>`}).join("")}
+    <div class="foot">Без латиницы. Кандзи — только с подсказкой каной сверху</div>
+  </section>`;
+  document.getElementById("back").onclick=home;
+  app.querySelectorAll(".live").forEach(b=>b.onclick=()=>liveGate(+b.dataset.i));
+  app.querySelectorAll(".stg").forEach(b=>b.onclick=()=>{const ci=+b.dataset.c,s=b.dataset.s; if(s==="w")puLearn(ci); else if(s==="b")puBuild(ci); else chapterGate(ci);});
+  window.scrollTo(0,0);
+}
+
+/* ---------- «ВЫУЧИ, СУКА» ---------- */
+function gateHTML(title,list,note){
+  return `<div class="gate"><b>ПЕРЕД ТЕМ КАК ЗНАКОМИТЬСЯ — ВЫУЧИ, СУКА.</b><span>Иначе хуй закадришь.</span></div>
+    ${note?`<div class="note">${note}</div>`:""}
+    <div class="label">${title}</div>
+    ${list.map((v,i)=>`<div class="ph"><div class="tx"><span class="jp">${rb(v.jp)}</span><span class="ru">${esc(v.ru)}</span></div><button class="spk" data-i="${i}" aria-label="Озвучить">🔊</button></div>`).join("")}`;
+}
+function chapterGate(ci){
+  const c=PU[ci],d=S.pu[ci]||{};
+  if(d.w&&d.b) return puDialog(ci);
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>${c.t}: диалог</h2></div>
+    ${gateHTML("Что понадобится",c.v)}
+    <button class="big" id="learn" ${pinkBtn}>Проверь меня сначала</button>
+    <button class="ghost" id="risk">Я и так всё знаю (рискнуть)</button>
+  </section>`;
+  document.getElementById("back").onclick=puHub;
+  document.getElementById("learn").onclick=()=>puQuiz(ci);
+  document.getElementById("risk").onclick=()=>puDialog(ci);
+  app.querySelectorAll(".spk").forEach(b=>b.onclick=()=>say(c.v[+b.dataset.i].jp));
+  window.scrollTo(0,0);
+}
+function liveGate(i){
+  const sc=LIVE[i],list=liveVocab(sc);
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>${sc.t}</h2></div>
+    ${gateHTML("Фразы, которые тебе понадобятся",list,LIVE_NOTE[sc.id]||"")}
+    <button class="big" id="quiz">Проверь меня</button>
+    <button class="big" id="go" ${pinkBtn}>Погнали к ней</button>
+  </section>`;
+  document.getElementById("back").onclick=puHub;
+  document.getElementById("quiz").onclick=()=>puQuizList(list,{back:()=>liveGate(i),next:()=>liveStart(i),nextLbl:"Погнали к ней"});
+  document.getElementById("go").onclick=()=>liveStart(i);
+  app.querySelectorAll(".spk").forEach(b=>b.onclick=()=>say(list[+b.dataset.i].jp));
+  window.scrollTo(0,0);
+}
+
+/* ---------- ЭТАП 1: СЛОВА ---------- */
+function puLearn(ci){
+  const c=PU[ci];
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>${c.t}: слова</h2></div>
+    <div class="sensei"><div class="face">${FACE.think}</div><div class="bubble">Читай вслух, жми 🔊. Не запомнишь — на проверке огребёшь.</div></div>
+    ${c.v.map((v,i)=>`<div class="ph"><div class="tx"><span class="jp">${rb(v.jp)}</span><span class="ru">${esc(v.ru)}</span></div><button class="spk" data-i="${i}" aria-label="Озвучить">🔊</button></div>`).join("")}
+    <button class="big" id="go">Выучил, проверяй, сука</button>
+  </section>`;
+  document.getElementById("back").onclick=puHub;
+  document.getElementById("go").onclick=()=>puQuiz(ci);
+  app.querySelectorAll(".spk").forEach(b=>b.onclick=()=>say(c.v[+b.dataset.i].jp));
+  window.scrollTo(0,0);
+}
+/* похожие по виду варианты: та же пунктуация, близкая длина, общие слова + один «мутант» правильного */
+const PUNCT=/[？！?!。、.,…〜~]+$/;
+const endP=s=>{const m=s.match(PUNCT);return m?m[0].replace(/[!！]/g,"!").replace(/[?？]/g,"?"):"";};
+function simScore(a,b){
+  a=plain(a);b=plain(b);
+  let s=0; if(endP(a)===endP(b)) s+=3;
+  s-=Math.abs(a.length-b.length)/Math.max(a.length,b.length)*6;
+  const ta=a.split(/[ 、。，,]+/),tb=new Set(b.split(/[ 、。，,]+/));
+  ta.forEach(w=>{if(w&&tb.has(w)) s+=1.5;});
+  if(a[0]===b[0]) s+=1;
+  if(a.includes("、")===b.includes("、")) s+=.7;
+  if((a.match(/ /g)||[]).length===(b.match(/ /g)||[]).length) s+=1;
+  return s+Math.random()*1.2;
+}
+const CLAUSE=/[^、。！？!?,.…]+[、。！？!?,.…\s]*/g;
+function mutate(text,key){
+  const src=ALLV().map(x=>key==="jp"?x.jp:x.ru);
+  const fixCase=(w,first)=>key==="ru"?(first?w.charAt(0).toUpperCase()+w.slice(1):(/^(Юки|Денис|Беларус)/.test(w)?w:w.charAt(0).toLowerCase()+w.slice(1))):w;
+  const cl=text.match(CLAUSE)||[text];
+  if(cl.length>=2){
+    const bodies=[...new Set(src.flatMap(s=>(s.match(CLAUSE)||[]).map(c=>c.replace(/[、。！？!?,.…\s]+$/,"").trim())))].filter(b=>b&&!/[{}]/.test(b));
+    for(let tries=0;tries<30;tries++){
+      const i=Math.floor(Math.random()*cl.length);
+      const body=cl[i].replace(/[、。！？!?,.…\s]+$/,"").trim(), tail=cl[i].slice(cl[i].replace(/[、。！？!?,.…\s]+$/,"").length);
+      if(/[{}]/.test(body)) continue;
+      const own=cl.map(x=>x.replace(/[、。！？!?,.…\s]+$/,"").trim().toLowerCase());
+      const c=bodies.filter(b=>!own.includes(b.toLowerCase())&&Math.abs(b.length-body.length)<=Math.max(3,body.length*.5));
+      if(!c.length) continue;
+      const nc=cl.slice(); nc[i]=(i>0&&key==="ru"?"":"")+fixCase(pick(c),i===0)+tail;
+      const out=nc.join("").trim();
+      if(out!==text&&!src.includes(out)) return out;
+    }
+  }
+  if(key!=="jp") return null;
+  const toks=text.split(" "); if(toks.length<2) return null;
+  const words=[...new Set(src.flatMap(s=>s.split(" ")))].map(w=>w.replace(PUNCT,"")).filter(w=>w&&!/[{}、。！？]/.test(w));
+  for(let tries=0;tries<30;tries++){
+    const i=Math.floor(Math.random()*toks.length);
+    const orig=toks[i], core=orig.replace(PUNCT,""), tail=orig.slice(core.length);
+    if(!core||/[{}、。！？]/.test(core)) continue;
+    const cands=words.filter(w=>w!==core&&Math.abs(w.length-core.length)<=2);
+    if(!cands.length) continue;
+    const nt=toks.slice(); nt[i]=pick(cands)+tail; const out=nt.join(" ");
+    if(out!==text&&!src.includes(out)) return out;
+  }
+  return null;
+}
+const STOPW=new Set(["я","ты","а","да","ну","ой","и","же","эм","вот","так","уж"]);
+const ruToks=s=>new Set(String(s||"").toLowerCase().replace(/ё/g,"е").replace(/обожаю/g,"люблю").split(/[^а-яa-z]+/).filter(w=>w&&!STOPW.has(w)));
+function sameMeaning(a,b){const A=ruToks(a),B=ruToks(b);if(!A.size||!B.size)return false;let n=0;A.forEach(w=>{if(B.has(w))n++;});return n/(A.size+B.size-n)>=.5;}
+function otherV(v,pool,n,key){
+  const keyOf=x=>key==="jp"?plain(x.jp):x.ru;
+  const cands=[...new Set([...pool,...ALLV()])].filter(x=>keyOf(x)!==keyOf(v)&&!sameMeaning(x.ru,v.ru)&&plain(x.jp)!==plain(v.jp));
+  const ranked=cands.map(x=>({x,s:simScore(key==="jp"?v.jp:v.ru,key==="jp"?x.jp:x.ru)})).sort((a,b)=>b.s-a.s);
+  const out=[];
+  const m=mutate(key==="jp"?v.jp:v.ru,key);
+  if(m&&n>=2) out.push(key==="jp"?{jp:m,ru:"(не то)",fake:true}:{jp:v.jp,ru:m,fake:true});
+  for(const {x} of ranked){if(out.length>=n)break; if(!out.some(o=>keyOf(o)===keyOf(x)))out.push(x);}
+  return out;
+}
+function puQuiz(ci){
+  puQuizList(PU[ci].v,{ci,kind:"w"});
+}
+function puQuizList(list,opt){
+  const qs=[];list.forEach(v=>{qs.push({t:"jr",v});qs.push({t:"rj",v});});
+  P=Object.assign({pool:list,queue:shuffle(qs),total:qs.length,done:0,hearts:5,combo:0,maxCombo:0,right:0,wrong:0,kind:"w"},opt);
+  puNext();
+}
+function puBuild(ci){
+  const qs=PU[ci].v.map(v=>({t:"b",v}));
+  P={ci,pool:PU[ci].v,kind:"b",queue:shuffle(qs),total:qs.length,done:0,hearts:5,combo:0,maxCombo:0,right:0,wrong:0};
+  puNext();
+}
+function puNext(){
+  hideSheet();
+  if(P.hearts<=0) return puResult(true);
+  if(!P.queue.length) return puResult(false);
+  P.cur=P.queue.shift(); P.locked=false;
+  const q=P.cur,v=q.v;
+  if(q.t==="jr") q.opts=shuffle([v,...otherV(v,P.pool,3,"ru")]);
+  if(q.t==="rj") q.opts=shuffle([v,...otherV(v,P.pool,3,"jp")]);
+  if(q.t==="b"){
+    const toks=v.jp.split(" "); const extra=[];
+    for(const o of shuffle(ALLV())){ if(extra.length>=2)break; for(const t of o.jp.split(" ")){ if(!toks.includes(t)&&!extra.includes(t)){extra.push(t);break;} } }
+    q.tiles=shuffle([...toks,...extra].map((t,i)=>({t,i}))); q.sel=[];
+  }
+  puRender();
+}
+function puRender(){
+  const q=P.cur,v=q.v; let body="";
+  const pct=Math.round(P.done/P.total*100);
+  if(q.t==="jr"){
+    body=`<div class="prompt">Что это значит?</div>
+    <div class="card" id="card"><button class="say" id="say" aria-label="Озвучить">🔊</button><div class="jpbig">${rb(v.jp)}</div></div>
+    <div class="opts1">${q.opts.map((o,i)=>`<button class="ropt" data-i="${i}"><span class="ru">${esc(o.ru)}</span></button>`).join("")}</div>`;
+  } else if(q.t==="rj"){
+    body=`<div class="prompt">Как сказать по-японски?</div>
+    <div class="card" id="card"><div class="rubig">${esc(v.ru)}</div></div>
+    <div class="opts1">${q.opts.map((o,i)=>`<button class="ropt" data-i="${i}"><span class="jp">${rb(o.jp)}</span></button>`).join("")}</div>`;
+  } else {
+    body=`<div class="prompt">Собери фразу по-японски</div>
+    <div class="card" id="card"><div class="rubig">${esc(v.ru)}</div></div>
+    <div class="slot" id="slot">${q.sel.map(i=>`<button class="tile" data-i="${i}">${rb(q.tiles.find(t=>t.i===i).t)}</button>`).join("")}</div>
+    <div class="pool" id="pool">${q.tiles.map(t=>`<button class="tile ${q.sel.includes(t.i)?"ghosted":""}" data-i="${t.i}">${rb(t.t)}</button>`).join("")}</div>
+    <button class="big" id="chk" ${pinkBtn}>Проверить</button>`;
+  }
+  app.innerHTML=`<section class="screen">
+    <div class="top"><button class="x" id="quit" aria-label="Выйти">✕</button><div class="prog"><i style="width:${pct}%;background:var(--pink)"></i></div><div class="hearts">♥ ${P.hearts}</div></div>
+    <div class="combo">${P.combo>=2?`серия ×${P.combo}`:""}</div>${body}</section>`;
+  document.getElementById("quit").onclick=P.back||puHub;
+  const sy=document.getElementById("say"); if(sy) sy.onclick=()=>say(v.jp);
+  if(q.t==="b"){
+    document.getElementById("pool").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{if(P.locked)return;const i=+b.dataset.i;if(!q.sel.includes(i)){q.sel.push(i);puRender();}});
+    document.getElementById("slot").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{if(P.locked)return;q.sel=q.sel.filter(x=>x!==+b.dataset.i);puRender();});
+    document.getElementById("chk").onclick=()=>{
+      if(P.locked)return; if(!q.sel.length){const s=document.getElementById("slot");s.classList.remove("shake");void s.offsetWidth;s.classList.add("shake");return;}
+      puAnswer(q.sel.map(i=>q.tiles.find(t=>t.i===i).t).join(" ")===v.jp);
+    };
+  } else {
+    app.querySelectorAll(".ropt").forEach(b=>b.onclick=()=>{
+      if(P.locked)return; const o=q.opts[+b.dataset.i];
+      app.querySelectorAll(".ropt").forEach((bb,i)=>{bb.disabled=true;if(q.opts[i]===v)bb.classList.add("ok");});
+      if(o!==v)b.classList.add("no");
+      puAnswer(o===v);
+    });
+  }
+}
+function puAnswer(ok){
+  P.locked=true; const q=P.cur,v=q.v,card=document.getElementById("card");
+  const line=`<span class="jp" style="font-size:19px">${rb(v.jp)}</span> = ${esc(v.ru)}`;
+  if(ok){
+    P.right++;P.done++;P.combo++;P.maxCombo=Math.max(P.maxCombo,P.combo);
+    card.classList.add("pop");beep(true);stampIt("恋",true);say(v.jp);
+    showSheet(true,COMBO[P.combo]||pick(PU_RIGHT),line,"ДАЛЬШЕ, КАЗАНОВА",puNext);
+  } else {
+    P.wrong++;P.hearts--;P.combo=0;
+    card.classList.add("shake");beep(false);buzz();stampIt("駄",false);
+    P.queue.push({t:q.t,v});
+    showSheet(false,pick(PU_WRONG),"Правильно: "+line,P.hearts<=0?"ВСЁ, ОНА УШЛА":"ПОНЯЛ, Я ДОЛБОЁБ",puNext);
+  }
+}
+function puResult(dead){
+  hideSheet();
+  const acc=Math.round(P.right/Math.max(1,P.right+P.wrong)*100);
+  const key=P.kind, ci=P.ci, cfg=P;
+  if(!dead){ if(ci!=null){S.pu[ci]=S.pu[ci]||{};S.pu[ci][key]=true;} S.xp+=P.right*5;save();}
+  let face,title,sub;
+  if(dead){face=FACE.dead;title="ОНА ЗАБЛОКИРОВАЛА ТЕБЯ";sub="Жизни кончились. Перечитай слова, лошара.";}
+  else if(acc===100){face=FACE.king;title="ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ";sub="Ни одной ошибки. Альтухи Токио в опасности.";}
+  else if(acc>=75){face=FACE.ok;title="КРАСАВА";sub="Почти чисто. Ещё разок — и к ней.";}
+  else {face=FACE.think;title="НУ Я В АХУЕ С ВАС";sub="С такими знаниями она хуй тебе ответит. Повтори.";}
+  let nextLbl,nextFn;
+  if(cfg.next){nextLbl=cfg.nextLbl;nextFn=cfg.next;}
+  else if(key==="w"){nextLbl="2. Собрать фразы";nextFn=()=>puBuild(ci);}
+  else {nextLbl="3. Диалог с альтухой";nextFn=()=>puDialog(ci);}
+  app.innerHTML=`<section class="screen res">
+    <div class="face">${face}</div><h2>${title}</h2><p>${sub}</p>
+    <div class="stats"><div class="stat"><b>${acc}%</b><small>точность</small></div><div class="stat"><b>+${dead?0:P.right*5}</b><small>XP</small></div><div class="stat fire"><b>×${P.maxCombo}</b><small>серия</small></div></div>
+    ${dead?`<button class="big" id="again">РЕВАНШ, СУКА</button>`:`<button class="big" id="nextS" ${pinkBtn}>${nextLbl}</button><button class="ghost" id="again">Ещё раз</button>`}
+    <button class="ghost" id="back">Назад</button>
+  </section>`;
+  document.getElementById("again").onclick=()=>key==="b"?puBuild(ci):(ci!=null?puQuiz(ci):puQuizList(cfg.pool,{back:cfg.back,next:cfg.next,nextLbl:cfg.nextLbl}));
+  const ns=document.getElementById("nextS"); if(ns) ns.onclick=nextFn;
+  document.getElementById("back").onclick=cfg.back||puHub;
+  window.scrollTo(0,0);
+}
+
+/* ---------- ЭТАП 3: СЮЖЕТНЫЙ ДИАЛОГ (чат + перевод своего ответа) ---------- */
+function puDialog(ci){
+  P={ci,kind:"d",i:0,symp:50,hist:[],phase:"pick",good:0,shown:{}};
+  puHerLine(); puDRender();
+}
+function puHerLine(){const l=PU[P.ci].L[P.i];P.hist.push({who:"her",jp:l[0],ru:l[1]});
+  const opts=l[2].map((o,k)=>({jp:o[0],ru:o[1],why:o[2],ok:k===0}));
+  const m=mutate(l[2][0][0],"jp"); if(m) opts.push({jp:m,ru:null,why:"Похоже на правильное, да не то. Читай каждую букву, слепошарый.",ok:false});
+  P.opts=shuffle(opts);P.phase="pick";}
+function puDRender(){
+  const c=PU[P.ci],correct=P.opts.find(o=>o.ok);
+  let below="";
+  if(P.phase==="pick"){
+    below=`<div class="ask">Что ответишь?</div><div class="opts1">${P.opts.map((o,i)=>`<button class="ropt" data-i="${i}"><span class="jp">${rb(o.jp)}</span></button>`).join("")}</div>`;
+  } else if(P.phase==="tr"){
+    if(!P.trOpts) P.trOpts=shuffle([{ru:correct.ru,ok:true},...otherV({jp:correct.jp,ru:correct.ru},PU[P.ci].v,3,"ru").map(x=>({ru:x.ru,ok:false}))]);
+    below=`<div class="ask">Теперь переведи, что ты ей сказал</div>
+      <div class="card" id="card"><div class="jpbig" style="font-size:24px">${rb(correct.jp)}</div></div>
+      <div class="opts1">${P.trOpts.map((o,i)=>`<button class="ropt" data-i="${i}"><span class="ru">${esc(o.ru)}</span></button>`).join("")}</div>`;
+  }
+  app.innerHTML=`<section class="screen">
+    <div class="top"><button class="x" id="quit" aria-label="Выйти">✕</button><div class="prog"><i style="width:${Math.round(P.i/c.L.length*100)}%;background:var(--pink)"></i></div><div class="hearts" style="color:var(--pink)">${P.i+1}/${c.L.length}</div></div>
+    <div class="meter"><span class="f">${herFace(P.symp)}</span><div class="bar"><i style="width:${P.symp}%"></i></div><b>${P.symp}%</b></div>
+    <div class="narr">${esc(c.intro)}</div>
+    <div class="chat" id="chat">${P.hist.map((m,k)=>`<div class="msg ${m.who} ${m.x?"x":""}">
+      <span class="who">${m.who==="her"?"ユキ":m.fix?"как надо было":"ты"}</span>
+      <span class="jp">${rb(m.jp)}</span>
+      ${m.who==="her"?`${P.shown[k]?`<span class="ru">${esc(m.ru)}</span>`:""}<span class="acts"><button class="mini" data-say="${k}">🔊</button>${P.shown[k]?"":`<button class="mini" data-tr="${k}">чё она сказала?</button>`}</span>`:""}
+    </div>`).join("")}</div>
+    ${below}
+  </section>`;
+  document.getElementById("quit").onclick=puHub;
+  app.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(P.hist[+b.dataset.say].jp));
+  app.querySelectorAll("[data-tr]").forEach(b=>b.onclick=()=>{P.shown[+b.dataset.tr]=true;puDRender();});
+  if(P.phase==="pick") app.querySelectorAll(".ropt").forEach(b=>b.onclick=()=>puPick(P.opts[+b.dataset.i],b));
+  if(P.phase==="tr") app.querySelectorAll(".ropt").forEach(b=>b.onclick=()=>puTr(P.trOpts[+b.dataset.i],b));
+  const tgt=P.phase==="pick"?document.getElementById("chat").lastElementChild:document.querySelector(".ask");
+  if(tgt) setTimeout(()=>{try{tgt.scrollIntoView({block:"start",behavior:"smooth"})}catch(e){}},30);
+}
+function puPick(o,btn){
+  if(P.phase!=="pick")return; P.phase="wait";
+  const correct=P.opts.find(x=>x.ok);
+  app.querySelectorAll(".ropt").forEach((b,i)=>{b.disabled=true;if(P.opts[i].ok)b.classList.add("ok");});
+  const toTr=()=>{P.phase="tr";P.trOpts=null;hideSheet();puDRender();};
+  if(o.ok){
+    P.symp=Math.min(100,P.symp+12);P.good++;
+    P.hist.push({who:"me",jp:o.jp});
+    beep(true);stampIt("恋",true);say(o.jp);
+    showSheet(true,pick(PU_RIGHT),esc(o.why)+" · симпатия +12","А ЧЁ Я СКАЗАЛ? →",toTr);
+  } else {
+    btn.classList.add("no");
+    P.symp=Math.max(0,P.symp-18);
+    P.hist.push({who:"me",jp:o.jp,x:true});
+    P.hist.push({who:"me",jp:correct.jp,fix:true});
+    beep(false);buzz();stampIt("駄",false);
+    showSheet(false,pick(PU_WRONG),`${esc(o.why)} ${o.ru?`Ты сказал: «${esc(o.ru)}».`:"Ты сказал какую-то хуйню."} Симпатия −18`,"ЛАДНО, ПЕРЕВЕДУ ПРАВИЛЬНЫЙ →",toTr);
+  }
+  save();
+}
+function puTr(o,btn){
+  if(P.phase!=="tr")return; P.phase="wait";
+  const correct=P.opts.find(x=>x.ok);
+  app.querySelectorAll(".ropt").forEach((b,i)=>{b.disabled=true;if(P.trOpts[i].ok)b.classList.add("ok");});
+  const go=()=>{P.i++; if(P.i>=PU[P.ci].L.length) return puDEnd(); puHerLine(); hideSheet(); puDRender();};
+  if(o.ok){beep(true);showSheet(true,pick(TR_RIGHT),`<span class="jp">${rb(correct.jp)}</span> = ${esc(correct.ru)}`,"ДАЛЬШЕ",go);}
+  else{btn.classList.add("no");beep(false);buzz();P.symp=Math.max(0,P.symp-5);showSheet(false,pick(TR_WRONG),`Это значит: «${esc(correct.ru)}». Симпатия −5`,"ЗАПОМНИЛ, ДАЛЬШЕ",go);}
+}
+function puDEnd(){
+  hideSheet();
+  const c=PU[P.ci],win=P.symp>=60;
+  S.pu[P.ci]=S.pu[P.ci]||{}; S.pu[P.ci].d=Math.max(S.pu[P.ci].d||0,P.symp); S.xp+=P.good*10; save();
+  const ci=P.ci;
+  app.innerHTML=`<section class="screen res">
+    <div class="face">${herFace(P.symp)}</div>
+    <h2>${win?(P.symp>=90?"ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ":"ПОБЕДА"):"ПРОВАЛ"}</h2>
+    <p style="color:var(--ink);font-size:17px;font-weight:700">${esc(c.end[win?0:1])}</p>
+    <div class="meter"><span class="f">симпатия</span><div class="bar"><i style="width:${P.symp}%"></i></div><b>${P.symp}%</b></div>
+    <p>${win?(P.symp>=90?"Ни одного кринжа. Ну ты зверь.":"Норм, но пару раз ты был кринжом. Она простила."):"Блядь, да с такими ответами она хуй даст тебе даже номер. Повтори главу."}</p>
+    ${win&&ci<PU.length-1?`<button class="big" id="nextC" ${pinkBtn}>Глава ${ci+2}: ${PU[ci+1].t}</button>`:""}
+    <button class="${win?"ghost":"big"}" id="again">${win?"Пройти ещё раз":"РЕВАНШ, СУКА"}</button>
+    <button class="ghost" id="back">К главам</button>
+  </section>`;
+  const nc=document.getElementById("nextC"); if(nc) nc.onclick=()=>puLearn(ci+1);
+  document.getElementById("again").onclick=()=>puDialog(ci);
+  document.getElementById("back").onclick=puHub;
+  window.scrollTo(0,0);
+}
+
+/* ---------- ЖИВОЕ ОБЩЕНИЕ ---------- */
+function liveStart(i){
+  const sc=LIVE[i];
+  const seq=[sc.open,...shuffle(sc.beats).slice(0,6),sc.close];
+  P={kind:"live",i,sc,seq,step:0,patience:3,symp:50,good:0,bad:0,combo:0,state:"ask",mood:sc.open.mood||"neutral",line:sc.open.h,lineRu:null,hinted:false};
+  liveAsk();
+}
+function liveAsk(){
+  const b=P.seq[P.step];
+  P.state="ask"; P.mood=b.mood||"neutral"; P.line=b.h; P.ru=null; P.hinted=false;
+  const lo=b.o.map((o,k)=>({jp:o[0],ru:o[1],ok:k===0}));
+  const lm=mutate(b.o[0][0],"jp"); if(lm) lo.push({jp:lm,ru:null,ok:false});
+  P.opts=shuffle(lo);
+  liveRender(); say(b.h,"ja");
+}
+function liveRender(){
+  const sc=P.sc,b=P.seq[P.step];
+  const hearts="♥".repeat(P.patience)+"♡".repeat(3-P.patience);
+  let bubble;
+  if(P.state==="mad"||P.state==="left") bubble=`<div class="speech ru-speech">${esc(P.ru)}</div>`;
+  else bubble=`<div class="speech"><span class="jp">${rb(P.line)}</span>${P.hinted&&P.state==="ask"?`<span class="hint">${esc(b.hr)}</span>`:""}</div>`;
+  let below="";
+  if(P.state==="ask"){
+    below=`<div class="opts1">${P.opts.map((o,k)=>`<button class="ropt" data-k="${k}"><span class="jp">${rb(o.jp)}</span></button>`).join("")}</div>
+      <div class="liverow"><button class="mini" id="rep">🔊 ещё раз</button>${P.hinted?"":`<button class="mini" id="hint">не понял (−5 симпатии)</button>`}</div>`;
+  } else if(P.state==="mad"){
+    const c=b.o[0];
+    below=`<div class="coach"><small>Надо было ответить:</small><button class="jp coachjp" id="coachSay">${rb(c[0])} <span class="mini">🔊</span></button><span class="ru">${esc(c[1])}</span><button class="big" id="cont" ${pinkBtn}>ЛАДНО, Я ДОЛБОЁБ</button></div>`;
+  }
+  app.innerHTML=`<section class="screen live-screen">
+    <div class="top"><button class="x" id="quit" aria-label="Выйти">✕</button><div class="prog"><i style="width:${Math.round(P.step/P.seq.length*100)}%;background:var(--pink)"></i></div><div class="hearts" aria-label="Её терпение">${hearts}</div></div>
+    <div class="stage bg-${sc.bg} ${P.state==="left"?"gone":""}" id="stage">
+      ${sceneDeco(sc.bg)}
+      ${bubble}
+      <div class="girlwrap ${P.state==="mad"?"shake":""}">${girlSVG(P.mood)}</div>
+      <div class="lovebar"><span>${herFace(P.symp)}</span><div class="bar"><i style="width:${P.symp}%"></i></div></div>
+      ${P.toast?`<div class="toast">${P.toast}</div>`:""}
+    </div>
+    ${P.step===0&&P.state==="ask"?`<div class="narr">${esc(sc.intro)}</div>`:""}
+    ${below}
+  </section>`;
+  P.toast=null;
+  document.getElementById("quit").onclick=()=>{try{speechSynthesis.cancel()}catch(e){};puHub();};
+  if(P.state==="ask"){
+    app.querySelectorAll(".ropt").forEach(btn=>btn.onclick=()=>liveAnswer(P.opts[+btn.dataset.k],btn));
+    document.getElementById("rep").onclick=()=>say(P.line,"ja");
+    const h=document.getElementById("hint"); if(h) h.onclick=()=>{P.hinted=true;P.symp=Math.max(0,P.symp-5);liveRender();};
+  }
+  const cs=document.getElementById("coachSay"); if(cs) cs.onclick=()=>sayQ(b.o[0][0],"ja");
+  const ct=document.getElementById("cont"); if(ct) ct.onclick=()=>{try{speechSynthesis.cancel()}catch(e){};liveAdvance();};
+}
+function liveAnswer(o,btn){
+  if(P.state!=="ask")return; P.state="busy";
+  const b=P.seq[P.step];
+  app.querySelectorAll(".ropt").forEach(x=>x.disabled=true);
+  if(o.ok){
+    btn.classList.add("ok"); P.good++; P.combo++; P.symp=Math.min(100,P.symp+10);
+    beep(true); say(o.jp,"ja");
+    if(P.combo===3) P.toast="ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ";
+    else if(P.combo===5) P.toast="ОНА ПОПЛЫЛА";
+    setTimeout(()=>{
+      P.mood=b.em; P.line=pick(HER_REACT[b.em]||HER_REACT.happy); P.state="react"; liveRender(); say(P.line,"ja");
+      setTimeout(liveAdvance,1500);
+    },700);
+  } else {
+    btn.classList.add("no"); P.bad++; P.combo=0; P.patience--; P.symp=Math.max(0,P.symp-15);
+    beep(false); buzz();
+    if(P.patience<=0){ P.mood="angry"; P.ru=pick(HER_LEAVE); P.state="left"; liveRender(); say(P.ru,"ru"); setTimeout(()=>liveEnd(true),2600); return; }
+    P.mood="angry"; P.ru=pick(HER_RU[Math.min(1,2-P.patience)]); P.state="mad";
+    setTimeout(()=>{liveRender(); say(P.ru,"ru");},350);
+  }
+}
+function liveAdvance(){
+  P.step++;
+  if(P.step>=P.seq.length) return liveEnd(false);
+  liveAsk();
+}
+function liveEnd(left){
+  const sc=P.sc,acc=Math.round(P.good/Math.max(1,P.good+P.bad)*100);
+  if(!left){ S.live[sc.id]=Math.max(S.live[sc.id]||0,P.symp); S.xp+=P.good*10; save(); }
+  const win=!left&&P.symp>=70;
+  let title,sub,mood;
+  if(left){title="ОНА УШЛА К АДЕКВАТНОМУ ЧЕЛУ";sub="Три косяка — и до свидания. Выучи фразы и возвращайся.";mood="angry";}
+  else if(P.bad===0){title="ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ";sub="Ни одного косяка. Она уже рассказывает подругам, какой ты.";mood="blush";}
+  else if(win){title="КРАСАВА";sub="Пару раз облажался, но она всё ещё с тобой.";mood="happy";}
+  else {title="НУ Я В АХУЕ С ВАС";sub="Она осталась, но смотрит на тебя как на дебила.";mood="pout";}
+  app.innerHTML=`<section class="screen res">
+    <div class="stage small bg-${sc.bg}">${sceneDeco(sc.bg)}<div class="girlwrap">${girlSVG(mood)}</div></div>
+    <h2>${title}</h2><p>${sub}</p>
+    <div class="stats"><div class="stat"><b>${acc}%</b><small>точность</small></div><div class="stat"><b>${P.symp}%</b><small>симпатия</small></div><div class="stat fire"><b>+${left?0:P.good*10}</b><small>XP</small></div></div>
+    <button class="big" id="again" ${pinkBtn}>${left?"РЕВАНШ, СУКА":"Ещё разговор"}</button>
+    <button class="ghost" id="learn">Повторить фразы</button>
+    <button class="ghost" id="back">К режимам</button>
+  </section>`;
+  const i=P.i;
+  document.getElementById("again").onclick=()=>liveStart(i);
+  document.getElementById("learn").onclick=()=>liveGate(i);
+  document.getElementById("back").onclick=puHub;
+  window.scrollTo(0,0);
+}
+
+
+/* =================================================================
+   УЧИТЬ БЕЗ РУК НАХУЙ
+   ================================================================= */
+if(!S.hfT) S.hfT={ears:5,eyes:7};
+const hfT=m=>Math.min(9,Math.max(1,S.hfT[m]||5));
+const HF={token:0,mode:null,content:"kana",count:0,wake:null};
+const NUM_RU=["Один","Два","Три","Четыре"];
+function speakP(text,lang,rate){
+  return new Promise(res=>{
+    try{
+      if(!window.speechSynthesis){setTimeout(res,600);return;}
+      const txt=ttsClean(text); if(!txt){setTimeout(res,50);return;}
+      const u=new SpeechSynthesisUtterance(txt); u.lang=lang==="ja"?"ja-JP":"ru-RU";
+      const fv=femaleVoice(lang); if(fv) u.voice=fv; u.rate=rate||(lang==="ja"?.85:1.1); u.pitch=lang==="ja"?1.2:1;
+      let done=false; const fin=()=>{if(!done){done=true;setTalk(false);res();}}; setTalk(true);
+      u.onend=fin; u.onerror=fin;
+      setTimeout(fin,1800+plain(text).length*(lang==="ja"?220:95)/(rate?Math.min(1,rate+.2):1));
+      speechSynthesis.speak(u);
+    }catch(e){res();}
+  });
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function tick(final){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type="square";o.frequency.value=final?1320:880;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(final?.14:.07,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+(final?.35:.08));o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.4)}catch(e){}}
+async function wakeOn(){try{if(navigator.wakeLock) HF.wake=await navigator.wakeLock.request("screen");}catch(e){HF.wake=null;}}
+function wakeOff(){try{HF.wake&&HF.wake.release();}catch(e){} HF.wake=null;}
+function hfStop(){HF.token++;try{speechSynthesis.cancel()}catch(e){};setTalk(false);wakeOff();}
+
+function hfMenu(){
+  hfStop(); hideSheet();
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Учить без рук нахуй</h2></div>
+    <div class="note">Едешь, качаешься, моешь посуду — похуй. Она сама спрашивает, сама ждёт, сама отвечает. Экран не гаси: браузер со спящим экраном замолкает.</div>
+    <div class="label">Для экрана: алфавит</div>
+    <div class="modes hfmodes">
+      ${[["hira","ひ","Хирагана","ひらがな"],["kata","カ","Катакана","カタカナ"],["kana","全","Всё нахуй","вся кана"],["mine","我","Мои буквы",myPool().length?myPool().length+" шт.":"настроить"]].map(([k,g,t,d])=>`<button class="mode" data-c="${k}" aria-pressed="${HF.content===k}"><span class="k">${g}</span><span class="t">${t}</span><span class="d">${d}</span></button>`).join("")}
+    </div>
+    <div class="label">Для экрана: предложения</div>
+    <div class="modes hfmodes1">
+      <button class="mode" data-c="phr" aria-pressed="${HF.content==="phr"}"><span class="k">恋</span><span class="t">Фразы и предложения</span><span class="d">всё из «Пикапим альтух»</span></button>
+    </div>
+    <div class="label">Секундомер на ответ</div>
+    <div class="timerset">${["ears","eyes"].map(m=>`<div class="tsrow"><span class="tsl">${m==="ears"?"🎧 наушники":"👀 экран"}</span><div class="tschips">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="tsc" data-tm="${m}" data-n="${n}" aria-pressed="${hfT(m)===n}">${n}</button>`).join("")}</div></div>`).join("")}</div>
+    <div class="label">Ты сейчас кто? Жми — и поехали</div>
+    <div class="hfpick">
+      <button class="hfcard" data-m="ears"><span class="ic">🎧</span><b>Я в наушниках</b><small>Глаза заняты, руки заняты. Только слушаю. Фразы для альтух: вопрос, три варианта, ${hfT("ears")} сек, ответ.</small></button>
+      <button class="hfcard" data-m="eyes"><span class="ic">👀</span><b>Смотрю в экран</b><small>Пальцем ткнуть не могу, но вижу. Кана или фразы: ${hfT("eyes")} сек, правильный подсвечивается сам.</small></button>
+    </div>
+    <div class="foot">В наушниках всегда гоняются фразы: кану на слух не увидишь</div>
+  </section>`;
+  document.getElementById("back").onclick=home;
+  app.querySelectorAll(".mode[data-c]").forEach(b=>b.onclick=()=>{ if(b.dataset.c==="mine"&&!myPool().length) return pickerScreen("hf"); HF.content=b.dataset.c;app.querySelectorAll(".mode[data-c]").forEach(x=>x.setAttribute("aria-pressed",x===b));});
+  app.querySelectorAll(".hfcard").forEach(b=>b.onclick=()=>hfStart(b.dataset.m));
+  app.querySelectorAll(".tsc").forEach(b=>b.onclick=()=>{S.hfT[b.dataset.tm]=+b.dataset.n;save();hfMenu();});
+  window.scrollTo(0,0);
+}
+function hfPhrasePool(){const seen=new Set();return ALLV().filter(v=>{const k=plain(v.jp);if(seen.has(k))return false;seen.add(k);return true;});}
+function hfMakeQ(){
+  const eyes=HF.mode==="eyes", n=eyes?4:3;
+  const useKana=eyes&&HF.content!=="phr";
+  if(useKana){
+    let kpool=ITEMS.filter(i=>HF.content==="hira"?i.s==="h":HF.content==="kata"?i.s==="k":HF.content==="mine"?inMine(i):true); if(!kpool.length) kpool=ITEMS;
+    const item=pick(kpool);
+    if(HF.content==="kana"&&item.twin&&Math.random()<.35){
+      const tw=item.twin, opts=shuffle([tw,...distractors(tw,tw.s,n-1,tw)]);
+      return {kind:"twin",show:item.k,sayIntro:"Найди пару.",sayJa:item.k,opts:opts.map(o=>({label:o.k,kana:true,ok:o===tw})),answerJa:tw.k,answerRu:null};
+    }
+    const opts=shuffle([item,...distractors(item,item.s,n-1)]);
+    return {kind:"listen",show:null,sayIntro:"Найди.",sayJa:item.k,opts:opts.map(o=>({label:o.k,kana:true,ok:o===item})),answerJa:item.k,answerRu:null,hint:item.s==="h"?"хирагана":"катакана"};
+  }
+  const pool=hfPhrasePool(), v=pick(pool);
+  if(Math.random()<.5){
+    const opts=shuffle([v,...otherV(v,pool,n-1,"ru")]);
+    return {kind:"jr",show:v.jp,sayIntro:"Переведи.",sayJa:v.jp,opts:opts.map(o=>({label:o.ru,ok:o===v})),answerRu:v.ru};
+  }
+  const opts=shuffle([v,...otherV(v,pool,n-1,"jp")]);
+  return {kind:"rj",show:null,showRu:v.ru,sayIntro:"Как сказать: "+v.ru+"?",sayJa:null,opts:opts.map(o=>({label:o.jp,jp:true,ok:o===v})),answerJa:v.jp};
+}
+function hfStart(mode){
+  HF.mode=mode; HF.count=0; HF.paused=false;
+  if(mode==="ears") HF.contentRun="phr";
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
+  wakeOn();
+  if(!window.speechSynthesis){
+    app.innerHTML=`<section class="screen"><div class="note">Этот браузер не умеет говорить. Открой в Safari или Chrome.</div><button class="ghost" id="back">Назад</button></section>`;
+    document.getElementById("back").onclick=hfMenu; return;
+  }
+  hfLoop();
+}
+function hfRender(q,state,sec,total){
+  const eyes=HF.mode==="eyes";
+  const reveal=state==="reveal";
+  const head=eyes
+    ? (q.kind==="jr"?`<div class="hfq jp">${rb(q.show)}</div>`
+      :q.kind==="rj"?`<div class="hfq ru">${esc(q.showRu)}</div>`
+      :q.kind==="twin"?`<div class="hfq kana">${q.show}</div><div class="hfsub">найди пару</div>`
+      :`<div class="hfq listen">🔊</div><div class="hfsub">слушай и найди · ${q.hint}</div>`)
+    : `<div class="hfq ears">🎧</div><div class="hfsub">${q.kind==="jr"?"переведи на слух":"как сказать по-японски"}</div>`;
+  const opts=`<div class="hfopts ${eyes?"":"dim"}">${q.opts.map((o,i)=>`<div class="hfo ${reveal?(o.ok?"ok":"no"):""}"><span class="num">${i+1}</span><span class="${o.kana?"kana":o.jp?"jp":"ru"}">${o.kana?o.label:o.jp?rb(o.label):esc(o.label)}</span></div>`).join("")}</div>`;
+  const pct=state==="count"?Math.round(sec/total*100):state==="reveal"?0:100;
+  app.innerHTML=`<section class="screen hf">
+    <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="hfmode">${eyes?"👀 смотрю в экран":"🎧 в наушниках"} · №${HF.count}</div></div>
+    <div class="hfstage">${head}<div class="timer"><i style="width:${pct}%"></i></div>${state==="count"?`<div class="sec">${sec}</div>`:reveal?`<div class="sec ok">✓</div>`:`<div class="sec">…</div>`}</div>
+    ${opts}
+    <div class="tsrun"><button class="mini" id="tminus" aria-label="Меньше секунд">−</button><span>⏱ ${hfT(HF.mode)} сек на ответ</span><button class="mini" id="tplus" aria-label="Больше секунд">+</button></div>
+    <div class="hfctl"><button class="big" id="pause">${HF.paused?"▶ Дальше":"⏸ Пауза"}</button><button class="ghost" id="stop">Стоп, хватит</button></div>
+  </section>`;
+  document.getElementById("quit").onclick=hfMenu;
+  document.getElementById("stop").onclick=hfMenu;
+  const adj=d=>{S.hfT[HF.mode]=Math.min(9,Math.max(1,hfT(HF.mode)+d));save();const el=app.querySelector(".tsrun span");if(el)el.textContent=`⏱ ${hfT(HF.mode)} сек на ответ`;};
+  document.getElementById("tminus").onclick=()=>adj(-1);
+  document.getElementById("tplus").onclick=()=>adj(1);
+  document.getElementById("pause").onclick=()=>{ if(HF.paused){HF.paused=false;wakeOn();hfLoop();} else {HF.paused=true;HF.token++;try{speechSynthesis.cancel()}catch(e){};wakeOff();hfRender(q,state,sec,total);} };
+}
+async function hfLoop(){
+  const my=++HF.token; const alive=()=>HF.token===my;
+  while(alive()){
+    HF.count++;
+    const q=hfMakeQ(), eyes=HF.mode==="eyes", T=hfT(HF.mode);
+    hfRender(q,"ask",T,T);
+    await speakP(q.sayIntro,"ru"); if(!alive())return;
+    if(q.sayJa){ if(q.kind==="listen"||q.kind==="twin") await kanaSayP(q.sayJa); else await speakP(q.sayJa,"ja"); if(!alive())return; }
+    if(!eyes){
+      for(let i=0;i<q.opts.length;i++){
+        await speakP(NUM_RU[i]+".","ru"); if(!alive())return;
+        const o=q.opts[i]; await speakP(o.label,o.jp?"ja":"ru"); if(!alive())return;
+      }
+    }
+    for(let s=T;s>0;s--){ hfRender(q,"count",s,T); tick(false); await sleep(1000); if(!alive())return; }
+    tick(true); hfRender(q,"reveal",0,T);
+    const idx=q.opts.findIndex(o=>o.ok);
+    if(eyes){
+      if(q.answerRu){ await speakP("Ответ: "+q.answerRu,"ru"); }
+      else { await speakP("Ответ:","ru"); if(!alive())return; if(q.kind==="listen"||q.kind==="twin") await kanaSayP(q.answerJa); else await speakP(q.answerJa,"ja"); }
+    } else {
+      await speakP("Ответ: "+NUM_RU[idx].toLowerCase()+".","ru"); if(!alive())return;
+      const o=q.opts[idx]; await speakP(o.label,o.jp?"ja":"ru");
+      if(q.kind==="jr"){ if(!alive())return; await speakP(q.sayJa,"ja"); }
+    }
+    if(!alive())return;
+    await sleep(900);
+  }
+}
+
+/* =================================================================
+   АЛЬТУХА УЧИТ ТЕБЯ (без рук / без глаз)
+   фраза: [японский, перевод, как она подаёт ситуацию, вопрос на проверке]
+   ================================================================= */
+const ACAD=[
+ {t:"Первая встреча",bg:"cafe",s:[
+  {t:"Приветствия",p:[
+   ["おはよう","Доброе утро","Утро, я с кофе, злая и ненакрашенная. Если подойдёшь, скажи «доброе утро». По-японски:","Утро, я злая и с кофе. Как поздороваешься?"],
+   ["こんにちは","Привет (днём)","Днём встречаемся на улице. Обычное «привет» — это:","Днём встретил меня на улице. Как сказать «привет»?"],
+   ["こんばんは","Добрый вечер","Вечер, я при параде, ты весь такой загадочный. «Добрый вечер» — это:","Вечер, я при параде. Как поздороваешься?"],
+   ["やっほー","Йо! / Хай!","А если мы уже кенты и я машу тебе издалека, ори:","Я машу тебе издалека, мы уже кенты. Что орёшь?"]]},
+  {t:"Представиться",p:[
+   ["はじめまして","Приятно познакомиться","Ты подошёл впервые, весь потный. Первое, что говоришь:","Ты впервые подошёл ко мне. С чего начнёшь?"],
+   ["デニスです","Я Денис","Дальше называешь себя. Никаких «ватаси ва», просто имя и «дэс»:","Как сказать, что ты Денис?"],
+   ["{名前|なまえ}は？","Как тебя зовут?","Потом спрашиваешь моё имя, коротко и мило:","Хочешь узнать моё имя. Что спросишь?"],
+   ["よろしくね","Будем знакомы","И в конце, чтобы закрепить знакомство:","Мы познакомились. Как сказать «будем знакомы»?"]]},
+  {t:"Откуда ты",p:[
+   ["どこから きたの？","Откуда ты?","Я слышу твой акцент и сразу такая:","Я слышу твой акцент. Что я спрошу?"],
+   ["ベラルーシから きた","Я из Беларуси","А ты гордо отвечаешь, что из Беларуси:","Как ответить, что ты из Беларуси?"],
+   ["{何|なに} してる ひと？","Чем занимаешься?","Потом я хочу понять, чем ты занимаешься. Вдруг богатый:","Хочу понять, чем ты занимаешься. Что спрошу?"],
+   ["ウェブの しごと してる","Работаю в вебе","А ты: работаю в вебе, делаю сайты, всё серьёзно:","Как сказать, что работаешь в вебе?"]]},
+  {t:"Возраст и работа",p:[
+   ["{何|なん}さい？","Сколько тебе лет?","Сразу не спрашивают, но если очень надо:","Хочешь узнать мой возраст. Как спросишь?"],
+   ["じゅうきゅうさい","Девятнадцать лет","Тебе девятнадцать. По-японски это:","Как сказать, что тебе девятнадцать?"],
+   ["がくせい？","Ты студент?","Я думаю, что ты студент, и уточняю:","Как спросить, студент ли ты?"],
+   ["ううん、はたらいてる","Не, работаю","А ты такой: не, я уже работаю, я взрослый:","Как ответить «не, работаю»?"]]},
+  {t:"Как дела",p:[
+   ["げんき？","Как дела?","Мы видимся второй раз. Спроси, как дела:","Как спросить «как дела»?"],
+   ["げんき だよ","Всё отлично","Если всё заебись, отвечаешь:","У тебя всё хорошо. Что ответишь?"],
+   ["まあまあ","Так себе","Если так себе, жизнь потрепала:","Дела так себе. Как сказать?"],
+   ["つかれた","Устал","А если пиздец как устал после работы:","Ты задолбался. Как сказать «устал»?"]]},
+  {t:"Прощание",p:[
+   ["またね","Пока, до встречи","Мы расходимся, и я машу ручкой:","Как сказать «пока, до встречи»?"],
+   ["じゃあね","Ну, пока","Или чуть небрежно, как будто тебе пофиг:","Небрежное «ну, пока» — это?"],
+   ["また あおう","Давай ещё увидимся","Но если ты не дурак, скажешь:","Как сказать «давай ещё увидимся»?"],
+   ["きを つけて","Аккуратнее, береги себя","Ночью отпускаешь меня домой и говоришь заботливо:","Я ухожу ночью. Что скажешь заботливо?"]]}]},
+ {t:"Прогулка",bg:"park",s:[
+  {t:"Ой, блядь",p:[
+   ["いたっ！","Ай, больно!","Представь: иду я с тобой, вся такая горячая, спотыкаюсь и ору «ай, больно!». По-японски это:","Мы шли, я споткнулась и заорала «ай, больно». Как это?"],
+   ["あぶない！","Осторожно!","А ты видишь, что я сейчас въебусь в столб, и кричишь:","Я сейчас въебусь в столб. Что кричишь?"],
+   ["だいじょうぶ？","Ты в порядке?","Потом, как джентльмен, спрашиваешь:","Я упала. Как спросишь, всё ли нормально?"],
+   ["びっくりした","Ты меня напугал","А если подкрадёшься сзади, я скажу:","Ты подкрался сзади. Что я скажу?"]]},
+  {t:"Смотри!",p:[
+   ["みて！","Смотри!","Я дёргаю тебя за рукав и показываю на котика:","Я тяну тебя за рукав. Что говорю?"],
+   ["かわいい！","Милый!","Котик такой, что я умираю:","Котик милый. Как я пищу?"],
+   ["すごい！","Охуеть! Круто!","Видим фейерверк, и ты такой:","Видим фейерверк. Что скажешь?"],
+   ["きれい","Красиво","Закат, сакура и я. Всё это:","Закат и сакура. Как сказать «красиво»?"]]},
+  {t:"Погода",p:[
+   ["あつい","Жарко","Летом в Токио ты плавишься и стонешь:","Ты плавишься летом. Как сказать «жарко»?"],
+   ["さむい","Холодно","Зимой я жмусь к тебе и ною:","Зимой я жмусь к тебе. Что ною?"],
+   ["あめ だ","Дождь пошёл","Капает на голову, ты смотришь в небо:","На голову капает. Что скажешь?"],
+   ["いい てんき","Хорошая погода","А когда солнышко и всё заебись:","Солнце, всё заебись. Как сказать «хорошая погода»?"]]},
+  {t:"Передохнуть",p:[
+   ["つかれた？","Устала?","Я иду медленно и пыхчу. Спроси меня:","Я пыхчу. Как спросишь, устала ли я?"],
+   ["ちょっと やすもう","Давай передохнём","Предложи посидеть на лавочке:","Как предложить передохнуть?"],
+   ["のど かわいた","Пить хочу","У меня сухо во рту, и я:","Мне сухо во рту. Что я скажу?"],
+   ["おなか すいた","Есть хочу","А потом урчит живот на всю улицу:","У меня урчит живот. Что я скажу?"]]},
+  {t:"Куда идём",p:[
+   ["どこ いく？","Куда пойдём?","Мы стоим как два барана. Спроси:","Стоим как бараны. Как спросить «куда пойдём»?"],
+   ["あっち いこう","Пошли туда","Ты показываешь пальцем и уверенно:","Ты показываешь пальцем. Как сказать «пошли туда»?"],
+   ["ここ どう？","Как тебе тут?","Пришли в новое место, и ты спрашиваешь моё мнение:","Как спросить «как тебе тут»?"],
+   ["いいね！","Классно!","А я довольная отвечаю:","Мне нравится место. Что скажу?"]]},
+  {t:"Фоточки",p:[
+   ["しゃしん とろう","Давай сфоткаемся","Без фоток прогулка не считается. Скажи:","Как предложить сфоткаться?"],
+   ["もう いっかい","Ещё раз","Я посмотрела фото, а там у меня три подбородка:","Фото плохое. Как сказать «ещё раз»?"],
+   ["いい かんじ","Классно вышло","Наконец норм фото, и ты:","Фото вышло норм. Как сказать?"]]}]},
+ {t:"Кафе и жратва",bg:"cafe",s:[
+  {t:"Заходим",p:[
+   ["ふたり です","Нас двое","Заходим в кафе, официант смотрит. Показываешь два пальца и говоришь:","Официант смотрит на нас. Как сказать «нас двое»?"],
+   ["すみません！","Извините! (позвать официанта)","Официант ушёл. Чтобы позвать, громко:","Как позвать официанта?"],
+   ["これ ください","Вот это, пожалуйста","Тычешь пальцем в меню, потому что нихуя не прочитал:","Ты тычешь в меню. Что скажешь?"],
+   ["おみず ください","Воды, пожалуйста","И попроси воды, мне жарко:","Как попросить воды?"]]},
+  {t:"Выбираем",p:[
+   ["{何|なに} たべる？","Что будешь есть?","Ты листаешь меню и спрашиваешь меня:","Как спросить, что я буду есть?"],
+   ["ラーメン に する","Возьму рамен","Я, конечно, беру рамен:","Как сказать «возьму рамен»?"],
+   ["おすすめ は？","Что посоветуете?","Ты не знаешь, что брать, и спрашиваешь официанта:","Как спросить, что посоветуют?"],
+   ["おなじ もの","То же самое","А потом сдаёшься и говоришь:","Как сказать «то же самое»?"]]},
+  {t:"Вкус",p:[
+   ["おいしい！","Вкусно!","Пробую и кайфую:","Мне вкусно. Как сказать?"],
+   ["からい","Остро","Ты откусил перец и плачешь:","Ты съел перец. Что скажешь?"],
+   ["あまい","Сладко","Десерт такой, что зубы сводит:","Десерт приторный. Как сказать «сладко»?"],
+   ["まずい","Гадость","А если хуйня, говори тихо, чтобы повар не слышал:","Еда гадость. Как сказать?"]]},
+  {t:"За столом",p:[
+   ["いただきます","Приятного (перед едой)","Перед едой японцы всегда говорят:","Что говорят перед едой?"],
+   ["かんぱい！","Будем! За нас!","Чокаемся пивом:","Мы чокаемся. Что кричишь?"],
+   ["おかわり","Добавки!","Ты сожрал всё и хочешь ещё:","Хочешь добавки. Как сказать?"],
+   ["ごちそうさま","Спасибо, было вкусно","После еды, чтобы не быть свиньёй:","Поели. Что говорят после?"]]},
+  {t:"Платим",p:[
+   ["おかいけい おねがいします","Счёт, пожалуйста","Пора платить. Зови официанта и говори:","Как попросить счёт?"],
+   ["いくら？","Сколько?","Ты с ужасом смотришь на чек:","Как спросить «сколько»?"],
+   ["おごるよ","Я угощаю","И тут, если ты мужик, говоришь:","Как сказать «я угощаю»?"],
+   ["ありがとう！","Спасибо!","А я, довольная, отвечаю:","Ты заплатил. Что я скажу?"]]}]},
+ {t:"Переписка и планы",bg:"home",s:[
+  {t:"Когда",p:[
+   ["{今日|きょう}","Сегодня","«Сегодня» по-японски:","Как сказать «сегодня»?"],
+   ["あした","Завтра","«Завтра»:","Как сказать «завтра»?"],
+   ["しゅうまつ","Выходные","«Выходные», то, ради чего мы живём:","Как сказать «выходные»?"],
+   ["いつ ひま？","Когда ты свободна?","И главный вопрос, который ты пишешь мне ночью:","Как спросить, когда я свободна?"]]},
+  {t:"Позвать",p:[
+   ["いっしょに いこう","Пошли вместе","Зовёшь меня куда-то вместе:","Как сказать «пошли вместе»?"],
+   ["えいが みない？","Сходим в кино?","Конкретно в кино:","Как позвать в кино?"],
+   ["あした どう？","Как насчёт завтра?","И сразу предлагаешь день:","Как предложить завтра?"],
+   ["いいよ！","Давай!","А я соглашаюсь, потому что ты не долбоёб. Пока что:","Я согласна. Что пишу?"]]},
+  {t:"Во сколько и где",p:[
+   ["なんじ？","Во сколько?","Я уточняю время:","Как спросить «во сколько»?"],
+   ["しちじ は？","Как насчёт семи?","Ты предлагаешь в семь:","Как предложить в семь?"],
+   ["えきで あおう","Встретимся на станции","И место. Станция, классика:","Как сказать «встретимся на станции»?"],
+   ["ちょっと おくれる","Немного опоздаю","А потом я пишу, что опоздаю. Как всегда:","Как сказать «немного опоздаю»?"]]},
+  {t:"Облом",p:[
+   ["ごめん、よていが ある","Прости, у меня планы","Иногда я реально занята:","Как сказать «прости, у меня планы»?"],
+   ["また こんど","В другой раз","И предлагаю:","Как сказать «в другой раз»?"],
+   ["ざんねん","Жаль","А ты грустишь:","Как сказать «жаль»?"],
+   ["だいじょうぶ","Ничего страшного","Но держишься как мужик:","Как сказать «ничего страшного»?"]]},
+  {t:"Ночная переписка",p:[
+   ["いま なに してる？","Что сейчас делаешь?","Полночь, я пишу тебе:","Как спросить «что делаешь»?"],
+   ["ねてた","Спал","А ты, сонный:","Ты спал. Что ответишь?"],
+   ["あいたい","Хочу увидеться","И тут я внезапно:","Как написать «хочу увидеться»?"],
+   ["おやすみ","Спокойной ночи","В конце:","Как пожелать спокойной ночи?"]]}]},
+ {t:"Флирт и чувства",bg:"whims",s:[
+  {t:"Комплименты",p:[
+   ["かわいいね","Ты милая","Самое базовое, без этого никуда:","Как сказать «ты милая»?"],
+   ["きれい だね","Ты красивая","Уровень повыше:","Как сказать «ты красивая»?"],
+   ["その ふく にあう","Тебе идёт это платье","Я пришла в новом платье. Промолчишь — умрёшь:","Я в новом платье. Что скажешь?"],
+   ["えがおが すき","Люблю твою улыбку","Финальный удар:","Как сказать «люблю твою улыбку»?"]]},
+  {t:"Эмоции",p:[
+   ["うれしい","Мне приятно","Когда ты делаешь комплимент, я:","Мне приятно. Как сказать?"],
+   ["たのしい","Весело","Когда нам вместе заебись:","Как сказать «весело»?"],
+   ["さびしい","Мне одиноко","Когда ты не пишешь три часа:","Ты не пишешь. Как я скажу «мне одиноко»?"],
+   ["はずかしい","Я смущаюсь","Когда ты смотришь на меня слишком долго:","Я смущаюсь. Как сказать?"]]},
+  {t:"Подъёбы",p:[
+   ["じょうだん だよ","Шучу","Ты сказал хуйню и спасаешься:","Как сказать «шучу»?"],
+   ["まじ？","Серьёзно?","Я не верю:","Как спросить «серьёзно?»"],
+   ["うそ！","Да ладно!","Совсем не верю:","Как сказать «да ладно!»?"],
+   ["ウケる","Угар, ржу","А если смешно:","Как сказать «угар»?"]]},
+  {t:"Ревность",p:[
+   ["だれ？","Кто это?","Тебе пишет какая-то тёлка, а я смотрю в твой телефон:","Тебе пишет тёлка. Что я спрошу?"],
+   ["ともだち だよ","Это просто друг","А ты спокойно:","Как сказать «это просто друг»?"],
+   ["しんじて","Поверь мне","Я не верю, а ты:","Как сказать «поверь мне»?"],
+   ["ばか","Дурак","А я, улыбаясь:","Как я назову тебя дураком?"]]},
+  {t:"Признание",p:[
+   ["すき です","Ты мне нравишься","Момент истины. Ты говоришь:","Как признаться «ты мне нравишься»?"],
+   ["つきあって ください","Давай встречаться","И сразу добиваешь:","Как сказать «давай встречаться»?"],
+   ["ほんと？","Правда?","Я краснею и переспрашиваю:","Я не верю. Что я скажу?"],
+   ["いいよ","Давай","И если ты прошёл всё это, я говорю:","Я согласна. Что я скажу?"]]}]},
+ {t:"Живём вместе",bg:"home",s:[
+  {t:"Ушёл и пришёл",p:[
+   ["いってきます","Я пошёл (выходя из дома)","Ты уходишь на работу и говоришь:","Ты уходишь из дома. Что говоришь?"],
+   ["いってらっしゃい","Удачи, возвращайся","А я отвечаю из кровати:","Ты ушёл. Что я отвечу?"],
+   ["ただいま","Я дома","Возвращаешься вечером:","Ты пришёл домой. Что говоришь?"],
+   ["おかえり","С возвращением","А я встречаю:","Ты вернулся. Что я скажу?"]]},
+  {t:"Утро",p:[
+   ["おきて！","Вставай!","Утро, ты не встаёшь, я ору:","Ты не встаёшь. Что я ору?"],
+   ["ねむい","Хочу спать","А ты стонешь из-под одеяла:","Ты не выспался. Что стонешь?"],
+   ["あと ごふん","Ещё пять минут","И просишь:","Как попросить «ещё пять минут»?"],
+   ["ごはん できた","Еда готова","Я приготовила завтрак:","Как сказать «еда готова»?"]]},
+  {t:"Ссоры",p:[
+   ["おこってる？","Ты злишься?","Я молчу уже час. Ты осторожно:","Я молчу час. Что спросишь?"],
+   ["おこってない","Не злюсь","А я, конечно:","Я злюсь, но говорю, что нет. Как?"],
+   ["ごめんね","Прости","Ты, на всякий случай:","Как сказать «прости»?"],
+   ["もう いいよ","Ладно, проехали","И я прощаю:","Я прощаю. Что скажу?"]]},
+  {t:"Забота",p:[
+   ["むり しないで","Не перенапрягайся","Я пашу до ночи. Скажи:","Как сказать «не перенапрягайся»?"],
+   ["ゆっくり やすんで","Отдыхай как следует","Когда я болею:","Как сказать «отдыхай как следует»?"],
+   ["そばに いるよ","Я рядом","И самое важное:","Как сказать «я рядом»?"],
+   ["だいすき","Обожаю тебя","И финал, чтобы я растаяла:","Как сказать «обожаю тебя»?"]]},
+  {t:"Вечер",p:[
+   ["{今日|きょう} どうだった？","Как прошёл день?","Ты приходишь, я спрашиваю:","Как спросить, как прошёл день?"],
+   ["いろいろ あった","Было всякое","А ты устало:","Как сказать «было всякое»?"],
+   ["ぎゅー して","Обними меня","Перед сном я тянусь к тебе:","Как я попрошу обнять?"],
+   ["いっしょに ねよう","Пошли спать вместе","И ты:","Как сказать «пошли спать вместе»?"]]}]}
+];
+const AK_V=()=>ACAD.flatMap(c=>c.s.flatMap(s=>s.p.map(p=>({jp:p[0],ru:p[1]}))));
+
+const AK_HELLO=["Ну привет. Надеюсь, ты нормальный парень, а не долбоёб.","О, пришёл. Я уж думала, ты опять залип в тиктоке.","Привет, красавчик. Ну, относительно красавчик.","Здарова. Садись, будем делать из тебя японца. Ну или хотя бы не позориться.","Приветик. Сегодня без соплей: учимся, и ты не тупишь.","Хай. Я накрасилась ради этого урока, так что не подведи."];
+const AK_HELLO_BAD=["Опять ты. В прошлый раз ты так тупил, что я плакала. Реабилитируйся.","О, мой любимый тормоз. Давай сегодня без позора, ладно?"];
+const AK_HELLO_GOOD=["О, мой отличник вернулся. Ну давай, удиви.","Привет, умничка. В прошлый раз было почти сексуально. Продолжаем."];
+const AK_NEXT=["Дальше.","Следующее.","Едем дальше.","Запоминай дальше.","Окей, следующее."];
+const AK_REPEAT=["Повтори, сука.","Повтори вслух.","Давай, повтори.","Скажи это. Громко, не стесняйся.","Повторяй, я слушаю."];
+const AK_CHECK=["Так, а теперь проверка. Не обосрись.","Всё, проверка. Посмотрим, что у тебя в голове кроме аниме.","Проверка, малыш. Если завалишь, я обижусь."];
+const AK_PRAISE=["Умничка.","Ого, а ты не безнадёжен.","Вот это мой мальчик.","Красава, сладкий.","Ебать ты мактрахер прям.","Да! Я почти влюбилась."];
+const AK_SILENT=["Надеюсь, ты угадал.","Ну, ты понял.","Запомнил? Молодец. Наверное."];
+const AK_END_GOOD=["Всё, ступенька пройдена. Ты молодец, можешь собой гордиться. Чуть-чуть.","Готово. Ты сегодня прям хорош. Не зазнавайся."];
+const AK_END_BAD=["Ну… ступенька пройдена. Технически. Повтори её завтра, тормоз.","Всё. Я устала от твоих ошибок. Завтра повторим, и чтоб без позора."];
+const AK={mode:"full",ch:0,st:0};
+const AK_SHORT_HELLO=["Вот сука, ладно.","Ладно, без соплей. Погнали.","Коротко так коротко. Поехали.","Хуле, давай быстро.","Окей, без болтовни. Слушай.","Ну и пожалуйста. Поехали.","Ой всё. Коротко, так коротко.","Зануда. Ладно, погнали.","Без романтики? Ну ты и сухарь. Поехали."];
+const AK_SHORT_REP=["Повтори.","Давай.","Ну?","Повторяй, сука.","Вслух.","Твоя очередь."];
+const AK_SHORT_CHECK=["Проверка.","Ну-ка, проверим.","Проверка, не обосрись.","Экзамен, быстро."];
+const AK_TOG_ON=["Вот сука, ладно. Коротко так коротко.","Ой всё. Молчу. Почти.","Зануда. Ладно, без историй.","Без романтики? Ну ты и сухарь. Окей.","Поняла, не грузить. Погнали дальше.","Ладно-ладно, только по делу. Душнила."];
+const AK_TOG_OFF=["О, соскучился по моему голосу? Ну держись.","Ладно, буду болтать. Ты сам напросился.","Опа, хочешь истории? Сейчас расскажу, сладкий.","Наконец-то. Я уже думала, ты робот."];
+const AK_SHORT_END=["Всё. Свободен.","Готово, красавчик.","Конец. Иди попей воды.","Всё, отстрелялись."];
+if(S.akShort===undefined) S.akShort=false;
+const EXAM_LV={easy:{t:"Лёгкий",n:10,o:3},mid:{t:"Средний",n:18,o:4},hard:{t:"Жёсткий",n:30,o:4}};
+const akWait=()=>new Promise(r=>{AK.waitResolve=r;});
+const akGo=()=>{const r=AK.waitResolve;AK.waitResolve=null;if(r)r();};
+if(!S.acad) S.acad={done:{},lastBad:0};
+if(!S.acad.exam) S.acad.exam={};
+if(!S.repPause) S.repPause=2;
+
+function akMenu(){
+  hfStop(); hideSheet();
+  const chips=(key,val,attr)=>`<div class="tschips">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="tsc" ${attr}="${key}" data-n="${n}" aria-pressed="${val===n}">${n}</button>`).join("")}</div>`;
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Альтуха учит тебя</h2></div>
+    <div class="stage small bg-whims">${sceneDeco("whims")}<div class="girlwrap">${girlSVG(S.acad.lastBad>=3?"pout":"blush")}</div></div>
+    <div class="note">Юки сама рассказывает ситуацию, говорит фразу по-японски, ждёт, пока ты повторишь вслух, а в конце ступеньки устраивает проверку. Если можешь тыкнуть в ответ — тыкай, она отреагирует. Не можешь — просто слушай.</div>
+    <label class="switch"><input type="checkbox" id="akShort" ${S.akShort?"checked":""}><span><b>Выключить пиздёж</b><small>без длинных историй: «Вот сука, ладно», перевод, фраза, повтори — коротко и по делу, но мат остаётся</small></span></label>
+    <div class="label">Как учимся</div>
+    <div class="seg seg3"><button class="segb" data-am="full" aria-pressed="${AK.mode==="full"}">✋👀 Руки и глаза<small>тыкаю сам, без таймера</small></button><button class="segb" data-am="eyes" aria-pressed="${AK.mode==="eyes"}">👀 Без рук<small>смотрю в экран</small></button><button class="segb" data-am="ears" aria-pressed="${AK.mode==="ears"}">🎧 Без глаз<small>только слушаю</small></button></div>
+    ${AK.mode==="full"?`<div class="note">Обычный режим: она ждёт, пока ты повторишь и нажмёшь «Дальше», а в проверке ждёт твой ответ сколько угодно. Ошибся — переспросит в конце.</div>`:`<div class="timerset">
+      <div class="tsrow"><span class="tsl">Пауза, чтобы повторить вслух: ${S.repPause} сек</span>${chips("rep",S.repPause,"data-rp")}</div>
+      <div class="tsrow"><span class="tsl">Секунд на ответ в проверке: ${hfT(AK.mode)}</span>${chips(AK.mode,hfT(AK.mode),"data-tm")}</div>
+    </div>`}
+    ${ACAD.map((c,ci)=>`<div class="ch"><div class="hd"><span class="n">${ci+1}</span><div><h3>${c.t}</h3><p>${c.s.length} ступенек · ${c.s.reduce((a,s)=>a+s.p.length,0)} фраз</p></div></div>
+      <div class="steps">${c.s.map((s,si)=>{const d=S.acad.done[ci+"-"+si];return `<button class="stepb ${d?"done":""}" data-c="${ci}" data-s="${si}"><b>${si+1}</b><span>${s.t}</span>${d?`<i>${d.bad===0?"чисто":"пройдено"}</i>`:""}</button>`}).join("")}</div>
+      ${(()=>{const doneN=c.s.filter((_,si)=>S.acad.done[ci+"-"+si]).length,all=doneN===c.s.length;return `<div class="exam ${all?"open":""}"><div class="exh"><b>Экзамен по главе</b><small>${all?"Все ступеньки пройдены — сдавай, сука":`Пройдено ${doneN} из ${c.s.length} ступенек. Можно и так, но огребёшь`} · 3 жизни</small></div><div class="exbtns">${Object.entries(EXAM_LV).map(([k,l])=>{const r=S.acad.exam[ci+"-"+k];return `<button class="exb ${r&&r.pass?"pass":""}" data-ec="${ci}" data-lv="${k}"><b>${l.t}</b><small>${l.n} вопросов</small>${r?`<i>${r.pass?"сдан":"рекорд"} ${r.best}/${l.n}</i>`:""}</button>`}).join("")}</div></div>`})()}
+      </div>`).join("")}
+  </section>`;
+  document.getElementById("back").onclick=home;
+  app.querySelectorAll(".segb").forEach(b=>b.onclick=()=>{AK.mode=b.dataset.am;akMenu();});
+  app.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>{S.repPause=+b.dataset.n;save();akMenu();});
+  app.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{S.hfT[b.dataset.tm]=+b.dataset.n;save();akMenu();});
+  app.querySelectorAll(".stepb").forEach(b=>b.onclick=()=>akStart(+b.dataset.c,+b.dataset.s));
+  app.querySelectorAll(".exb").forEach(b=>b.onclick=()=>akExamStart(+b.dataset.ec,b.dataset.lv));
+  document.getElementById("akShort").onchange=e=>{S.akShort=e.target.checked;save();};
+  window.scrollTo(0,0);
+}
+function akStart(ci,si){
+  AK.exam=null;AK.ch=ci;AK.st=si;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;
+  try{if(!window.AudioContext&&!window.webkitAudioContext)throw 0;AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
+  wakeOn(); akRun();
+}
+function akRender(){
+  const c=ACAD[AK.ch],s=c.s[AK.st],v=AK.view,eyes=AK.mode!=="ears",full=AK.mode==="full";
+  let bubble="";
+  if(v.kind==="talk") bubble=`<div class="speech"><span class="akru">${esc(v.ru)}</span></div>`;
+  else if(v.kind==="teach"||v.kind==="repeat") bubble=`<div class="speech"><span class="jp akjp">${rb(v.p[0])}</span><span class="hint">${esc(v.p[1])}</span>${v.kind==="repeat"?`<span class="akrep">🗣 ${esc(v.cue)}</span>`:""}${v.kind==="teach"?`<button class="mini akspk" id="akspk">🔊 ещё раз</button>`:""}</div>`;
+  else if(v.kind==="check"||v.kind==="reveal") bubble=`<div class="speech">${v.promptHtml||`<span class="akru">${esc(S.akShort?"Как будет: "+v.p[1].replace(/[?!.]+$/,"")+"?":v.p[3])}</span>`}</div>`;
+  else if(v.kind==="react") bubble=`<div class="speech ${v.bad?"ru-speech":""}"><span class="akru">${esc(v.ru)}</span></div>`;
+  let below="";
+  if(v.kind==="check"||v.kind==="reveal"||(v.kind==="react"&&v.opts)){
+    below=`<div class="hfopts">${v.opts.map((o,i)=>{const st=(v.kind!=="check")?(o.ok?"ok":(AK.tap===i?"no":"dim2")):(AK.tap===i?"sel":"");const listen=v.kind!=="check";return `<button class="hfo akopt ${st} ${listen?"listen":""}" data-i="${i}" ${!listen&&AK.tap!=null?"disabled":""}><span class="num">${listen&&o.ok?"🔊":i+1}</span>${o.jp!=null?`<span class="jp">${rb(o.jp)}</span>`:`<span class="ru">${esc(o.ru)}</span>`}</button>`}).join("")}</div>`;
+  }
+  const timer=v.sec!=null?`<div class="aktimer"><div class="timer"><i style="width:${Math.round(v.sec/v.total*100)}%"></i></div><b>${v.sec}</b></div>`:"";
+  app.innerHTML=`<section class="screen live-screen">
+    <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="prog"><i style="width:${Math.round((AK.prog||0)*100)}%;background:var(--pink)"></i></div><div class="hfmode">${full?"✋":eyes?"👀":"🎧"} ${AK.exam?`<span class="akhearts">${"♥".repeat(AK.exam.lives)}${"♡".repeat(3-AK.exam.lives)}</span>`:`${AK.ch+1}.${AK.st+1}`}</div></div>
+    <button class="aktog" id="akShortT" aria-pressed="${!!S.akShort}"><span class="dot"></span>${S.akShort?"Пиздёж выключен — коротко":"Пиздёж включён — с историями"}<i>${S.akShort?"включить":"выключить"}</i></button>
+    <div class="stage bg-${c.bg}">${sceneDeco(c.bg)}${bubble}<div class="girlwrap ${v.kind==="react"&&v.bad?"shake":""}">${girlSVG(AK.mood)}</div><div class="lovebar lbl"><span>${AK.exam?"Экзамен · "+EXAM_LV[AK.exam.lv].t+" · "+(AK.exam.i+1)+"/"+AK.exam.n:s.t}</span></div></div>
+    ${timer}${below}
+    ${full&&v.kind==="repeat"&&v.wait?`<button class="big" id="akgo" ${pinkBtn}>Повторил вслух, дальше →</button><button class="ghost" id="akagain">🔊 Скажи ещё раз</button>`:""}
+    ${full&&v.kind==="react"&&v.wait?`<button class="big" id="akgo" ${pinkBtn}>Дальше →</button>`:""}
+    <div class="hfctl ${full?"hide":""}"><button class="big" id="pause">${AK.paused?"▶ Продолжить":"⏸ Пауза"}</button><button class="ghost" id="stop">Стоп, хватит</button></div>
+  </section>`;
+  document.getElementById("quit").onclick=akMenu;
+  document.getElementById("stop").onclick=akMenu;
+  document.getElementById("pause").onclick=()=>{ if(AK.paused){AK.paused=false;wakeOn();(AK.exam?akExamRun:akRun)(AK.resume);} else {AK.paused=true;HF.token++;try{speechSynthesis.cancel()}catch(e){};wakeOff();akRender();} };
+  app.querySelectorAll(".akopt").forEach(b=>b.onclick=()=>{ if(AK.view.kind!=="check"){ const o=AK.view.opts&&AK.view.opts[+b.dataset.i]; if(o){ b.classList.remove("ping"); void b.offsetWidth; b.classList.add("ping"); sayQ(o.jp!=null?o.jp:o.ru,o.jp!=null?"ja":"ru"); } return; } if(AK.tap!=null)return; AK.tap=+b.dataset.i; akRender(); if(AK.mode==="full") akGo(); });
+  const g=document.getElementById("akgo"); if(g) g.onclick=akGo;
+  document.getElementById("akShortT").onclick=akToggleShort;
+  const ag=document.getElementById("akagain"); if(ag) ag.onclick=()=>{try{speechSynthesis.cancel()}catch(e){};speakP(AK.view.p[0],"ja",.7);};
+  const sp=document.getElementById("akspk"); if(sp) sp.onclick=()=>{try{speechSynthesis.cancel()}catch(e){};speakP(AK.view.p[0],"ja",.7);};
+}
+
+function akToggleShort(){
+  S.akShort=!S.akShort; save();
+  const line=pick(S.akShort?AK_TOG_ON:AK_TOG_OFF);
+  if(AK.paused){ akRender(); return; }
+  HF.token++; try{speechSynthesis.cancel()}catch(e){}
+  const r=AK.resume;
+  if(r){ if(r.phase==="hello"){ r.phase="teach"; r.i=0; } if(r.started===false) r.started=true; }
+  AK.mood=S.akShort?"pout":"laugh"; AK.view={kind:"talk",ru:line}; akRender();
+  const my=HF.token;
+  speakP(line,"ru").then(()=>{ if(HF.token!==my||AK.paused) return; (AK.exam?akExamRun:akRun)(AK.resume); });
+}
+async function akRun(resume){
+  const my=++HF.token, alive=()=>HF.token===my;
+  const c=ACAD[AK.ch],s=c.s[AK.st],eyes=AK.mode!=="ears",full=AK.mode==="full";
+  const talk=async(ru,mood)=>{ if(mood)AK.mood=mood; AK.view={kind:"talk",ru}; akRender(); await speakP(ru,"ru"); return alive(); };
+  const total=s.p.length*2;
+  let r=resume||{phase:"hello",i:0,order:null};
+  AK.resume=r;
+  if(r.phase==="hello"){
+    const hello=S.akShort?pick(AK_SHORT_HELLO):S.acad.lastBad>=3?pick(AK_HELLO_BAD):S.acad.lastGood?pick(AK_HELLO_GOOD):pick(AK_HELLO);
+    AK.prog=0;
+    if(!await talk(hello,"happy"))return;
+    if(!S.akShort){ if(!await talk(`Глава ${AK.ch+1}, ступенька ${AK.st+1}: ${s.t}. Поехали.`,"happy"))return; }
+    r.phase="teach"; r.i=0;
+  }
+  while(r.phase==="teach"&&r.i<s.p.length){
+    const p=s.p[r.i]; AK.prog=r.i/total;
+    if(r.i>0&&!S.akShort){ if(!await talk(pick(AK_NEXT),"calm"))return; }
+    if(!await talk(S.akShort?(/[.!?…)]$/.test(p[1])?p[1]:p[1]+"."):p[2],r.i%2?"laugh":"happy"))return;
+    AK.view={kind:"teach",p}; AK.mood="happy"; akRender();
+    await speakP(p[0],"ja",.8); if(!alive())return;
+    await sleep(450); if(!alive())return;
+    await speakP(p[0],"ja",.6); if(!alive())return;
+    const cue=S.akShort?pick(AK_SHORT_REP):pick(AK_REPEAT);
+    AK.view={kind:"repeat",p,cue}; akRender();
+    await speakP(cue,"ru"); if(!alive())return;
+    if(full){ AK.view={kind:"repeat",p,cue,wait:true}; akRender(); await akWait(); if(!alive())return; }
+    else for(let t=S.repPause;t>0;t--){ AK.view={kind:"repeat",p,cue,sec:t,total:S.repPause}; akRender(); await sleep(1000); if(!alive())return; }
+    r.i++;
+  }
+  if(r.phase==="teach"){ r.phase="check"; r.i=0; r.order=shuffle(s.p.map((_,k)=>k)); if(!await talk(S.akShort?pick(AK_SHORT_CHECK):pick(AK_CHECK),"pout"))return; }
+  const pool=c.s.flatMap(x=>x.p.map(p=>({jp:p[0],ru:p[1]})));
+  while(r.phase==="check"&&r.i<r.order.length){
+    const p=s.p[r.order[r.i]]; AK.prog=(s.p.length+r.i)/total;
+    const v={jp:p[0],ru:p[1]}, n=eyes?4:3;
+    const opts=shuffle([v,...otherV(v,pool,n-1,"jp")]).map(o=>({jp:o.jp,ok:o===v}));
+    AK.tap=null; AK.view={kind:"check",p,opts}; akRender();
+    await speakP(S.akShort?"Как будет: "+p[1].replace(/[?!.]+$/,"")+"?":p[3],"ru"); if(!alive())return;
+    if(!eyes){
+      for(let k=0;k<opts.length;k++){ await speakP(NUM_RU[k]+".","ru"); if(!alive())return; await speakP(opts[k].jp,"ja",.85); if(!alive())return; if(AK.tap!=null)break; }
+    }
+    const T=hfT(AK.mode);
+    if(full){ if(AK.tap==null){ await akWait(); if(!alive())return; } }
+    else for(let t=T;t>0;t--){ if(AK.tap!=null)break; AK.view={kind:"check",p,opts,sec:t,total:T}; akRender(); tick(false); await sleep(1000); if(!alive())return; }
+    if(!full) tick(true);
+    const idx=opts.findIndex(o=>o.ok);
+    const sayRight=async()=>{ await speakP(eyes?"Правильно:":"Правильно: "+NUM_RU[idx].toLowerCase()+".","ru"); if(!alive())return false; await speakP(p[0],"ja",.8); return alive(); };
+    if(AK.tap!=null&&!opts[AK.tap].ok){
+      // сначала оскорбляет, потом говорит как надо
+      AK.bad++; AK.mood=AK.bad>=2?"angry":"pout";
+      const ins=pick(HER_RU[Math.min(1,AK.bad-1)]);
+      AK.view={kind:"react",ru:ins,bad:true,opts}; akRender(); beep(false); buzz();
+      await speakP(ins,"ru"); if(!alive())return;
+      AK.view={kind:"reveal",p,opts}; akRender();
+      if(!await sayRight())return;
+      if(full){ if(!r.retried) r.retried=[]; if(!r.retried.includes(r.order[r.i])){ r.retried.push(r.order[r.i]); r.order.push(r.order[r.i]); } AK.view={kind:"react",ru:"Запомнил? Я потом ещё раз спрошу.",opts,wait:true}; akRender(); await speakP("Запомнил? Я потом ещё раз спрошу.","ru"); if(!alive())return; await akWait(); }
+    } else if(AK.tap!=null){
+      // угадал: хвалит и повторяет фразу
+      AK.good++; AK.mood=pick(["blush","laugh","happy"]);
+      const pr=pick(AK_PRAISE); AK.view={kind:"react",ru:pr,opts}; akRender();
+      await speakP(pr,"ru"); if(!alive())return;
+      await speakP(p[0],"ja",.8);
+    } else {
+      AK.view={kind:"reveal",p,opts}; akRender();
+      if(!await sayRight())return;
+      if(Math.random()<.25){ const sl=pick(AK_SILENT); AK.view={kind:"react",ru:sl,opts}; akRender(); await speakP(sl,"ru"); }
+    }
+    if(!alive())return;
+    await sleep(500);
+    r.i++;
+  }
+  // финал
+  AK.prog=1;
+  const clean=AK.bad===0;
+  S.acad.done[AK.ch+"-"+AK.st]={bad:AK.bad,good:AK.good,at:Date.now()};
+  S.acad.lastBad=AK.bad; S.acad.lastGood=clean&&AK.good>0; S.xp+=s.p.length*5; save();
+  const end=S.akShort?pick(AK_SHORT_END):AK.bad>=2?pick(AK_END_BAD):pick(AK_END_GOOD);
+  AK.mood=AK.bad>=2?"pout":"blush";
+  AK.view={kind:"talk",ru:end}; akRender(); await speakP(end,"ru"); if(!alive())return;
+  wakeOff(); akEnd();
+}
+function akEnd(){
+  const c=ACAD[AK.ch], nextSi=AK.st+1<c.s.length?AK.st+1:null, nextCi=nextSi==null&&AK.ch+1<ACAD.length?AK.ch+1:null;
+  const s=c.s[AK.st];
+  app.innerHTML=`<section class="screen res">
+    <div class="stage small bg-${c.bg}">${sceneDeco(c.bg)}<div class="girlwrap">${girlSVG(AK.mood)}</div></div>
+    <h2>${AK.bad===0&&AK.good>0?"ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ":AK.bad>=2?"НУ Я В АХУЕ С ВАС":"СТУПЕНЬКА ПРОЙДЕНА"}</h2>
+    <p>${esc(s.t)} · ${s.p.length} фраз${AK.good+AK.bad?` · тыкнул правильно ${AK.good} из ${AK.good+AK.bad}`:""}</p>
+    <div class="note">${s.p.map(p=>`<div class="akrow"><span class="jp">${rb(p[0])}</span><span>${esc(p[1])}</span></div>`).join("")}</div>
+    ${nextSi==null?`<button class="big" id="exam" ${pinkBtn}>Экзамен по главе «${esc(c.t)}»</button>`:""}
+    ${nextSi!=null?`<button class="big" id="nx" ${pinkBtn}>Ступенька ${nextSi+1}: ${esc(c.s[nextSi].t)}</button>`:nextCi!=null?`<button class="ghost" id="nx">Глава ${nextCi+1}: ${esc(ACAD[nextCi].t)}</button>`:""}
+    <button class="ghost" id="again">Повторить ступеньку</button>
+    <button class="ghost" id="menu">К главам</button>
+  </section>`;
+  const nx=document.getElementById("nx"); if(nx) nx.onclick=()=>nextSi!=null?akStart(AK.ch,nextSi):akStart(nextCi,0);
+  document.getElementById("again").onclick=()=>akStart(AK.ch,AK.st);
+  const ex=document.getElementById("exam"); if(ex) ex.onclick=()=>akExamPick(AK.ch);
+  document.getElementById("menu").onclick=akMenu;
+  window.scrollTo(0,0);
+}
+
+
+/* ---------- ЭКЗАМЕН ПО ГЛАВЕ ---------- */
+const EX_HELLO=["Так. Экзамен. Три жизни. Обосрёшься трижды — я ухожу.","Экзамен, малыш. Три ошибки — и я к адекватному челу.","Ну что, посмотрим, что ты запомнил. Три жизни, не больше."];
+const EX_PASS=["Сдал. Ебать ты мактрахер прям.","Сдал! Я тобой горжусь. Немножко.","Экзамен сдан. Можешь звать меня на свидание."];
+const EX_STREAK={3:"Три подряд. Неплохо.",5:"Пять подряд! Ты чё, японец?",8:"Восемь подряд. Я, кажется, влюбилась.",12:"Двенадцать подряд. Ты вообще человек?"};
+function akExamPick(ci){
+  const c=ACAD[ci];
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Экзамен: ${esc(c.t)}</h2></div>
+    <div class="note">Рандомные фразы из всей главы вперемешку: то она говорит ситуацию — выбери японский, то говорит по-японски — выбери перевод. <b>3 жизни.</b></div>
+    <div class="exbtns big3">${Object.entries(EXAM_LV).map(([k,l])=>`<button class="exb" data-lv="${k}"><b>${l.t}</b><small>${l.n} вопросов · ${l.o} варианта</small></button>`).join("")}</div>
+  </section>`;
+  document.getElementById("back").onclick=akMenu;
+  app.querySelectorAll(".exb").forEach(b=>b.onclick=()=>akExamStart(ci,b.dataset.lv));
+}
+function akExamStart(ci,lv){
+  const c=ACAD[ci], L=EXAM_LV[lv];
+  const pool=c.s.flatMap(x=>x.p);
+  const qs=[]; let bag=[];
+  while(qs.length<L.n){ if(!bag.length) bag=shuffle(pool.slice()); const p=bag.pop(); qs.push({p,type:Math.random()<(lv==="easy"?.65:.5)?"a":"b"}); }
+  AK.ch=ci; AK.st=0; AK.bad=0; AK.good=0; AK.mood="happy"; AK.paused=false;
+  AK.exam={lv,lives:3,i:0,n:L.n,o:L.o,qs,streak:0,maxStreak:0};
+  AK.view={kind:"talk",ru:""};
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
+  wakeOn(); akExamRun();
+}
+async function akExamRun(resume){
+  const my=++HF.token, alive=()=>HF.token===my;
+  const E=AK.exam, c=ACAD[AK.ch], eyes=AK.mode!=="ears", full=AK.mode==="full";
+  const pool=c.s.flatMap(x=>x.p.map(p=>({jp:p[0],ru:p[1]})));
+  const talk=async(ru,mood)=>{ if(mood)AK.mood=mood; AK.view={kind:"talk",ru}; akRender(); await speakP(ru,"ru"); return alive(); };
+  const r=resume||{started:false}; AK.resume=r;
+  if(!r.started){ if(!await talk(S.akShort?pick(AK_SHORT_HELLO)+" Экзамен, три жизни.":pick(EX_HELLO),"pout"))return; r.started=true; }
+  while(E.i<E.n&&E.lives>0){
+    const q=E.qs[E.i], p=q.p, v={jp:p[0],ru:p[1]}; AK.prog=E.i/E.n;
+    let opts,promptHtml,sayFn;
+    if(q.type==="a"){
+      opts=shuffle([v,...otherV(v,pool,E.o-1,"jp")]).map(o=>({jp:o.jp,ok:o===v}));
+      promptHtml=`<span class="akru">${esc(S.akShort?"Как будет: "+p[1].replace(/[?!.]+$/,"")+"?":p[3])}</span>`;
+      sayFn=async()=>{ await speakP(S.akShort?"Как будет: "+p[1].replace(/[?!.]+$/,"")+"?":p[3],"ru"); };
+    } else {
+      opts=shuffle([v,...otherV(v,pool,E.o-1,"ru")]).map(o=>({ru:o.ru,ok:o===v}));
+      promptHtml=`<span class="akru">Переведи:</span><span class="jp akjp">${rb(p[0])}</span>`;
+      sayFn=async()=>{ await speakP("Переведи.","ru"); if(alive()) await speakP(p[0],"ja",.8); };
+    }
+    AK.tap=null; AK.view={kind:"check",p,opts,promptHtml}; akRender();
+    await sayFn(); if(!alive())return;
+    if(!eyes){ for(let k=0;k<opts.length;k++){ await speakP(NUM_RU[k]+".","ru"); if(!alive())return; const o=opts[k]; await speakP(o.jp!=null?o.jp:o.ru,o.jp!=null?"ja":"ru",.9); if(!alive())return; if(AK.tap!=null)break; } }
+    const T=Math.max(1,hfT(AK.mode)-(E.lv==="hard"?1:0));
+    if(full){ if(AK.tap==null){ await akWait(); if(!alive())return; } }
+    else for(let t=T;t>0;t--){ if(AK.tap!=null)break; AK.view={kind:"check",p,opts,promptHtml,sec:t,total:T}; akRender(); tick(false); await sleep(1000); if(!alive())return; }
+    const idx=opts.findIndex(o=>o.ok), right=opts[idx];
+    const sayRight=async()=>{ await speakP(eyes?"Правильно:":"Правильно: "+NUM_RU[idx].toLowerCase()+".","ru"); if(!alive())return false; await speakP(right.jp!=null?right.jp:right.ru,right.jp!=null?"ja":"ru",.85); return alive(); };
+    if(AK.tap!=null&&!opts[AK.tap].ok){
+      E.lives--; AK.bad++; E.streak=0; AK.mood=E.lives<=1?"angry":"pout";
+      if(E.lives<=0){ const lv=pick(HER_LEAVE); AK.view={kind:"react",ru:lv,bad:true,opts}; akRender(); beep(false); buzz(); await speakP(lv,"ru"); if(!alive())return; break; }
+      const ins=pick(HER_RU[Math.min(1,AK.bad-1)])+(E.lives===1?" Последняя жизнь, долбоёб.":"");
+      AK.view={kind:"react",ru:ins,bad:true,opts}; akRender(); beep(false); buzz();
+      await speakP(ins,"ru"); if(!alive())return;
+      AK.view={kind:"reveal",p,opts,promptHtml}; akRender();
+      if(!await sayRight())return;
+      if(full){ AK.view={kind:"react",ru:"Запомнил? Дальше.",opts,wait:true}; akRender(); await akWait(); if(!alive())return; }
+    } else if(AK.tap!=null){
+      AK.good++; E.streak++; E.maxStreak=Math.max(E.maxStreak,E.streak); AK.mood=pick(["blush","laugh","happy"]);
+      const pr=EX_STREAK[E.streak]||pick(S.akShort?["Да.","Ага.","Норм.","Верно, сука."]:AK_PRAISE);
+      AK.view={kind:"react",ru:pr,opts}; akRender(); beep(true);
+      await speakP(pr,"ru"); if(!alive())return;
+    } else {
+      AK.view={kind:"reveal",p,opts,promptHtml}; akRender();
+      if(!await sayRight())return;
+    }
+    await sleep(350); if(!alive())return;
+    E.i++;
+  }
+  AK.prog=1;
+  const pass=E.lives>0;
+  const key=AK.ch+"-"+E.lv, prev=S.acad.exam[key]||{best:0,pass:false};
+  S.acad.exam[key]={best:Math.max(prev.best,AK.good),pass:prev.pass||pass};
+  S.xp+=AK.good*8; save();
+  if(pass){ AK.mood="blush"; const m=S.akShort?"Сдал. Свободен, красавчик.":pick(EX_PASS); AK.view={kind:"talk",ru:m}; akRender(); await speakP(m,"ru"); if(!alive())return; }
+  wakeOff(); akExamEnd(pass);
+}
+function akExamEnd(pass){
+  const E=AK.exam,c=ACAD[AK.ch],L=EXAM_LV[E.lv];
+  const lvls=Object.keys(EXAM_LV), nextLv=lvls[lvls.indexOf(E.lv)+1];
+  app.innerHTML=`<section class="screen res">
+    <div class="stage small bg-${c.bg}">${sceneDeco(c.bg)}<div class="girlwrap">${girlSVG(pass?"blush":"angry")}</div></div>
+    <h2>${pass?(E.lives===3?"ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ":"ЭКЗАМЕН СДАН"):"ОНА УШЛА К АДЕКВАТНОМУ ЧЕЛУ"}</h2>
+    <p>${esc(c.t)} · ${L.t} · правильно ${AK.good}${AK.mode==="full"||AK.good+AK.bad?` из ${AK.good+AK.bad}`:""}</p>
+    <div class="stats"><div class="stat"><b>${"♥".repeat(E.lives)}${"♡".repeat(3-E.lives)}</b><small>жизни</small></div><div class="stat"><b>×${E.maxStreak}</b><small>серия</small></div><div class="stat fire"><b>+${AK.good*8}</b><small>XP</small></div></div>
+    ${pass&&nextLv?`<button class="big" id="up" ${pinkBtn}>Уровень выше: ${EXAM_LV[nextLv].t}</button>`:""}
+    ${pass&&!nextLv&&AK.ch+1<ACAD.length?`<button class="big" id="nextC" ${pinkBtn}>Глава ${AK.ch+2}: ${esc(ACAD[AK.ch+1].t)}</button>`:""}
+    <button class="${pass?"ghost":"big"}" id="again">${pass?"Ещё раз":"РЕВАНШ, СУКА"}</button>
+    <button class="ghost" id="menu">К главам</button>
+  </section>`;
+  const ci=AK.ch;
+  const up=document.getElementById("up"); if(up) up.onclick=()=>akExamStart(ci,nextLv);
+  const nc=document.getElementById("nextC"); if(nc) nc.onclick=()=>akStart(ci+1,0);
+  document.getElementById("again").onclick=()=>akExamStart(ci,E.lv);
+  document.getElementById("menu").onclick=akMenu;
+  window.scrollTo(0,0);
+}
+
+home();
+</script>
+
+</body>
+</html>
