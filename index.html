@@ -344,6 +344,13 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .seg3 .segb{font-size:14px;padding:10px}
 .hfctl.hide{display:none}
 .akspk{align-self:flex-start;margin-top:2px;color:#1B1530;background:#ECE8F7}
+.ak-review{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--ink);color:var(--bg);border-radius:16px;padding:14px 16px}
+.ak-review:disabled{opacity:.5}
+.ak-review .k{font-size:32px;line-height:1}
+.ak-review b{display:block;font-weight:900;font-size:16px}
+.ak-review small{font-size:13px;opacity:.85}
+.aknote{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#E8338A}
+.akfull{font-size:15px;color:#6B6890;font-weight:500}
 .hfo.akopt.no{opacity:1;border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--surface))}
 .hfo.akopt.no .num{background:var(--bad);color:#fff}
 .akopt{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
@@ -478,7 +485,7 @@ function distractors(item,script,n,exclude){
   return out.slice(0,n);
 }
 function makeQ(item,forceType){
-  let types=["read","read","find","find","type"]; if(item.twin) types.push("twin","twin");
+  let types=["read","read","find","find","type"];
   let t=forceType||pick(types);
   if(t==="twin"&&!item.twin) t="read";
   const q={item,type:t};
@@ -1522,21 +1529,32 @@ function hfMakeQ(){
   const useKana=eyes&&HF.content!=="phr";
   if(useKana){
     let kpool=ITEMS.filter(i=>HF.content==="hira"?i.s==="h":HF.content==="kata"?i.s==="k":HF.content==="mine"?inMine(i):true); if(!kpool.length) kpool=ITEMS;
-    const item=pick(kpool);
-    if(HF.content==="kana"&&item.twin&&Math.random()<.35){
+    const item=pickItems(kpool.filter(i=>i.k!==HF.lastK),1)[0]||pick(kpool); HF.lastK=item.k;
+    if(false){
       const tw=item.twin, opts=shuffle([tw,...distractors(tw,tw.s,n-1,tw)]);
       return {kind:"twin",show:item.k,sayIntro:"Найди пару.",sayJa:item.k,opts:opts.map(o=>({label:o.k,kana:true,ok:o===tw})),answerJa:tw.k,answerRu:null};
     }
     const opts=shuffle([item,...distractors(item,item.s,n-1)]);
     return {kind:"listen",show:null,sayIntro:"Найди.",sayJa:item.k,opts:opts.map(o=>({label:o.k,kana:true,ok:o===item})),answerJa:item.k,answerRu:null,hint:item.s==="h"?"хирагана":"катакана"};
   }
-  const pool=hfPhrasePool(), v=pick(pool);
-  if(Math.random()<.5){
+  const pool=hfPhrasePool();
+  // умный выбор: новая фраза только изредка и сначала разбирается, остальное — повтор того, что пора освежить
+  const learned=pool.filter(x=>S.srs[srsKey(x.jp)]), fresh=pool.filter(x=>!S.srs[srsKey(x.jp)]);
+  HF.sinceNew=(HF.sinceNew||0)+1; HF.recent=HF.recent||[];
+  let v, intro=false;
+  if(fresh.length&&(learned.length<4||HF.sinceNew>=6)){ v=fresh[0]; intro=true; HF.sinceNew=0; }
+  else{
+    const now=Date.now();
+    const cand=learned.filter(x=>!HF.recent.includes(srsKey(x.jp))).sort((a,b)=>(S.srs[srsKey(a.jp)].d-now)-(S.srs[srsKey(b.jp)].d-now)||S.srs[srsKey(a.jp)].b-S.srs[srsKey(b.jp)].b);
+    v=pick(cand.slice(0,5).length?cand.slice(0,5):learned);
+  }
+  HF.recent.push(srsKey(v.jp)); if(HF.recent.length>3) HF.recent.shift();
+  if(!intro&&Math.random()<.4){
     const opts=shuffle([v,...otherV(v,pool,n-1,"ru")]);
-    return {kind:"jr",show:v.jp,sayIntro:"Переведи.",sayJa:v.jp,opts:opts.map(o=>({label:o.ru,ok:o===v})),answerRu:v.ru};
+    return {kind:"jr",v,show:v.jp,sayIntro:"Переведи.",sayJa:v.jp,opts:opts.map(o=>({label:o.ru,ok:o===v})),answerRu:v.ru};
   }
   const opts=shuffle([v,...otherV(v,pool,n-1,"jp")]);
-  return {kind:"rj",show:null,showRu:v.ru,sayIntro:"Как сказать: "+v.ru+"?",sayJa:null,opts:opts.map(o=>({label:o.jp,jp:true,ok:o===v})),answerJa:v.jp};
+  return {kind:"rj",v,intro,show:null,showRu:v.ru,sayIntro:"Как сказать: "+v.ru.replace(/[?!.]+$/,"")+"?",sayJa:null,opts:opts.map(o=>({label:o.jp,jp:true,ok:o===v})),answerJa:v.jp};
 }
 function hfStart(mode){
   HF.mode=mode; HF.count=0; HF.paused=false;
@@ -1579,10 +1597,20 @@ async function hfLoop(){
   while(alive()){
     HF.count++;
     const q=hfMakeQ(), eyes=HF.mode==="eyes", T=hfT(HF.mode);
+    if(q.intro){
+      hfRender(Object.assign({},q,{kind:"jr",show:q.v.jp}),"ask",T,T);
+      await speakP("Новая фраза. "+q.v.ru,"ru"); if(!alive())return;
+      await speakP(q.v.jp,"ja",.65); if(!alive())return;
+      await speakP("Повтори.","ru"); if(!alive())return;
+      await sleep(Math.max(2,S.repPause)*1000); if(!alive())return;
+      await speakP(q.v.jp,"ja",.9); if(!alive())return;
+      await sleep(Math.max(2,S.repPause)*1000); if(!alive())return;
+      srsSeen(q.v.jp);
+    }
     hfRender(q,"ask",T,T);
     await speakP(q.sayIntro,"ru"); if(!alive())return;
     if(q.sayJa){ if(q.kind==="listen"||q.kind==="twin") await kanaSayP(q.sayJa); else await speakP(q.sayJa,"ja"); if(!alive())return; }
-    if(!eyes){
+    if(!eyes&&q.kind!=="jr"&&q.kind!=="rj"){
       for(let i=0;i<q.opts.length;i++){
         await speakP(NUM_RU[i]+".","ru"); if(!alive())return;
         const o=q.opts[i]; await speakP(o.label,o.jp?"ja":"ru"); if(!alive())return;
@@ -1594,11 +1622,20 @@ async function hfLoop(){
     if(eyes){
       if(q.answerRu){ await speakP("Ответ: "+q.answerRu,"ru"); }
       else { await speakP("Ответ:","ru"); if(!alive())return; if(q.kind==="listen"||q.kind==="twin") await kanaSayP(q.answerJa); else await speakP(q.answerJa,"ja"); }
+    } else if(q.kind==="rj"){
+      await speakP("Ответ.","ru"); if(!alive())return;
+      await speakP(q.answerJa,"ja",.8); if(!alive())return;
+      await speakP("Повтори.","ru"); if(!alive())return;
+      await sleep(Math.max(2,S.repPause)*1000); if(!alive())return;
+      await speakP(q.answerJa,"ja",.95);
+    } else if(q.kind==="jr"){
+      await speakP("Это: "+q.answerRu,"ru"); if(!alive())return;
+      await speakP(q.sayJa,"ja",.85);
     } else {
       await speakP("Ответ: "+NUM_RU[idx].toLowerCase()+".","ru"); if(!alive())return;
       const o=q.opts[idx]; await speakP(o.label,o.jp?"ja":"ru");
-      if(q.kind==="jr"){ if(!alive())return; await speakP(q.sayJa,"ja"); }
     }
+    if(q.v) srsGrade(q.v.jp,1);
     if(!alive())return;
     await sleep(900);
   }
@@ -1808,13 +1845,16 @@ function akMenu(){
   app.innerHTML=`<section class="screen">
     <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Альтуха учит тебя</h2></div>
     <div class="stage small bg-whims">${sceneDeco("whims")}<div class="girlwrap">${girlSVG(S.acad.lastBad>=3?"pout":"blush")}</div></div>
-    <div class="note">Юки сама рассказывает ситуацию, говорит фразу по-японски, ждёт, пока ты повторишь вслух, а в конце ступеньки устраивает проверку. Если можешь тыкнуть в ответ — тыкай, она отреагирует. Не можешь — просто слушай.</div>
+    <div class="note"><b>Как устроен урок.</b> Разминка старым → новые фразы по одной: длинные режутся на кусочки, ты повторяешь вслух → каждую новую она спрашивает несколько раз через растущие промежутки → финал вперемешку с тем, что ты учил раньше. Старое возвращается само, когда его пора освежить, — через 10 уроков первый урок будет отлетать от зубов.</div>
+    ${(()=>{const st=srsStats();return `<button class="ak-review" id="akRev" ${st.learned?"":"disabled"}><span class="k">🔁</span><span><b>Просто повторить выученное</b><small>${st.learned?`${st.learned} фраз в памяти · ${st.due} пора повторить · без нового, ${S.akLen} мин`:"Сначала пройди хотя бы одну ступеньку"}</small></span></button>`})()}
+    <div class="label">Длина урока</div>
+    <div class="seg seg3">${[10,15,20].map(n=>`<button class="segb" data-len="${n}" aria-pressed="${S.akLen===n}">${n} минут<small>${n===10?"быстро":n===15?"нормально":"балдеть"}</small></button>`).join("")}</div>
     <label class="switch"><input type="checkbox" id="akShort" ${S.akShort?"checked":""}><span><b>Выключить пиздёж</b><small>без длинных историй: «Вот сука, ладно», перевод, фраза, повтори — коротко и по делу, но мат остаётся</small></span></label>
     <div class="label">Как учимся</div>
     <div class="seg seg3"><button class="segb" data-am="full" aria-pressed="${AK.mode==="full"}">✋👀 Руки и глаза<small>тыкаю сам, без таймера</small></button><button class="segb" data-am="eyes" aria-pressed="${AK.mode==="eyes"}">👀 Без рук<small>смотрю в экран</small></button><button class="segb" data-am="ears" aria-pressed="${AK.mode==="ears"}">🎧 Без глаз<small>только слушаю</small></button></div>
-    ${AK.mode==="full"?`<div class="note">Обычный режим: она ждёт, пока ты повторишь и нажмёшь «Дальше», а в проверке ждёт твой ответ сколько угодно. Ошибся — переспросит в конце.</div>`:`<div class="timerset">
+    ${AK.mode==="full"?`<div class="note">Обычный режим: в вопросах она ждёт твой ответ сколько угодно. Паузы на повтор идут сами, но их можно пропустить кнопкой. Ошибся — переспросит через пару вопросов.</div><div class="timerset"><div class="tsrow"><span class="tsl">Пауза, чтобы повторить вслух: ${S.repPause} сек</span>${chips("rep",S.repPause,"data-rp")}</div></div>`:`<div class="timerset">
       <div class="tsrow"><span class="tsl">Пауза, чтобы повторить вслух: ${S.repPause} сек</span>${chips("rep",S.repPause,"data-rp")}</div>
-      <div class="tsrow"><span class="tsl">Секунд на ответ в проверке: ${hfT(AK.mode)}</span>${chips(AK.mode,hfT(AK.mode),"data-tm")}</div>
+      <div class="tsrow"><span class="tsl">Секунд, чтобы вспомнить: ${hfT(AK.mode)}</span>${chips(AK.mode,hfT(AK.mode),"data-tm")}</div>
     </div>`}
     ${ACAD.map((c,ci)=>`<div class="ch"><div class="hd"><span class="n">${ci+1}</span><div><h3>${c.t}</h3><p>${c.s.length} ступенек · ${c.s.reduce((a,s)=>a+s.p.length,0)} фраз</p></div></div>
       <div class="steps">${c.s.map((s,si)=>{const d=S.acad.done[ci+"-"+si];return `<button class="stepb ${d?"done":""}" data-c="${ci}" data-s="${si}"><b>${si+1}</b><span>${s.t}</span>${d?`<i>${d.bad===0?"чисто":"пройдено"}</i>`:""}</button>`}).join("")}</div>
@@ -1823,6 +1863,8 @@ function akMenu(){
   </section>`;
   document.getElementById("back").onclick=home;
   app.querySelectorAll(".segb").forEach(b=>b.onclick=()=>{AK.mode=b.dataset.am;akMenu();});
+  app.querySelectorAll("[data-len]").forEach(b=>b.onclick=()=>{S.akLen=+b.dataset.len;save();akMenu();});
+  const rv=document.getElementById("akRev"); if(rv) rv.onclick=akReviewStart;
   app.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>{S.repPause=+b.dataset.n;save();akMenu();});
   app.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{S.hfT[b.dataset.tm]=+b.dataset.n;save();akMenu();});
   app.querySelectorAll(".stepb").forEach(b=>b.onclick=()=>akStart(+b.dataset.c,+b.dataset.s));
@@ -1830,29 +1872,25 @@ function akMenu(){
   document.getElementById("akShort").onchange=e=>{S.akShort=e.target.checked;save();};
   window.scrollTo(0,0);
 }
-function akStart(ci,si){
-  AK.exam=null;AK.ch=ci;AK.st=si;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;
-  try{if(!window.AudioContext&&!window.webkitAudioContext)throw 0;AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
-  wakeOn(); akRun();
-}
 function akRender(){
   const c=ACAD[AK.ch],s=c.s[AK.st],v=AK.view,eyes=AK.mode!=="ears",full=AK.mode==="full";
   let bubble="";
   if(v.kind==="talk") bubble=`<div class="speech"><span class="akru">${esc(v.ru)}</span></div>`;
-  else if(v.kind==="teach"||v.kind==="repeat") bubble=`<div class="speech"><span class="jp akjp">${rb(v.p[0])}</span><span class="hint">${esc(v.p[1])}</span>${v.kind==="repeat"?`<span class="akrep">🗣 ${esc(v.cue)}</span>`:""}${v.kind==="teach"?`<button class="mini akspk" id="akspk">🔊 ещё раз</button>`:""}</div>`;
+  else if(v.kind==="teach"||v.kind==="repeat"){ const ch=v.chunk||v.p[0], part=ch!==v.p[0];
+    bubble=`<div class="speech">${v.note?`<span class="aknote">${esc(v.note)}</span>`:""}<span class="jp akjp">${rb(ch)}</span>${part?`<span class="jp akfull">${rb(v.p[0])}</span>`:""}<span class="hint">${esc(v.p[1])}</span>${v.kind==="repeat"&&v.cue?`<span class="akrep">🗣 ${esc(v.cue)}</span>`:""}<button class="mini akspk" id="akspk">🔊 ещё раз</button></div>`; }
   else if(v.kind==="check"||v.kind==="reveal") bubble=`<div class="speech">${v.promptHtml||`<span class="akru">${esc(S.akShort?"Как будет: "+v.p[1].replace(/[?!.]+$/,"")+"?":v.p[3])}</span>`}</div>`;
   else if(v.kind==="react") bubble=`<div class="speech ${v.bad?"ru-speech":""}"><span class="akru">${esc(v.ru)}</span></div>`;
   let below="";
-  if(v.kind==="check"||v.kind==="reveal"||(v.kind==="react"&&v.opts)){
+  if(v.opts&&(v.kind==="check"||v.kind==="reveal"||v.kind==="react")){
     below=`<div class="hfopts">${v.opts.map((o,i)=>{const st=(v.kind!=="check")?(o.ok?"ok":(AK.tap===i?"no":"dim2")):(AK.tap===i?"sel":"");const listen=v.kind!=="check";return `<button class="hfo akopt ${st} ${listen?"listen":""}" data-i="${i}" ${!listen&&AK.tap!=null?"disabled":""}><span class="num">${listen&&o.ok?"🔊":i+1}</span>${o.jp!=null?`<span class="jp">${rb(o.jp)}</span>`:`<span class="ru">${esc(o.ru)}</span>`}</button>`}).join("")}</div>`;
   }
   const timer=v.sec!=null?`<div class="aktimer"><div class="timer"><i style="width:${Math.round(v.sec/v.total*100)}%"></i></div><b>${v.sec}</b></div>`:"";
   app.innerHTML=`<section class="screen live-screen">
-    <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="prog"><i style="width:${Math.round((AK.prog||0)*100)}%;background:var(--pink)"></i></div><div class="hfmode">${full?"✋":eyes?"👀":"🎧"} ${AK.exam?`<span class="akhearts">${"♥".repeat(AK.exam.lives)}${"♡".repeat(3-AK.exam.lives)}</span>`:`${AK.ch+1}.${AK.st+1}`}</div></div>
+    <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="prog"><i style="width:${Math.round((AK.prog||0)*100)}%;background:var(--pink)"></i></div><div class="hfmode">${full?"✋":eyes?"👀":"🎧"} ${AK.exam?`<span class="akhearts">${"♥".repeat(AK.exam.lives)}${"♡".repeat(3-AK.exam.lives)}</span>`:AK.review?"🔁":`${AK.ch+1}.${AK.st+1}`}</div></div>
     <button class="aktog" id="akShortT" aria-pressed="${!!S.akShort}"><span class="dot"></span>${S.akShort?"Пиздёж выключен — коротко":"Пиздёж включён — с историями"}<i>${S.akShort?"включить":"выключить"}</i></button>
-    <div class="stage bg-${c.bg}">${sceneDeco(c.bg)}${bubble}<div class="girlwrap ${v.kind==="react"&&v.bad?"shake":""}">${girlSVG(AK.mood)}</div><div class="lovebar lbl"><span>${AK.exam?"Экзамен · "+EXAM_LV[AK.exam.lv].t+" · "+(AK.exam.i+1)+"/"+AK.exam.n:s.t}</span></div></div>
+    <div class="stage bg-${c.bg}">${sceneDeco(c.bg)}${bubble}<div class="girlwrap ${v.kind==="react"&&v.bad?"shake":""}">${girlSVG(AK.mood)}</div><div class="lovebar lbl"><span>${AK.exam?"Экзамен · "+EXAM_LV[AK.exam.lv].t+" · "+(AK.exam.i+1)+"/"+AK.exam.n:AK.review?"Повторение · "+AK.reviewed:(s?s.t:"")}</span></div></div>
     ${timer}${below}
-    ${full&&v.kind==="repeat"&&v.wait?`<button class="big" id="akgo" ${pinkBtn}>Повторил вслух, дальше →</button><button class="ghost" id="akagain">🔊 Скажи ещё раз</button>`:""}
+    ${v.skippable?`<button class="big" id="akskip" ${pinkBtn}>Повторил, дальше →</button>`:""}
     ${full&&v.kind==="react"&&v.wait?`<button class="big" id="akgo" ${pinkBtn}>Дальше →</button>`:""}
     <div class="hfctl ${full?"hide":""}"><button class="big" id="pause">${AK.paused?"▶ Продолжить":"⏸ Пауза"}</button><button class="ghost" id="stop">Стоп, хватит</button></div>
   </section>`;
@@ -1861,9 +1899,10 @@ function akRender(){
   document.getElementById("pause").onclick=()=>{ if(AK.paused){AK.paused=false;wakeOn();(AK.exam?akExamRun:akRun)(AK.resume);} else {AK.paused=true;HF.token++;try{speechSynthesis.cancel()}catch(e){};wakeOff();akRender();} };
   app.querySelectorAll(".akopt").forEach(b=>b.onclick=()=>{ if(AK.view.kind!=="check"){ const o=AK.view.opts&&AK.view.opts[+b.dataset.i]; if(o){ b.classList.remove("ping"); void b.offsetWidth; b.classList.add("ping"); sayQ(o.jp!=null?o.jp:o.ru,o.jp!=null?"ja":"ru"); } return; } if(AK.tap!=null)return; AK.tap=+b.dataset.i; akRender(); if(AK.mode==="full") akGo(); });
   const g=document.getElementById("akgo"); if(g) g.onclick=akGo;
+  const sk=document.getElementById("akskip"); if(sk) sk.onclick=()=>{AK.skip=true;sk.disabled=true;};
   document.getElementById("akShortT").onclick=akToggleShort;
   const ag=document.getElementById("akagain"); if(ag) ag.onclick=()=>{try{speechSynthesis.cancel()}catch(e){};speakP(AK.view.p[0],"ja",.7);};
-  const sp=document.getElementById("akspk"); if(sp) sp.onclick=()=>{try{speechSynthesis.cancel()}catch(e){};speakP(AK.view.p[0],"ja",.7);};
+  const sp=document.getElementById("akspk"); if(sp) sp.onclick=()=>sayQ(AK.view.chunk||AK.view.p[0],"ja");
 }
 
 function akToggleShort(){
@@ -1872,91 +1911,269 @@ function akToggleShort(){
   if(AK.paused){ akRender(); return; }
   HF.token++; try{speechSynthesis.cancel()}catch(e){}
   const r=AK.resume;
-  if(r){ if(r.phase==="hello"){ r.phase="teach"; r.i=0; } if(r.started===false) r.started=true; }
+  if(r){ if(AK.plan&&AK.plan[r.i]&&AK.plan[r.i].t==="hello"&&!AK.exam) r.i++; if(r.started===false) r.started=true; }
   AK.mood=S.akShort?"pout":"laugh"; AK.view={kind:"talk",ru:line}; akRender();
   const my=HF.token;
   speakP(line,"ru").then(()=>{ if(HF.token!==my||AK.paused) return; (AK.exam?akExamRun:akRun)(AK.resume); });
 }
+/* =================================================================
+   ДВИЖОК УРОКА v2: кусочки → многократные вспоминания с растущими
+   интервалами → интервальное повторение старого между уроками
+   ================================================================= */
+const SRS_INT=[0,10*60e3,864e5,3*864e5,7*864e5,16*864e5,35*864e5];
+if(!S.srs) S.srs={};
+if(!S.akLen) S.akLen=15;
+const srsKey=jp=>plain(jp);
+const ALLP=ACAD.flatMap((c,ci)=>c.s.flatMap((s,si)=>s.p.map(p=>({p,ci,si}))));
+// ступеньки, пройденные по старой схеме, сразу попадают в повторение
+try{ Object.keys(S.acad.done||{}).forEach(k=>{ const [ci,si]=k.split("-").map(Number); const st=ACAD[ci]&&ACAD[ci].s[si]; if(st) st.p.forEach(p=>{ const kk=srsKey(p[0]); if(!S.srs[kk]) S.srs[kk]={b:0,d:Date.now(),n:0}; }); }); save(); }catch(e){}
+function srsSeen(jp){const k=srsKey(jp); if(!S.srs[k]){S.srs[k]={b:0,d:Date.now()+SRS_INT[1],n:0};save();}}
+function srsGrade(jp,g){ // 2 — тыкнул верно, 1 — просто прослушал, 0 — ошибся
+  const k=srsKey(jp), r=S.srs[k]||{b:0,d:0,n:0};
+  r.n++;
+  if(g===0) r.b=0; else if(g===2) r.b=Math.min(6,r.b+1); else r.b=Math.min(3,r.b+1);
+  r.d=Date.now()+SRS_INT[r.b]; S.srs[k]=r; save();
+}
+function srsPick(n,exclude){
+  const now=Date.now();
+  const cand=ALLP.filter(x=>S.srs[srsKey(x.p[0])]&&!(exclude&&exclude.has(srsKey(x.p[0]))));
+  cand.sort((a,b)=>{const A=S.srs[srsKey(a.p[0])],B=S.srs[srsKey(b.p[0])];return (A.d-now)-(B.d-now)||A.b-B.b;});
+  return cand.slice(0,n).map(x=>x.p);
+}
+function srsStats(){const now=Date.now();let learned=0,due=0;ALLP.forEach(x=>{const r=S.srs[srsKey(x.p[0])];if(r){learned++;if(r.d<=now)due++;}});return {learned,due};}
+/* длинную фразу режем на кусочки и собираем по нарастающей */
+function chunksOf(jp){
+  const pl=plain(jp); if(pl.replace(/[、。！？…\s]/g,"").length<=5) return [];
+  const parts=[];
+  jp.split(" ").forEach((t,ti)=>{
+    const tp=plain(t);
+    if(!/[{]/.test(t)&&tp.replace(/[、。！？…]/g,"").length>6){
+      // сначала пробуем отрезать частицу (ベラルーシ|から), иначе режем посередине, не разрывая слоги
+      const core=t.replace(/[、。！？…]+$/,"");
+      const prt=["から","まで","ので","けど","は","が","を","に","で","の","と","も","へ"].find(x=>core.endsWith(x)&&core.length-x.length>=3);
+      const SM=/[ゃゅょっぁぃぅぇぉャュョッァィゥェォーん、。！？]/;
+      const okCut=c=>c>=2&&core.length-c>=2&&!SM.test(t[c])&&t[c-1]!=="っ"&&t[c-1]!=="ッ"&&!(t[c]==="う"&&/[ゅょ]/.test(t[c-1]));
+      let cut;
+      const comma=core.indexOf("、");
+      if(comma>=2&&comma<core.length-2) cut=comma+1;
+      else if(prt) cut=core.length-prt.length;
+      else{ const mid=Math.ceil(core.length/2); cut=[0,-1,1,-2,2,-3,3].map(d=>mid+d).find(okCut)||mid; }
+      parts.push({s:t.slice(0,cut),sp:ti>0}); parts.push({s:t.slice(cut),sp:false});
+    } else parts.push({s:t,sp:ti>0});
+  });
+  if(parts.length<2) return [];
+  const pref=[]; let acc="";
+  parts.forEach(p=>{acc+=(p.sp?" ":"")+p.s; pref.push(acc);});
+  pref.pop(); // целиком скажем отдельно
+  if(pref.length>3){ const keep=[pref[0],pref[Math.floor(pref.length/2)],pref[pref.length-1]]; return [...new Set(keep)]; }
+  return pref;
+}
+const AK_WARM=["Сначала разминка: вспоминаем старое, чтоб не протухло.","Разминка. Посмотрим, что у тебя осталось в башке с прошлого раза.","Начнём со старого. Если забыл — я обижусь."];
+const AK_NEWBLOCK=["Теперь новое. Не ссы, по кусочкам разберём.","Новые фразы. Медленно, по частям, ты справишься.","Окей, новое. Я буду возвращаться к каждой фразе, пока не запомнишь."];
+const AK_MIX=["Теперь все новые вперемешку.","Перемешиваю. Посмотрим, не путаешь ли.","Всё вперемешку, малыш."];
+const AK_FINAL=["Финал: всё подряд, и старое, и новое.","Последний круг. Закрепляем, чтоб от зубов отлетало.","Финалочка. Добиваем память."];
+const AK_RECALL_CUE=["Вспоминай.","Думай.","Ну?","Давай, вспоминай.","Тик-так."];
+const AK_RIGHT_SHORT=["Да.","Ага.","Верно.","Умничка.","Красава.","Да, сладкий."];
+const AK_REVIEW_HELLO=["Повторяем всё, что ты учил. Включай мозг и балдей.","Режим повторения. Ничего нового, только то, что ты уже должен знать.","Повторялка. Я буду спрашивать старое, пока не начнёт отлетать от зубов."];
+
+function akPlan(review){
+  const tasks=[{t:"hello"}];
+  const lens={10:[5,6],15:[8,10],20:[12,14]}[S.akLen]||[8,10];
+  if(review){
+    tasks.push({t:"say",ru:S.akShort?"Повторение.":pick(AK_REVIEW_HELLO)});
+    tasks.push({t:"final",review:true});
+    tasks.push({t:"end"});
+    return tasks;
+  }
+  const s=ACAD[AK.ch].s[AK.st], newP=s.p, newSet=new Set(newP.map(p=>srsKey(p[0])));
+  const warm=srsPick(lens[0],newSet);
+  if(!S.akShort) tasks.push({t:"preview"});
+  if(warm.length){ tasks.push({t:"say",ru:S.akShort?"Разминка.":pick(AK_WARM)}); warm.forEach((p,i)=>tasks.push({t:"recall",p,dir:i%3===2?"jr":"rj",grade:true})); }
+  tasks.push({t:"say",ru:S.akShort?"Новое.":pick(AK_NEWBLOCK)});
+  newP.forEach((p,i)=>{
+    tasks.push({t:"intro",p,n:i+1,of:newP.length});
+    tasks.push({t:"recall",p,dir:"jr",fresh:true});
+    for(let j=i-1;j>=Math.max(0,i-2);j--) tasks.push({t:"recall",p:newP[j],dir:"rj",fresh:true});
+  });
+  tasks.push({t:"say",ru:S.akShort?"Вперемешку.":pick(AK_MIX)});
+  shuffle(newP).forEach(p=>tasks.push({t:"recall",p,dir:"rj"}));
+  tasks.push({t:"say",ru:S.akShort?"Финал.":pick(AK_FINAL)});
+  tasks.push({t:"final",newP,oldN:lens[1]});
+  tasks.push({t:"end"});
+  return tasks;
+}
+function akStart(ci,si){
+  AK.exam=null;AK.review=false;AK.ch=ci;AK.st=si;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;AK.reviewed=0;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
+  AK.plan=akPlan(false); AK.resume={i:0,t0:Date.now(),requeued:{}};
+  wakeOn(); akRun(AK.resume);
+}
+function akReviewStart(){
+  const st=srsStats(); if(!st.learned){ return; }
+  const first=srsPick(1)[0]; const hit=ALLP.find(x=>x.p===first);
+  AK.exam=null;AK.review=true;AK.ch=hit?hit.ci:0;AK.st=hit?hit.si:0;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;AK.reviewed=0;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
+  AK.plan=akPlan(true); AK.resume={i:0,t0:Date.now(),requeued:{}};
+  wakeOn(); akRun(AK.resume);
+}
 async function akRun(resume){
   const my=++HF.token, alive=()=>HF.token===my;
-  const c=ACAD[AK.ch],s=c.s[AK.st],eyes=AK.mode!=="ears",full=AK.mode==="full";
+  const eyes=AK.mode!=="ears", full=AK.mode==="full";
+  const r=resume||AK.resume; AK.resume=r;
+  const budget=S.akLen*60e3;
   const talk=async(ru,mood)=>{ if(mood)AK.mood=mood; AK.view={kind:"talk",ru}; akRender(); await speakP(ru,"ru"); return alive(); };
-  const total=s.p.length*2;
-  let r=resume||{phase:"hello",i:0,order:null};
-  AK.resume=r;
-  if(r.phase==="hello"){
-    const hello=S.akShort?pick(AK_SHORT_HELLO):S.acad.lastBad>=3?pick(AK_HELLO_BAD):S.acad.lastGood?pick(AK_HELLO_GOOD):pick(AK_HELLO);
-    AK.prog=0;
-    if(!await talk(hello,"happy"))return;
-    if(!S.akShort){ if(!await talk(`Глава ${AK.ch+1}, ступенька ${AK.st+1}: ${s.t}. Поехали.`,"happy"))return; }
-    r.phase="teach"; r.i=0;
-  }
-  while(r.phase==="teach"&&r.i<s.p.length){
-    const p=s.p[r.i]; AK.prog=r.i/total;
-    if(r.i>0&&!S.akShort){ if(!await talk(pick(AK_NEXT),"calm"))return; }
-    if(!await talk(S.akShort?(/[.!?…)]$/.test(p[1])?p[1]:p[1]+"."):p[2],r.i%2?"laugh":"happy"))return;
-    AK.view={kind:"teach",p}; AK.mood="happy"; akRender();
-    await speakP(p[0],"ja",.8); if(!alive())return;
-    await sleep(450); if(!alive())return;
-    await speakP(p[0],"ja",.6); if(!alive())return;
+  const pauseFor=async(n,view)=>{ AK.skip=false; for(let t=n;t>0;t--){ if(AK.skip)break; AK.view=Object.assign({},view,{sec:t,total:n,skippable:full}); akRender(); await sleep(1000); if(!alive())return false; } AK.view=Object.assign({},view); return true; };
+  const setLabel=p=>{const h=ALLP.find(x=>x.p===p); if(h){AK.ch=h.ci;AK.st=h.si;}};
+
+  async function intro(task){
+    const p=task.p; setLabel(p);
+    const story=S.akShort?(/[.!?…)]$/.test(p[1])?p[1]:p[1]+"."):p[2];
+    if(!await talk((task.n?`Фраза ${task.n} из ${task.of}. `:"")+story,task.n%2?"happy":"laugh"))return false;
+    AK.view={kind:"teach",p,chunk:p[0]}; AK.mood="happy"; akRender();
+    await speakP(p[0],"ja",.7); if(!alive())return false;
+    const ch=chunksOf(p[0]);
+    if(ch.length){
+      if(!S.akShort){ AK.view={kind:"teach",p,chunk:p[0],note:"по кусочкам"}; akRender(); await speakP("Длинная. Разберём по кусочкам.","ru"); if(!alive())return false; }
+      for(let k=0;k<ch.length;k++){
+        AK.view={kind:"teach",p,chunk:ch[k],note:`кусочек ${k+1}`}; akRender();
+        await speakP(ch[k],"ja",.65); if(!alive())return false;
+        if(k===0){ await speakP("Повтори.","ru"); if(!alive())return false; }
+        if(!await pauseFor(Math.max(2,S.repPause),{kind:"repeat",p,chunk:ch[k],cue:"повтори кусочек"}))return false;
+      }
+    }
+    AK.view={kind:"teach",p,chunk:p[0],note:"целиком"}; akRender();
+    await speakP(ch.length?"Теперь целиком.":"","ru"); if(!alive())return false;
+    await speakP(p[0],"ja",.75); if(!alive())return false;
     const cue=S.akShort?pick(AK_SHORT_REP):pick(AK_REPEAT);
-    AK.view={kind:"repeat",p,cue}; akRender();
-    await speakP(cue,"ru"); if(!alive())return;
-    if(full){ AK.view={kind:"repeat",p,cue,wait:true}; akRender(); await akWait(); if(!alive())return; }
-    else for(let t=S.repPause;t>0;t--){ AK.view={kind:"repeat",p,cue,sec:t,total:S.repPause}; akRender(); await sleep(1000); if(!alive())return; }
-    r.i++;
+    AK.view={kind:"repeat",p,chunk:p[0],cue}; akRender();
+    await speakP(cue,"ru"); if(!alive())return false;
+    if(!await pauseFor(S.repPause+1,{kind:"repeat",p,chunk:p[0],cue}))return false;
+    AK.view={kind:"teach",p,chunk:p[0],note:"в живом темпе"}; akRender();
+    await speakP(S.akShort?"Быстрее.":"И ещё раз, в живом темпе.","ru"); if(!alive())return false;
+    await speakP(p[0],"ja",.95); if(!alive())return false;
+    if(!await pauseFor(S.repPause,{kind:"repeat",p,chunk:p[0],cue:"повтори быстро"}))return false;
+    srsSeen(p[0]);
+    return true;
   }
-  if(r.phase==="teach"){ r.phase="check"; r.i=0; r.order=shuffle(s.p.map((_,k)=>k)); if(!await talk(S.akShort?pick(AK_SHORT_CHECK):pick(AK_CHECK),"pout"))return; }
-  const pool=c.s.flatMap(x=>x.p.map(p=>({jp:p[0],ru:p[1]})));
-  while(r.phase==="check"&&r.i<r.order.length){
-    const p=s.p[r.order[r.i]]; AK.prog=(s.p.length+r.i)/total;
-    const v={jp:p[0],ru:p[1]}, n=eyes?4:3;
-    const opts=shuffle([v,...otherV(v,pool,n-1,"jp")]).map(o=>({jp:o.jp,ok:o===v}));
-    AK.tap=null; AK.view={kind:"check",p,opts}; akRender();
-    await speakP(S.akShort?"Как будет: "+p[1].replace(/[?!.]+$/,"")+"?":p[3],"ru"); if(!alive())return;
-    if(!eyes){
-      for(let k=0;k<opts.length;k++){ await speakP(NUM_RU[k]+".","ru"); if(!alive())return; await speakP(opts[k].jp,"ja",.85); if(!alive())return; if(AK.tap!=null)break; }
-    }
+
+  async function recall(task){
+    const p=task.p; setLabel(p);
+    const v={jp:p[0],ru:p[1]};
+    const pool=ACAD[AK.ch].s.flatMap(x=>x.p.map(q=>({jp:q[0],ru:q[1]})));
+    const jr=task.dir==="jr";
+    const promptRu=jr?"Что значит:":(S.akShort?"Как будет: "+p[1].replace(/[?!.]+$/,"")+"?":p[3]);
+    const promptHtml=jr?`<span class="akru">Что значит:</span><span class="jp akjp">${rb(p[0])}</span>`:`<span class="akru">${esc(promptRu)}</span>`;
+    let opts=null;
+    if(eyes){ const n=full?4:3; opts=jr?shuffle([v,...otherV(v,pool,n-1,"ru")]).map(o=>({ru:o.ru,ok:o===v})):shuffle([v,...otherV(v,pool,n-1,"jp")]).map(o=>({jp:o.jp,ok:o===v})); }
+    AK.tap=null; AK.view={kind:"check",p,opts,promptHtml}; akRender();
+    await speakP(promptRu,"ru"); if(!alive())return false;
+    if(jr){ await speakP(p[0],"ja",.8); if(!alive())return false; }
     const T=hfT(AK.mode);
-    if(full){ if(AK.tap==null){ await akWait(); if(!alive())return; } }
-    else for(let t=T;t>0;t--){ if(AK.tap!=null)break; AK.view={kind:"check",p,opts,sec:t,total:T}; akRender(); tick(false); await sleep(1000); if(!alive())return; }
-    if(!full) tick(true);
-    const idx=opts.findIndex(o=>o.ok);
-    const sayRight=async()=>{ await speakP(eyes?"Правильно:":"Правильно: "+NUM_RU[idx].toLowerCase()+".","ru"); if(!alive())return false; await speakP(p[0],"ja",.8); return alive(); };
-    if(AK.tap!=null&&!opts[AK.tap].ok){
-      // сначала оскорбляет, потом говорит как надо
-      AK.bad++; AK.mood=AK.bad>=2?"angry":"pout";
-      const ins=pick(HER_RU[Math.min(1,AK.bad-1)]);
-      AK.view={kind:"react",ru:ins,bad:true,opts}; akRender(); beep(false); buzz();
-      await speakP(ins,"ru"); if(!alive())return;
-      AK.view={kind:"reveal",p,opts}; akRender();
-      if(!await sayRight())return;
-      if(full){ if(!r.retried) r.retried=[]; if(!r.retried.includes(r.order[r.i])){ r.retried.push(r.order[r.i]); r.order.push(r.order[r.i]); } AK.view={kind:"react",ru:"Запомнил? Я потом ещё раз спрошу.",opts,wait:true}; akRender(); await speakP("Запомнил? Я потом ещё раз спрошу.","ru"); if(!alive())return; await akWait(); }
-    } else if(AK.tap!=null){
-      // угадал: хвалит и повторяет фразу
-      AK.good++; AK.mood=pick(["blush","laugh","happy"]);
-      const pr=pick(AK_PRAISE); AK.view={kind:"react",ru:pr,opts}; akRender();
-      await speakP(pr,"ru"); if(!alive())return;
-      await speakP(p[0],"ja",.8);
-    } else {
-      AK.view={kind:"reveal",p,opts}; akRender();
-      if(!await sayRight())return;
-      if(Math.random()<.25){ const sl=pick(AK_SILENT); AK.view={kind:"react",ru:sl,opts}; akRender(); await speakP(sl,"ru"); }
+    if(full){ if(AK.tap==null){ await akWait(); if(!alive())return false; } }
+    else{
+      if(!eyes&&Math.random()<.35){ await speakP(pick(AK_RECALL_CUE),"ru"); if(!alive())return false; }
+      for(let t=T;t>0;t--){ if(AK.tap!=null)break; AK.view={kind:"check",p,opts,promptHtml,sec:t,total:T}; akRender(); tick(false); await sleep(1000); if(!alive())return false; }
+      tick(true);
     }
-    if(!alive())return;
-    await sleep(500);
+    const tapped=AK.tap!=null, right=tapped&&opts[AK.tap].ok;
+    const sayAnswer=async(withRepeat)=>{
+      AK.view={kind:"reveal",p,opts,promptHtml}; akRender();
+      if(jr){ await speakP("Это: "+p[1],"ru"); if(!alive())return false; }
+      else{
+        await speakP(p[0],"ja",.8); if(!alive())return false;
+        if(withRepeat){ await speakP(S.akShort?"Повтори.":pick(["Повтори.","Скажи вслух.","Повторяй."]),"ru"); if(!alive())return false;
+          if(!await pauseFor(Math.max(2,S.repPause),{kind:"reveal",p,opts,promptHtml}))return false; }
+      }
+      return true;
+    };
+    if(tapped&&!right){
+      AK.bad++; AK.mood=AK.bad>=3?"angry":"pout";
+      const ins=pick(HER_RU[Math.min(1,Math.floor((AK.bad-1)/2))]);
+      AK.view={kind:"react",ru:ins,bad:true,opts}; akRender(); beep(false); buzz();
+      await speakP(ins,"ru"); if(!alive())return false;
+      await speakP("Правильно:","ru"); if(!alive())return false;
+      if(!await sayAnswer(true))return false;
+      if(!task.fresh&&!AK.review) srsGrade(p[0],0); else if(AK.review) srsGrade(p[0],0);
+      // ошибся — эта фраза вернётся через пару шагов
+      const key=srsKey(p[0])+task.dir;
+      if((r.requeued[key]||0)<2){ r.requeued[key]=(r.requeued[key]||0)+1; AK.plan.splice(r.i+3,0,{t:"recall",p,dir:"rj",fresh:true}); }
+      if(full){ AK.view={kind:"react",ru:"Запомнил? Я скоро ещё раз спрошу.",opts,wait:true}; akRender(); await akWait(); if(!alive())return false; }
+    } else if(right){
+      AK.good++; AK.mood=pick(["blush","laugh","happy"]);
+      const pr=Math.random()<.3?pick(AK_PRAISE):pick(AK_RIGHT_SHORT);
+      AK.view={kind:"react",ru:pr,opts}; akRender(); beep(true);
+      await speakP(pr,"ru"); if(!alive())return false;
+      AK.view={kind:"reveal",p,opts,promptHtml}; akRender();
+      await speakP(jr?p[1]:p[0],jr?"ru":"ja",.85); if(!alive())return false;
+      if(task.grade||AK.review||(!task.fresh)) srsGrade(p[0],2);
+    } else {
+      await speakP(eyes?"Ответ:":"Ответ.","ru"); if(!alive())return false;
+      if(!await sayAnswer(!jr))return false;
+      if(task.grade||AK.review) srsGrade(p[0],1);
+    }
+    AK.reviewed++;
+    await sleep(250);
+    return alive();
+  }
+
+  while(r.i<AK.plan.length){
+    const task=AK.plan[r.i];
+    AK.prog=Math.min(.98,Math.max(r.i/AK.plan.length,(Date.now()-r.t0)/budget*.95));
+    if(task.t==="hello"){
+      const hello=S.akShort?pick(AK_SHORT_HELLO):S.acad.lastBad>=3?pick(AK_HELLO_BAD):S.acad.lastGood?pick(AK_HELLO_GOOD):pick(AK_HELLO);
+      if(!await talk(hello,"happy"))return;
+      if(!AK.review&&!S.akShort){ const s=ACAD[AK.ch].s[AK.st]; if(!await talk(`Глава ${AK.ch+1}, ступенька ${AK.st+1}: ${s.t}. Урок минут на ${S.akLen}.`,"happy"))return; }
+    }
+    else if(task.t==="preview"){
+      const s=ACAD[AK.ch].s[AK.st];
+      if(!await talk("Сегодня выучишь: "+s.p.map(p=>p[1].replace(/[?!.]+$/,"")).join(", ")+". Не страшно, я помогу.","blush"))return;
+    }
+    else if(task.t==="say"){ if(!await talk(task.ru,"calm"))return; }
+    else if(task.t==="intro"){ if(!await intro(task))return; }
+    else if(task.t==="recall"){ if(!await recall(task))return; }
+    else if(task.t==="final"){
+      // добиваем время: новое и старое вперемешку, приоритет — то, что пора повторить
+      const used=new Set(); let k=task.k||0, cycleNew=shuffle((task.newP||[]).slice());
+      while(Date.now()-r.t0<budget-20e3&&k<60){
+        let p=null, dir="rj";
+        if(cycleNew.length&&(k%2===0||task.review)) p=cycleNew.shift();
+        if(!p){ const old=srsPick(30,new Set([...used,...(task.newP||[]).map(q=>srsKey(q[0]))])); p=old[0]||null; if(!p&&task.newP&&task.newP.length){ cycleNew=shuffle(task.newP.slice()); p=cycleNew.shift(); } }
+        if(!p){ const any=srsPick(1); p=any[0]; used.clear(); }
+        if(!p) break;
+        used.add(srsKey(p[0])); if(used.size>25) used.clear();
+        if(k%4===3) dir="jr";
+        task.k=++k;
+        if(!await recall({t:"recall",p,dir,grade:true}))return;
+        AK.prog=Math.min(.98,(Date.now()-r.t0)/budget);
+      }
+    }
+    else if(task.t==="end"){
+      AK.prog=1;
+      if(!AK.review){ S.acad.done[AK.ch+"-"+AK.st]={bad:AK.bad,good:AK.good,at:Date.now()}; }
+      S.acad.lastBad=AK.bad; S.acad.lastGood=AK.bad===0&&AK.good>0; S.xp+=AK.reviewed*3; save();
+      const end=S.akShort?pick(AK_SHORT_END):AK.bad>=3?pick(AK_END_BAD):pick(AK_END_GOOD);
+      AK.mood=AK.bad>=3?"pout":"blush";
+      if(!await talk(end))return;
+      wakeOff(); r.i++; return AK.review?akReviewEnd():akEnd();
+    }
     r.i++;
   }
-  // финал
-  AK.prog=1;
-  const clean=AK.bad===0;
-  S.acad.done[AK.ch+"-"+AK.st]={bad:AK.bad,good:AK.good,at:Date.now()};
-  S.acad.lastBad=AK.bad; S.acad.lastGood=clean&&AK.good>0; S.xp+=s.p.length*5; save();
-  const end=S.akShort?pick(AK_SHORT_END):AK.bad>=2?pick(AK_END_BAD):pick(AK_END_GOOD);
-  AK.mood=AK.bad>=2?"pout":"blush";
-  AK.view={kind:"talk",ru:end}; akRender(); await speakP(end,"ru"); if(!alive())return;
-  wakeOff(); akEnd();
 }
+function akReviewEnd(){
+  const st=srsStats();
+  app.innerHTML=`<section class="screen res">
+    <div class="stage small bg-whims">${sceneDeco("whims")}<div class="girlwrap">${girlSVG(AK.bad>=3?"pout":"blush")}</div></div>
+    <h2>${AK.bad===0&&AK.good>0?"ЕБАТЬ ТЫ МАКТРАХЕР ПРЯМ":AK.bad>=3?"НУ Я В АХУЕ С ВАС":"ПОВТОРЕНИЕ ГОТОВО"}</h2>
+    <p>Повторил ${AK.reviewed} раз${AK.good+AK.bad?` · тыкнул правильно ${AK.good} из ${AK.good+AK.bad}`:""}</p>
+    <div class="stats"><div class="stat"><b>${st.learned}</b><small>фраз в памяти</small></div><div class="stat"><b>${st.due}</b><small>пора повторить</small></div><div class="stat fire"><b>+${AK.reviewed*3}</b><small>XP</small></div></div>
+    <button class="big" id="again" ${pinkBtn}>Ещё повторение</button>
+    <button class="ghost" id="menu">К главам</button>
+  </section>`;
+  document.getElementById("again").onclick=akReviewStart;
+  document.getElementById("menu").onclick=akMenu;
+  window.scrollTo(0,0);
+}
+
 function akEnd(){
   const c=ACAD[AK.ch], nextSi=AK.st+1<c.s.length?AK.st+1:null, nextCi=nextSi==null&&AK.ch+1<ACAD.length?AK.ch+1:null;
   const s=c.s[AK.st];
