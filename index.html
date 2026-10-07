@@ -2017,36 +2017,72 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(S.voice===undefined) S.voice=false;
 const VOICE={ok:!!SR,denied:false,rec:null,onInterim:null};
 function stopListen(){ try{VOICE.rec&&VOICE.rec.abort()}catch(e){} }
-function listen(lang,ms,alive){
+VOICE.endP=Promise.resolve(); VOICE.fails=0;
+function listenOnce(lang,ms,alive){
   return new Promise(res=>{
-    if(!SR||VOICE.denied){res({err:"na",alts:[]});return;}
     let r; try{ r=new SR(); }catch(e){res({err:"na",alts:[]});return;}
+    let endRes; VOICE.endP=new Promise(z=>{endRes=z; setTimeout(z,1500);});
     VOICE.rec=r; r.lang=lang==="ja"?"ja-JP":"ru-RU"; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
-    let done=false, interim="", alts=[];
-    const fin=o=>{ if(done)return; done=true; clearTimeout(to); clearInterval(iv); try{r.abort()}catch(e){} if(VOICE.rec===r)VOICE.rec=null; res(o); };
-    r.onresult=e=>{ let fl=false; const a=[]; for(let i=0;i<e.results.length;i++){ const R=e.results[i]; if(R.isFinal) fl=true; for(let k=0;k<R.length;k++) a.push(R[k].transcript); } if(a.length){ alts=a; interim=a[0]; } VOICE.onInterim&&VOICE.onInterim(interim); if(fl) fin({alts}); };
-    r.onerror=e=>{ if(e.error!=="no-speech"&&e.error!=="aborted"){ VOICE.lastErr=e.error; if(["not-allowed","service-not-allowed","network","audio-capture","language-not-supported"].includes(e.error)) VOICE.denied=true; } fin({err:e.error,alts}); };
-    r.onend=()=>fin({alts});
+    let done=false, alts=[], err=null;
+    const fin=o=>{ if(done)return; done=true; clearTimeout(to); clearInterval(iv); try{r.abort()}catch(e){} res(o); };
+    r.onresult=e=>{ let fl=false; const a=[]; for(let i=0;i<e.results.length;i++){ const R=e.results[i]; if(R.isFinal) fl=true; for(let k=0;k<R.length;k++) a.push(R[k].transcript); } if(a.length) alts=a; VOICE.onInterim&&VOICE.onInterim(alts[0]||""); if(fl) fin({alts}); };
+    r.onerror=e=>{ err=e.error; if(e.error!=="no-speech"&&e.error!=="aborted") VOICE.lastErr=e.error; fin({err:e.error,alts}); };
+    r.onend=()=>{ endRes&&endRes(); if(VOICE.rec===r) VOICE.rec=null; fin({alts,err}); };
     const to=setTimeout(()=>fin({alts,timeout:true}),ms);
     const iv=setInterval(()=>{ if(alive&&!alive()) fin({alts:[],dead:true}); },200);
     try{ r.start(); }catch(e){ fin({err:"start",alts:[]}); }
   });
 }
+/* слушаем надёжно: ждём, пока прошлый сеанс точно закрылся, даём голосу Юки затихнуть, при сбое перезапускаем */
+async function listen(lang,ms,alive){
+  if(!SR||VOICE.denied) return {err:"na",alts:[]};
+  await VOICE.endP; await new Promise(z=>setTimeout(z,300));
+  const deadline=Date.now()+ms; let last={alts:[]};
+  for(let attempt=0;attempt<3;attempt++){
+    const left=deadline-Date.now(); if(left<1200) break;
+    const t0=Date.now();
+    last=await listenOnce(lang,left,alive);
+    if(last.dead) return last;
+    if(last.alts&&last.alts.length){ VOICE.fails=0; return last; }
+    if(["not-allowed","service-not-allowed","language-not-supported"].includes(last.err)){ VOICE.denied=true; return last; }
+    if(last.timeout) return last;
+    const quick=Date.now()-t0<1500;
+    if(last.err==="no-speech"&&!quick) return last;
+    // быстрый обрыв, network, audio-capture, start — пробуем ещё раз
+    await VOICE.endP; await new Promise(z=>setTimeout(z,400));
+  }
+  if(last.err&&["network","audio-capture","start"].includes(last.err)){ VOICE.fails++; if(VOICE.fails>=2) VOICE.denied=true; }
+  return last;
+}
 const toHira=s=>String(s).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
-const jaNorm=s=>toHira(plain(String(s))).replace(/[\s、。！？!?…・ー〜~,.「」『』]/g,"");
+const KJ_RAW="大丈夫:だいじょうぶ|行ってらっしゃい:いってらっしゃい|行って来ます:いってきます|行ってきます:いってきます|御馳走様:ごちそうさま|ご馳走様:ごちそうさま|宜しくお願いします:よろしくおねがいします|宜しく:よろしく|有難う:ありがとう|有り難う:ありがとう|頂きます:いただきます|御免:ごめん|今日は:こんにちは|今晩は:こんばんは|御早う:おはよう|お早う:おはよう|初めまして:はじめまして|始めまして:はじめまして|十九歳:じゅうきゅうさい|19歳:じゅうきゅうさい|七時:しちじ|7時:しちじ|五分:ごふん|5分:ごふん|一回:いっかい|1回:いっかい|一口:ひとくち|二人:ふたり|2人:ふたり|名前:なまえ|今日:きょう|明日:あした|昨日:きのう|週末:しゅうまつ|土曜日:どようび|日曜日:にちようび|土曜:どよう|今度:こんど|今:いま|後で:あとで|暇:ひま|忙しい:いそがしい|駅:えき|何時:なんじ|何歳:なんさい|何才:なんさい|何して:なにして|何で:なんで|何:なに|夜:よる|仕事:しごと|学生:がくせい|趣味:しゅみ|音楽:おんがく|映画:えいが|友達:ともだち|家族:かぞく|妹:いもうと|兄:あに|好き:すき|大好き:だいすき|嫌い:きらい|私:わたし|僕:ぼく|俺:おれ|君:きみ|鳥:とり|猫:ねこ|犬:いぬ|花:はな|空:そら|雨:あめ|天気:てんき|暑い:あつい|寒い:さむい|綺麗:きれい|奇麗:きれい|可愛い:かわいい|凄い:すごい|凄く:すごく|見て:みて|見ない:みない|此処:ここ|写真:しゃしん|撮ろう:とろう|帰ろう:かえろう|送る:おくる|待った:まった|待って:まって|来た所:きたところ|来たところ:きたところ|来た:きた|来ました:きました|痛っ:いたっ|痛い:いたい|危ない:あぶない|疲れた:つかれた|休もう:やすもう|喉:のど|渇いた:かわいた|乾いた:かわいた|行こう:いこう|行く:いく|行って:いって|下さい:ください|水:みず|お水:おみず|御水:おみず|お茶:おちゃ|食べる:たべる|乾杯:かんぱい|美味しい:おいしい|不味い:まずい|辛い:からい|甘い物:あまいもの|甘い:あまい|幾ら:いくら|お腹:おなか|御腹:おなか|空いた:すいた|会計:かいけい|お勧め:おすすめ|御勧め:おすすめ|笑顔:えがお|嬉しい:うれしい|楽しみ:たのしみ|楽しい:たのしい|寂しい:さびしい|淋しい:さびしい|恥ずかしい:はずかしい|格好いい:かっこいい|優しい:やさしい|嘘:うそ|冗談:じょうだん|彼女:かのじょ|彼氏:かれし|似合う:にあう|服:ふく|付き合って:つきあって|家:いえ|部屋:へや|お風呂:おふろ|御風呂:おふろ|洗濯:せんたく|料理:りょうり|眠い:ねむい|晩御飯:ばんごはん|晩ご飯:ばんごはん|朝御飯:あさごはん|朝ご飯:あさごはん|御飯:ごはん|ご飯:ごはん|電気:でんき|只今:ただいま|お帰り:おかえり|御帰り:おかえり|起きて:おきて|出来た:できた|手伝って:てつだって|出して:だして|沸いた:わいた|先に:さきに|太った:ふとった|欲しい:ほしい|返事:へんじ|遅い:おそい|遅れる:おくれる|大事:だいじ|別に:べつに|勿論:もちろん|誕生日:たんじょうび|買って:かって|上げる:あげる|許して:ゆるして|許す:ゆるす|上司:じょうし|電車:でんしゃ|大変:たいへん|悲しい:かなしい|酷い:ひどい|頑張って:がんばって|頑張る:がんばる|偉い:えらい|無理:むり|側:そば|傍:そば|最悪:さいあく|話して:はなして|話そう:はなそう|怒られた:おこられた|怒ってる:おこってる|怒ってない:おこってない|怒る:おこる|悪くない:わるくない|作ろう:つくろう|聞く:きく|聴く:きく|馬鹿:ばか|心配:しんぱい|電話:でんわ|忘れた:わすれた|本当:ほんとう|本と:ほんと|仲直り:なかなおり|飲んでた:のんでた|言って:いって|信じて:しんじて|愛してる:あいしてる|働いてる:はたらいてる|勉強中:べんきょうちゅう|勉強:べんきょう|上手:じょうず|日本語:にほんご|元気:げんき|交換:こうかん|会おう:あおう|会いたい:あいたい|会う:あう|予定:よてい|お休み:おやすみ|御休み:おやすみ|一緒:いっしょ|散歩:さんぽ|隣:となり|何処:どこ|雪:ゆき|少し:すこし|話せます:はなせます|又:また|皆:みんな|御免ね:ごめんね|御免なさい:ごめんなさい|早く:はやく|着替えて:きがえて|分かった:わかった|分からない:わからない|知らない:しらない|夢:ゆめ|夏:なつ|未だ:まだ|反省:はんせい|何でも:なんでも";
+const KJ=KJ_RAW.split("|").map(x=>x.split(":")).sort((a,b)=>b[0].length-a[0].length);
+const jaNorm=s=>{ let x=toHira(plain(String(s))); for(const [k,v] of KJ) if(x.includes(k)) x=x.split(k).join(v); return x.replace(/[\s、。！？!?…・ー〜~,.「」『』]/g,""); };
+const isKanji=c=>/[一-鿿々]/.test(c);
+const jaNormT=s=>toHira(String(s).replace(/\{([^|}]+)\|([^}]+)\}/g,"$2")).replace(/[\s、。！？!?…・ー〜~,.「」『』]/g,"");
+const KJ_ALT=[["今日は","きょうは"],["今日","こんにち"],["何","なん"],["本当","ほんと"],["一回","いちかい"],["行って","おこなって"]];
 function jaMatch(said,target){
-  const a=jaNorm(said), b=jaNorm(target); if(!a||!b) return 0;
-  const isK=c=>/[一-鿿々]/.test(c), n=a.length, m=b.length, INF=1e9;
+  let best=0; const variants=[said]; KJ_ALT.forEach(([k,v])=>{ if(String(said).includes(k)) variants.push(String(said).split(k).join(v)); });
+  for(const s of variants) best=Math.max(best,jaMatch1(s,target)); return best;
+}
+function jaMatch1(said,target){
+  const a=jaNorm(said), b=jaNormT(target); if(!a||!b) return 0;
+  const n=a.length, m=b.length, INF=1e9;
   const D=Array.from({length:n+1},()=>new Array(m+1).fill(INF)); D[0][0]=0;
   for(let i=0;i<=n;i++)for(let j=0;j<=m;j++){ const d=D[i][j]; if(d>=INF)continue;
     if(i<n&&j<m) D[i+1][j+1]=Math.min(D[i+1][j+1],d+(a[i]===b[j]?0:1));
     if(i<n) D[i+1][j]=Math.min(D[i+1][j],d+1);
     if(j<m) D[i][j+1]=Math.min(D[i][j+1],d+1);
-    if(i<n&&isK(a[i])) for(let k=1;k<=4&&j+k<=m;k++) D[i+1][j+k]=Math.min(D[i+1][j+k],d); }
+    // неизвестный кандзи может быть 1–2 каной, но это дорого: мусор из кандзи больше не проходит
+    if(i<n&&isKanji(a[i])) for(let k=1;k<=2&&j+k<=m;k++) D[i+1][j+k]=Math.min(D[i+1][j+k],d+.6); }
+  const kana=[...a].filter(c=>!isKanji(c)).length;
+  if(kana<Math.ceil(m*.5)) return 0; // хотя бы половина ответа должна быть распознана каной
   return 1-D[n][m]/m;
 }
-const jaOk=(alts,target)=>{ const m=jaNorm(target).length, thr=m<=3?.99:m<=6?.8:.72; return alts.some(s=>jaMatch(s,target)>=thr); };
-const ruWords=s=>String(s).toLowerCase().replace(/ё/g,"е").replace(/\(.*?\)/g," ").replace(/[^а-яa-z0-9\s]/g," ").split(/\s+/).filter(w=>w&&!STOPW.has(w));
+const jaOk=(alts,target)=>{ const m=jaNormT(target).length, thr=m<=3?.99:m<=6?.8:.82; return alts.some(s=>jaMatch(s,target)>=thr); };
+const ruWords=s=>{ const all=String(s).toLowerCase().replace(/ё/g,"е").replace(/\(.*?\)/g," ").replace(/[^а-яa-z0-9\s]/g," ").split(/\s+/).filter(Boolean); const f=all.filter(w=>!STOPW.has(w)); return f.length?f:all; };
+const RUDE=/ху[йяеи]|пизд|бля|еба|ёба|член|сука|нахер|говн|жоп|мудак|долбо/i;
+const RUDE_BACK=["Сам иди нахуй, умник. Отвечай нормально.","Ой, какие мы дерзкие. Это неправильно, дебил.","Член тебе в ответ. Нет, это не японский.","Я тебя сейчас сама пошлю. Правильно будет вот так.","Ещё раз нахамишь — уйду к адекватному челу."];
 const stemRu=w=>w.slice(0,Math.max(3,Math.min(5,w.length-1)));
 function ruOk(alts,target){
   const variants=[target,...target.split(/[\/,]/)];
@@ -2400,7 +2436,7 @@ async function akRun(resume){
         const alts=(heard.alts||[]).filter(Boolean); said=alts[0]||"";
         if(alts.length){
           if(jr?ruOk(alts,p[1]):jaOk(alts,p[0])) vres="right";
-          else { const cmd=voiceCmd(alts); vres=cmd||"wrong"; }
+          else { const cmd=voiceCmd(alts); vres=cmd||"wrong"; if(vres==="wrong"&&alts.some(x=>RUDE.test(x))) AK.rude=true; }
         }
       }
       if(vres==="repeat"){ await talk(pick(VOICE_REPEAT),"calm"); if(!alive())return false; return recall(task); }
@@ -2437,7 +2473,7 @@ async function akRun(resume){
       if((r.requeued[key]||0)<2){ r.requeued[key]=(r.requeued[key]||0)+1; AK.plan.splice(r.i+3,0,{t:"recall",p,dir:"rj",fresh:true}); }
     } else if(tapped&&!right){
       AK.bad++; AK.mood=AK.bad>=3?"angry":"pout";
-      const ins=pick(HER_RU[Math.min(1,Math.floor((AK.bad-1)/2))]);
+      const ins=AK.rude?pick(RUDE_BACK):pick(HER_RU[Math.min(1,Math.floor((AK.bad-1)/2))]); AK.rude=false;
       AK.view={kind:"react",ru:ins,bad:true,opts,said:talkSaid}; akRender(); beep(false); buzz();
       await speakP(ins,"ru"); if(!alive())return false;
       await speakP("Правильно:","ru"); if(!alive())return false;
