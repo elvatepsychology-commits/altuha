@@ -454,6 +454,13 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .said{font-size:13px;font-weight:700;opacity:.85}
 .mictest{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:600}
 .switch.off{opacity:.6}
+.ansrow{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ansb{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:6px 2px;font-size:11px;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1;white-space:nowrap}
+.ansb span{font-size:17px;line-height:1.1}
+.ansb[aria-pressed="true"]{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 14%,var(--surface));color:var(--pink)}
+.aktog.slim{padding:6px 12px;font-size:12px}
+.micerr{background:color-mix(in srgb,var(--bad) 14%,var(--surface));border:2px solid var(--bad);border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.4;font-weight:500}
+.micerr b{font-weight:900}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -2018,7 +2025,7 @@ function listen(lang,ms,alive){
     let done=false, interim="", alts=[];
     const fin=o=>{ if(done)return; done=true; clearTimeout(to); clearInterval(iv); try{r.abort()}catch(e){} if(VOICE.rec===r)VOICE.rec=null; res(o); };
     r.onresult=e=>{ let fl=false; const a=[]; for(let i=0;i<e.results.length;i++){ const R=e.results[i]; if(R.isFinal) fl=true; for(let k=0;k<R.length;k++) a.push(R[k].transcript); } if(a.length){ alts=a; interim=a[0]; } VOICE.onInterim&&VOICE.onInterim(interim); if(fl) fin({alts}); };
-    r.onerror=e=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed") VOICE.denied=true; fin({err:e.error,alts}); };
+    r.onerror=e=>{ if(e.error!=="no-speech"&&e.error!=="aborted"){ VOICE.lastErr=e.error; if(["not-allowed","service-not-allowed","network","audio-capture","language-not-supported"].includes(e.error)) VOICE.denied=true; } fin({err:e.error,alts}); };
     r.onend=()=>fin({alts});
     const to=setTimeout(()=>fin({alts,timeout:true}),ms);
     const iv=setInterval(()=>{ if(alive&&!alive()) fin({alts:[],dead:true}); },200);
@@ -2055,15 +2062,36 @@ function voiceCmd(alts){
 const VOICE_FORGOT=["Эх, склеротик. Слушай.","Забыл? Ну ты и рыбка. Запоминай.","Ладно, напомню. Но это последний раз. Нет.","Ну ты и тормоз. Слушай внимательно."];
 const VOICE_REPEAT=["Окей, ещё раз.","Глухой? Повторяю.","Слушай внимательнее, сладкий."];
 const VOICE_BACK=["Ладно, возвращаемся.","Назад так назад.","Окей, отматываю."];
-function voiceNote(){ return !SR?"Этот браузер не умеет распознавать речь. Открой сайт в Safari (айфон) или Chrome / Arc (комп).":VOICE.denied?"Микрофон заблокирован. Разреши доступ к микрофону для этого сайта в настройках браузера.":""; }
+const IN_FRAME=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+function voiceErrText(err){
+  if(!SR) return "Этот браузер не умеет распознавать речь. Айфон — Safari, комп — Google Chrome.";
+  if(IN_FRAME&&(err==="not-allowed"||err==="service-not-allowed")) return "Ты открыл приложение внутри Claude — тут микрофон закрыт. Открой свою ссылку github.io отдельно в Safari или Chrome.";
+  switch(err){
+    case "not-allowed": return "Доступ к микрофону запрещён. Разреши микрофон для сайта: в Chrome — замок слева от адреса → Микрофон → Разрешить; на айфоне — «аА» в адресной строке → Настройки сайта → Микрофон → Разрешить.";
+    case "service-not-allowed": return "Распознавание речи выключено. На айфоне: Настройки → Основные → Клавиатура → включи «Диктовка». На компе открой в Google Chrome.";
+    case "network": return "Этот браузер не может распознавать речь (так бывает в Arc, Brave, Opera, Яндексе). Открой ссылку в Google Chrome или Safari.";
+    case "audio-capture": return "Микрофон не найден или занят другой программой (Zoom, Discord, OBS). Закрой их или выбери микрофон в системе.";
+    case "language-not-supported": return "Браузер не умеет этот язык. Открой в Google Chrome или Safari.";
+    default: return err?"Ошибка микрофона: "+err+". Попробуй Google Chrome или Safari.":"";
+  }
+}
+function voiceNote(){ return !SR?voiceErrText():VOICE.denied?voiceErrText(VOICE.lastErr):""; }
+/* запрос микрофона прямо из нажатия — без этого Safari и Chrome иногда молча не дают доступ */
+function voicePrime(){
+  if(!S.voice||!SR) return;
+  VOICE.denied=false; VOICE.lastErr=null;
+  try{ if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia) navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(tr=>tr.stop());}).catch(e=>{ VOICE.lastErr=(e&&e.name==="NotFoundError")?"audio-capture":"not-allowed"; VOICE.denied=true; }); }catch(e){}
+}
 async function micTest(){
   const el=document.getElementById("micRes"); if(!el) return;
   if(!SR){ el.textContent=voiceNote(); return; }
+  VOICE.denied=false; VOICE.lastErr=null;
+  try{ if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){ const s=await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(tr=>tr.stop()); } }catch(e){ el.textContent="❌ "+voiceErrText(e&&e.name==="NotFoundError"?"audio-capture":"not-allowed"); return; }
   el.textContent="🎤 Слушаю… скажи что-нибудь по-русски";
   VOICE.onInterim=t=>{ const e=document.getElementById("micRes"); if(e) e.textContent="🎤 "+t; };
   const r=await listen("ru",6000); VOICE.onInterim=null;
   const e2=document.getElementById("micRes"); if(!e2) return;
-  if(r.err&&VOICE.denied) e2.textContent=voiceNote();
+  if(r.err&&VOICE.denied) e2.textContent="❌ "+voiceErrText(r.err);
   else if(r.alts&&r.alts.length) e2.textContent="✅ Услышала: «"+r.alts[0]+"». Всё работает.";
   else e2.textContent="Ничего не услышала"+(r.err?" ("+r.err+")":"")+". Проверь микрофон и попробуй ещё раз.";
 }
@@ -2090,8 +2118,8 @@ function akMenu(){
       <button class="mpb" data-am="bg" aria-pressed="${AK.mode==="bg"}"><span class="ic">💻</span><b>Работаю параллельно</b><small>Скрипты, кампании, монтаж — а она в наушниках. Сигнал перед вопросом, больше времени на ответ, ответ дважды, нажимать не надо.</small></button>
     </div>
     <label class="switch"><input type="checkbox" id="akShort" ${S.akShort?"checked":""}><span><b>Выключить пиздёж</b><small>без историй: перевод, фраза, повтори. Мат остаётся. Можно переключать прямо в уроке</small></span></label>
-    <label class="switch ${SR?"":"off"}"><input type="checkbox" id="akVoice" ${S.voice&&SR?"checked":""} ${SR?"":"disabled"}><span><b>🎤 Отвечать голосом</b><small>${SR?"Она спрашивает — микрофон включается сам. Японский отвечаешь по-японски, перевод — по-русски. Команды: «повтори», «назад», «не помню». Работает на твоём сайте в Safari / Chrome / Arc, в превью Claude микрофон закрыт.":voiceNote()}</small></span></label>
-    ${SR?`<div class="mictest"><button class="mini" id="micT">🎤 Проверить микрофон</button><span id="micRes"></span></div>`:""}
+    <label class="switch ${SR?"":"off"}"><input type="checkbox" id="akVoice" ${S.voice&&SR?"checked":""} ${SR?"":"disabled"}><span><b>🎤 Отвечать голосом</b><small>${SR?"Она спрашивает — микрофон включается сам. Японский отвечаешь по-японски, перевод — по-русски. Команды: «повтори», «назад», «не помню». Работает на твоём сайте github.io в Safari (айфон) или Google Chrome (комп). В Arc и в превью Claude не работает.":voiceNote()}</small></span></label>
+    ${SR?`<div class="mictest"><button class="mini" id="micT">🎤 Проверить микрофон</button><span id="micRes">${VOICE.denied?"❌ "+esc(voiceNote()):""}</span></div>`:""}
     <label class="switch"><input type="checkbox" id="akWarmC" ${S.akWarm?"checked":""}><span><b>Разминка старым в начале урока</b><small>до 6 вопросов по тому, что ты уже учил и что пора освежить</small></span></label>
     <div class="timerset">
       <div class="tsrow"><span class="tsl">Пауза, чтобы повторить вслух: ${repP()} сек</span>${chips("rep",repP(),"data-rp")}</div>
@@ -2106,7 +2134,7 @@ function akMenu(){
   app.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>{ if(isBg()) S.repBg=+b.dataset.n; else S.repPause=+b.dataset.n; save(); akMenu();});
   app.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{S.hfT[b.dataset.tm]=+b.dataset.n;save();akMenu();});
   document.getElementById("akShort").onchange=e=>{S.akShort=e.target.checked;save();};
-  const av=document.getElementById("akVoice"); if(av) av.onchange=e=>{S.voice=e.target.checked;save();};
+  const av=document.getElementById("akVoice"); if(av) av.onchange=e=>{S.voice=e.target.checked;save();voicePrime();akMenu();};
   const mt=document.getElementById("micT"); if(mt) mt.onclick=micTest;
   document.getElementById("akWarmC").onchange=e=>{S.akWarm=e.target.checked;save();};
   document.getElementById("akRev").onclick=akReviewStart;
@@ -2202,12 +2230,14 @@ function akPlan(review,items,ci){
 }
 function akBoot(){ try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){} wakeOn(); }
 function akStart(ci,items,kind){
+  voicePrime();
   AK.lbl=null;AK.cur=null;AK.exam=null;AK.review=false;AK.ch=ci;AK.kind=kind;AK.items=items;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;AK.reviewed=0;
   AK.title=(kind==="w"?"Слова":"Фразы")+" · "+COURSE[ci].t;
   AK.plan=akPlan(false,items,ci); AK.resume={i:0,t0:Date.now(),requeued:{}};
   akBoot(); akRun(AK.resume);
 }
 function akReviewStart(){
+  voicePrime();
   if(!srsStats().learned) return;
   AK.lbl=null;AK.cur=null;AK.exam=null;AK.review=true;AK.ch=0;AK.items=[];AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;AK.reviewed=0;
   AK.title="Повторение";
@@ -2237,8 +2267,10 @@ function akRender(){
   const label=E?`📞 ${E.final?"Финал":"Созвон"} · ${E.i+1}/${E.n}`:AK.lbl?AK.lbl:AK.review?"Повторение · "+AK.reviewed:AK.title||"";
   app.innerHTML=`<section class="screen live-screen">
     <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="prog"><i style="width:${Math.round((AK.prog||0)*100)}%;background:var(--pink)"></i></div><div class="hfmode">${E?`<span class="akhearts">${"♥".repeat(E.lives)}${"♡".repeat(E.max-E.lives)}</span>`:`${full?"🎯 фокус":"💻 фон"}`}</div></div>
-    <div class="togrow"><button class="aktog" id="akShortT" aria-pressed="${!!S.akShort}"><span class="dot"></span>${S.akShort?"Пиздёж: выкл":"Пиздёж: вкл"}<i>${S.akShort?"вкл":"выкл"}</i></button>${SR&&!E?`<button class="aktog" id="akVoiceT" aria-pressed="${!S.voice}"><span class="dot"></span>${S.voice?"🎤 Голос: вкл":"🎤 Голос: выкл"}<i>${S.voice?"выкл":"вкл"}</i></button>`:""}</div>
+    ${E?"":`<div class="ansrow">${[["hand","✋","Руками"],["voice","🎤","Голосом"],["ears","🎧","Фоном"],["earsv","🎧🎤","Фон+голос"]].filter(m=>SR||!(m[0]==="voice"||m[0]==="earsv")).map(([k,ic,l])=>`<button class="ansb" data-am="${k}" aria-pressed="${ansMode()===k}"><span>${ic}</span>${l}</button>`).join("")}</div>`}
+    <button class="aktog slim" id="akShortT" aria-pressed="${!!S.akShort}"><span class="dot"></span>${S.akShort?"Пиздёж: выкл · коротко":"Пиздёж: вкл · с историями"}<i>${S.akShort?"включить":"выключить"}</i></button>
     <div class="stage bg-${c.bg}">${sceneDeco(c.bg)}${E?`<div class="callbadge">📞 ${E.final?"финальный созвон":"созвон"} · ${fmtClock(Date.now()-E.t0)}</div>`:""}${bubble}<div class="girlwrap ${v.kind==="react"&&v.bad?"shake":""}">${girlSVG(AK.mood)}</div><div class="lovebar lbl"><span>${esc(label)}</span></div></div>
+    ${S.voice&&VOICE.denied&&!E?`<div class="micerr">🎤 Голос не работает: ${esc(voiceNote())} <b>Исправь и нажми «Голосом» ещё раз.</b></div>`:""}
     ${AK.listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${AK.listening==="ja"?"Скажи по-японски":"Скажи перевод по-русски"}</b><span id="micTxt">${esc(AK.heardTxt||"слушаю…")}</span></span></div><div class="cmdhint">варианты покажу, если промолчишь · команды: «повтори» · «назад» · «не помню»${AK.listening==="ja"?" · もう一回 · わからない":""}</div>`:""}
     ${timer}${below}
     ${v.skippable?`<button class="big" id="akskip" ${pinkBtn}>Повторил, дальше →</button>`:""}
@@ -2253,7 +2285,7 @@ function akRender(){
   const g=document.getElementById("akgo"); if(g) g.onclick=akGo;
   const sk=document.getElementById("akskip"); if(sk) sk.onclick=()=>{AK.skip=true;sk.disabled=true;};
   document.getElementById("akShortT").onclick=akToggleShort;
-  const vt=document.getElementById("akVoiceT"); if(vt) vt.onclick=()=>{ S.voice=!S.voice; save(); if(!S.voice) stopListen(); akRender(); };
+  app.querySelectorAll(".ansb").forEach(b=>b.onclick=()=>akSetAnswerMode(b.dataset.am));
   const sp=document.getElementById("akspk"); if(sp) sp.onclick=()=>sayQ(AK.view.chunk||AK.view.p[0],"ja");
   if(v.kind==="build"){
     const B=v.b;
@@ -2263,6 +2295,31 @@ function akRender(){
   }
 }
 const fmtClock=ms=>{const s=Math.floor(ms/1000);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");};
+
+/* ---------- смена способа ответа прямо в уроке ---------- */
+const ansMode=()=>AK.mode==="bg"?(S.voice?"earsv":"ears"):(S.voice?"voice":"hand");
+const ANS_LINES={
+  voice:["О, ебать, за какие темки взялся. Ну давай, задам вопрос заново — отвечай голосом.","Голосом? Смелый. Повторяю вопрос, говори вслух, я слушаю.","Ого, хочешь со мной поболтать? Ладно, спрашиваю заново. Отвечай голосом, сладкий."],
+  hand:["Ладно, тыкай пальчиком, лентяй. Повторяю вопрос.","Застеснялся? Окей, руками так руками. Спрашиваю заново.","Ну и пожалуйста. Тыкай кнопки, повторяю."],
+  ears:["Работаешь? Окей, буду у тебя в ушах. Нажимать ничего не надо, просто вспоминай.","Многозадачный, сука. Ладно, фоном так фоном. Повторяю вопрос.","Понял, ты занят. Я сама спрашиваю и сама отвечаю, ты только вспоминай."],
+  earsv:["Работаешь и болтаешь? Ну ты машина. Отвечай вслух, руки не нужны.","Фоном и голосом? Ебать ты продуктивный. Повторяю, говори вслух.","Окей, работай, а мне отвечай голосом. Задаю вопрос заново."]
+};
+function akSetAnswerMode(m){
+  if(ansMode()===m&&!(S.voice&&VOICE.denied)) return;
+  AK.mode=S.akMode=(m==="ears"||m==="earsv")?"bg":"full";
+  S.voice=(m==="voice"||m==="earsv");
+  save();
+  if(S.voice) voicePrime();
+  stopListen(); AK.listening=null; AK.waitResolve=null; AK.tap=null;
+  if(AK.paused){ akRender(); return; }
+  HF.token++; try{speechSynthesis.cancel()}catch(e){}
+  const r=AK.resume;
+  if(r&&!AK.exam&&AK.plan&&AK.plan[r.i]&&AK.plan[r.i].t==="hello") r.i++;
+  const line=S.akShort?({voice:"Голосом. Повторяю.",hand:"Руками. Повторяю.",ears:"Фоном. Повторяю.",earsv:"Фоном и голосом. Повторяю."})[m]:pick(ANS_LINES[m]);
+  AK.mood=m==="hand"?"pout":"laugh"; AK.view={kind:"talk",ru:line}; akRender();
+  const my=HF.token;
+  speakP(line,"ru").then(()=>{ if(HF.token!==my||AK.paused) return; if(AK.mode==="bg") wakeOn(); (AK.exam?akExamRun:akRun)(AK.resume); });
+}
 function akToggleShort(){
   S.akShort=!S.akShort; save();
   const line=pick(S.akShort?AK_TOG_ON:AK_TOG_OFF);
@@ -2338,7 +2395,7 @@ async function akRun(resume){
       const heard=await Promise.race([listen(lang,ms,alive),new Promise(res=>{AK.waitResolve=()=>{stopListen();res({tapped:true});};})]);
       AK.waitResolve=null; AK.listening=null; VOICE.onInterim=null;
       if(!alive())return false;
-      if(VOICE.denied){ S.voice=false; save(); AK.view={kind:"talk",ru:"Микрофон закрыт, так что отвечай кнопками."}; akRender(); await speakP("Микрофон закрыт, отвечай кнопками.","ru"); if(!alive())return false; AK.view={kind:"check",p,opts,promptHtml}; akRender(); }
+      if(VOICE.denied){ AK.view={kind:"talk",ru:"Микрофон не работает, так что отвечай кнопками. Причину написала сверху."}; akRender(); await speakP("Микрофон не работает, отвечай кнопками.","ru"); if(!alive())return false; AK.view={kind:"check",p,opts,promptHtml}; akRender(); }
       else if(!heard.tapped){
         const alts=(heard.alts||[]).filter(Boolean); said=alts[0]||"";
         if(alts.length){
