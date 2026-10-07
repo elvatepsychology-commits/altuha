@@ -1856,12 +1856,15 @@ function akMenu(){
       <div class="tsrow"><span class="tsl">Пауза, чтобы повторить вслух: ${S.repPause} сек</span>${chips("rep",S.repPause,"data-rp")}</div>
       <div class="tsrow"><span class="tsl">Секунд, чтобы вспомнить: ${hfT(AK.mode)}</span>${chips(AK.mode,hfT(AK.mode),"data-tm")}</div>
     </div>`}
+    <div class="label">Главы и ступеньки — проходи по порядку</div>
     ${ACAD.map((c,ci)=>`<div class="ch"><div class="hd"><span class="n">${ci+1}</span><div><h3>${c.t}</h3><p>${c.s.length} ступенек · ${c.s.reduce((a,s)=>a+s.p.length,0)} фраз</p></div></div>
       <div class="steps">${c.s.map((s,si)=>{const d=S.acad.done[ci+"-"+si];return `<button class="stepb ${d?"done":""}" data-c="${ci}" data-s="${si}"><b>${si+1}</b><span>${s.t}</span>${d?`<i>${d.bad===0?"чисто":"пройдено"}</i>`:""}</button>`}).join("")}</div>
       ${(()=>{const doneN=c.s.filter((_,si)=>S.acad.done[ci+"-"+si]).length,all=doneN===c.s.length;return `<div class="exam ${all?"open":""}"><div class="exh"><b>Экзамен по главе</b><small>${all?"Все ступеньки пройдены — сдавай, сука":`Пройдено ${doneN} из ${c.s.length} ступенек. Можно и так, но огребёшь`} · 3 жизни</small></div><div class="exbtns">${Object.entries(EXAM_LV).map(([k,l])=>{const r=S.acad.exam[ci+"-"+k];return `<button class="exb ${r&&r.pass?"pass":""}" data-ec="${ci}" data-lv="${k}"><b>${l.t}</b><small>${l.n} вопросов</small>${r?`<i>${r.pass?"сдан":"рекорд"} ${r.best}/${l.n}</i>`:""}</button>`}).join("")}</div></div>`})()}
       </div>`).join("")}
+    <button class="ghost" id="akReset">${AK.resetArm?"Точно? Нажми ещё раз — всё обнулится":"Сбросить прогресс уроков и начать с нуля"}</button>
   </section>`;
   document.getElementById("back").onclick=home;
+  document.getElementById("akReset").onclick=()=>{ if(!AK.resetArm){AK.resetArm=true;akMenu();return;} AK.resetArm=false; S.srs={}; S.acad={done:{},lastBad:0,exam:{}}; save(); akMenu(); };
   app.querySelectorAll(".segb").forEach(b=>b.onclick=()=>{AK.mode=b.dataset.am;akMenu();});
   app.querySelectorAll("[data-len]").forEach(b=>b.onclick=()=>{S.akLen=+b.dataset.len;save();akMenu();});
   const rv=document.getElementById("akRev"); if(rv) rv.onclick=akReviewStart;
@@ -1888,7 +1891,7 @@ function akRender(){
   app.innerHTML=`<section class="screen live-screen">
     <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="prog"><i style="width:${Math.round((AK.prog||0)*100)}%;background:var(--pink)"></i></div><div class="hfmode">${full?"✋":eyes?"👀":"🎧"} ${AK.exam?`<span class="akhearts">${"♥".repeat(AK.exam.lives)}${"♡".repeat(3-AK.exam.lives)}</span>`:AK.review?"🔁":`${AK.ch+1}.${AK.st+1}`}</div></div>
     <button class="aktog" id="akShortT" aria-pressed="${!!S.akShort}"><span class="dot"></span>${S.akShort?"Пиздёж выключен — коротко":"Пиздёж включён — с историями"}<i>${S.akShort?"включить":"выключить"}</i></button>
-    <div class="stage bg-${c.bg}">${sceneDeco(c.bg)}${bubble}<div class="girlwrap ${v.kind==="react"&&v.bad?"shake":""}">${girlSVG(AK.mood)}</div><div class="lovebar lbl"><span>${AK.exam?"Экзамен · "+EXAM_LV[AK.exam.lv].t+" · "+(AK.exam.i+1)+"/"+AK.exam.n:AK.review?"Повторение · "+AK.reviewed:(s?s.t:"")}</span></div></div>
+    <div class="stage bg-${c.bg}">${sceneDeco(c.bg)}${bubble}<div class="girlwrap ${v.kind==="react"&&v.bad?"shake":""}">${girlSVG(AK.mood)}</div><div class="lovebar lbl"><span>${AK.exam?"Экзамен · "+EXAM_LV[AK.exam.lv].t+" · "+(AK.exam.i+1)+"/"+AK.exam.n:AK.lbl?AK.lbl:AK.review?"Повторение · "+AK.reviewed:(s?s.t:"")}</span></div></div>
     ${timer}${below}
     ${v.skippable?`<button class="big" id="akskip" ${pinkBtn}>Повторил, дальше →</button>`:""}
     ${full&&v.kind==="react"&&v.wait?`<button class="big" id="akgo" ${pinkBtn}>Дальше →</button>`:""}
@@ -1934,13 +1937,17 @@ function srsGrade(jp,g){ // 2 — тыкнул верно, 1 — просто п
   if(g===0) r.b=0; else if(g===2) r.b=Math.min(6,r.b+1); else r.b=Math.min(3,r.b+1);
   r.d=Date.now()+SRS_INT[r.b]; S.srs[k]=r; save();
 }
-function srsPick(n,exclude){
-  const now=Date.now();
-  const cand=ALLP.filter(x=>S.srs[srsKey(x.p[0])]&&!(exclude&&exclude.has(srsKey(x.p[0]))));
+/* «старое» — это только фразы из ступенек, которые ты реально прошёл уроком */
+function doneSteps(beforeCi,beforeSi){
+  return Object.keys(S.acad.done||{}).filter(k=>{ if(beforeCi==null) return true; const [c,s]=k.split("-").map(Number); return c<beforeCi||(c===beforeCi&&s<beforeSi); });
+}
+function srsPick(n,exclude,allowed){
+  const now=Date.now(), allow=allowed?new Set(allowed):null;
+  const cand=ALLP.filter(x=>S.srs[srsKey(x.p[0])]&&!(exclude&&exclude.has(srsKey(x.p[0])))&&(!allow||allow.has(x.ci+"-"+x.si)));
   cand.sort((a,b)=>{const A=S.srs[srsKey(a.p[0])],B=S.srs[srsKey(b.p[0])];return (A.d-now)-(B.d-now)||A.b-B.b;});
   return cand.slice(0,n).map(x=>x.p);
 }
-function srsStats(){const now=Date.now();let learned=0,due=0;ALLP.forEach(x=>{const r=S.srs[srsKey(x.p[0])];if(r){learned++;if(r.d<=now)due++;}});return {learned,due};}
+function srsStats(){const now=Date.now(),allow=new Set(doneSteps());let learned=0,due=0;ALLP.forEach(x=>{if(!allow.has(x.ci+"-"+x.si))return;const r=S.srs[srsKey(x.p[0])];if(r){learned++;if(r.d<=now)due++;}});return {learned,due};}
 /* длинную фразу режем на кусочки и собираем по нарастающей */
 function chunksOf(jp){
   const pl=plain(jp); if(pl.replace(/[、。！？…\s]/g,"").length<=5) return [];
@@ -1981,14 +1988,21 @@ function akPlan(review){
   const lens={10:[5,6],15:[8,10],20:[12,14]}[S.akLen]||[8,10];
   if(review){
     tasks.push({t:"say",ru:S.akShort?"Повторение.":pick(AK_REVIEW_HELLO)});
-    tasks.push({t:"final",review:true});
+    tasks.push({t:"final",review:true,allowed:doneSteps()});
     tasks.push({t:"end"});
     return tasks;
   }
   const s=ACAD[AK.ch].s[AK.st], newP=s.p, newSet=new Set(newP.map(p=>srsKey(p[0])));
-  const warm=srsPick(lens[0],newSet);
+  const allowed=doneSteps(AK.ch,AK.st);
+  const warm=srsPick(lens[0],newSet,allowed);
   if(!S.akShort) tasks.push({t:"preview"});
-  if(warm.length){ tasks.push({t:"say",ru:S.akShort?"Разминка.":pick(AK_WARM)}); warm.forEach((p,i)=>tasks.push({t:"recall",p,dir:i%3===2?"jr":"rj",grade:true})); }
+  if(warm.length){
+    const titles=[...new Set(warm.map(p=>{const h=ALLP.find(x=>x.p===p);return h?ACAD[h.ci].s[h.si].t:"";}).filter(Boolean))].slice(0,3);
+    tasks.push({t:"say",ru:S.akShort?"Разминка: "+titles.join(", ")+".":pick(AK_WARM)+" Повторяем: "+titles.join(", ")+"."});
+    warm.forEach((p,i)=>tasks.push({t:"recall",p,dir:i%3===2?"jr":"rj",grade:true}));
+  } else if(!S.akShort&&allowed.length===0){
+    tasks.push({t:"say",ru:AK.ch===0&&AK.st===0?"Это самый первый урок, так что старого нет. Начинаем с нуля.":"Прошлых уроков ты ещё не проходил, так что сразу к новому."});
+  }
   tasks.push({t:"say",ru:S.akShort?"Новое.":pick(AK_NEWBLOCK)});
   newP.forEach((p,i)=>{
     tasks.push({t:"intro",p,n:i+1,of:newP.length});
@@ -1998,19 +2012,19 @@ function akPlan(review){
   tasks.push({t:"say",ru:S.akShort?"Вперемешку.":pick(AK_MIX)});
   shuffle(newP).forEach(p=>tasks.push({t:"recall",p,dir:"rj"}));
   tasks.push({t:"say",ru:S.akShort?"Финал.":pick(AK_FINAL)});
-  tasks.push({t:"final",newP,oldN:lens[1]});
+  tasks.push({t:"final",newP,oldN:lens[1],allowed});
   tasks.push({t:"end"});
   return tasks;
 }
 function akStart(ci,si){
-  AK.exam=null;AK.review=false;AK.ch=ci;AK.st=si;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;AK.reviewed=0;
+  AK.lbl=null;AK.cur=null;AK.exam=null;AK.review=false;AK.ch=ci;AK.st=si;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;AK.reviewed=0;
   try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
   AK.plan=akPlan(false); AK.resume={i:0,t0:Date.now(),requeued:{}};
   wakeOn(); akRun(AK.resume);
 }
 function akReviewStart(){
   const st=srsStats(); if(!st.learned){ return; }
-  const first=srsPick(1)[0]; const hit=ALLP.find(x=>x.p===first);
+  const first=srsPick(1,null,doneSteps())[0]; const hit=ALLP.find(x=>x.p===first); AK.lbl=null; AK.cur=null;
   AK.exam=null;AK.review=true;AK.ch=hit?hit.ci:0;AK.st=hit?hit.si:0;AK.bad=0;AK.good=0;AK.mood="happy";AK.view={kind:"talk",ru:""};AK.paused=false;AK.reviewed=0;
   try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
   AK.plan=akPlan(true); AK.resume={i:0,t0:Date.now(),requeued:{}};
@@ -2023,7 +2037,7 @@ async function akRun(resume){
   const budget=S.akLen*60e3;
   const talk=async(ru,mood)=>{ if(mood)AK.mood=mood; AK.view={kind:"talk",ru}; akRender(); await speakP(ru,"ru"); return alive(); };
   const pauseFor=async(n,view)=>{ AK.skip=false; for(let t=n;t>0;t--){ if(AK.skip)break; AK.view=Object.assign({},view,{sec:t,total:n,skippable:full}); akRender(); await sleep(1000); if(!alive())return false; } AK.view=Object.assign({},view); return true; };
-  const setLabel=p=>{const h=ALLP.find(x=>x.p===p); if(h){AK.ch=h.ci;AK.st=h.si;}};
+  const setLabel=p=>{const h=ALLP.find(x=>x.p===p); AK.cur=h||null; AK.lbl=h&&(AK.review||h.ci!==AK.ch||h.si!==AK.st)?"Повтор · "+ACAD[h.ci].s[h.si].t:null;};
 
   async function intro(task){
     const p=task.p; setLabel(p);
@@ -2059,7 +2073,7 @@ async function akRun(resume){
   async function recall(task){
     const p=task.p; setLabel(p);
     const v={jp:p[0],ru:p[1]};
-    const pool=ACAD[AK.ch].s.flatMap(x=>x.p.map(q=>({jp:q[0],ru:q[1]})));
+    const pool=ACAD[AK.cur?AK.cur.ci:AK.ch].s.flatMap(x=>x.p.map(q=>({jp:q[0],ru:q[1]})));
     const jr=task.dir==="jr";
     const promptRu=jr?"Что значит:":(S.akShort?"Как будет: "+p[1].replace(/[?!.]+$/,"")+"?":p[3]);
     const promptHtml=jr?`<span class="akru">Что значит:</span><span class="jp akjp">${rb(p[0])}</span>`:`<span class="akru">${esc(promptRu)}</span>`;
@@ -2137,8 +2151,8 @@ async function akRun(resume){
       while(Date.now()-r.t0<budget-20e3&&k<60){
         let p=null, dir="rj";
         if(cycleNew.length&&(k%2===0||task.review)) p=cycleNew.shift();
-        if(!p){ const old=srsPick(30,new Set([...used,...(task.newP||[]).map(q=>srsKey(q[0]))])); p=old[0]||null; if(!p&&task.newP&&task.newP.length){ cycleNew=shuffle(task.newP.slice()); p=cycleNew.shift(); } }
-        if(!p){ const any=srsPick(1); p=any[0]; used.clear(); }
+        if(!p){ const old=srsPick(30,new Set([...used,...(task.newP||[]).map(q=>srsKey(q[0]))]),task.allowed); p=old[0]||null; if(!p&&task.newP&&task.newP.length){ cycleNew=shuffle(task.newP.slice()); p=cycleNew.shift(); } }
+        if(!p){ const any=srsPick(1,null,task.allowed); p=any[0]; used.clear(); }
         if(!p) break;
         used.add(srsKey(p[0])); if(used.size>25) used.clear();
         if(k%4===3) dir="jr";
@@ -2214,7 +2228,7 @@ function akExamStart(ci,lv){
   const pool=c.s.flatMap(x=>x.p);
   const qs=[]; let bag=[];
   while(qs.length<L.n){ if(!bag.length) bag=shuffle(pool.slice()); const p=bag.pop(); qs.push({p,type:Math.random()<(lv==="easy"?.65:.5)?"a":"b"}); }
-  AK.ch=ci; AK.st=0; AK.bad=0; AK.good=0; AK.mood="happy"; AK.paused=false;
+  AK.lbl=null; AK.review=false; AK.ch=ci; AK.st=0; AK.bad=0; AK.good=0; AK.mood="happy"; AK.paused=false;
   AK.exam={lv,lives:3,i:0,n:L.n,o:L.o,qs,streak:0,maxStreak:0};
   AK.view={kind:"talk",ru:""};
   try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
