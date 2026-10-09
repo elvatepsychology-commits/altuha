@@ -925,11 +925,13 @@ const V=(jp,ru)=>({jp,ru});
 let VOICES=[];
 function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
 try{loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
+const APP_VER="29";
 const V_MALE=/hattori|otoya|ichiro|keita|daichi|naoki|yuri\b|maxim|dmitr|pavel|male(?!.*female)/i;
 const V_GOOD=/premium|enhanced|улучш|natural|neural|online|siri/i;
 const V_FEM=/female|kyoko|o-ren|haruka|ayumi|nanami|sayaka|mizuki|aoi|shiori|milena|katya|irina|svetlana|dariya|alena|ekaterina|google/i;
 function voicesFor(lang){ return VOICES.filter(x=>x.lang&&x.lang.toLowerCase().replace("_","-").startsWith(lang)); }
-function voiceScore(x){ let s=0; if(V_GOOD.test(x.name)) s+=10; if(V_FEM.test(x.name)) s+=5; if(V_MALE.test(x.name)) s-=20; if(/google/i.test(x.name)) s+=3; if(!x.localService) s+=1; if(/eloquence|novelty|bad news|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|albert|fred|junior|ralph|grandma|grandpa|flo|reed|rocko|sandy|shelley/i.test(x.name)) s-=30; return s; }
+const vTier=x=>{ const u=(x.voiceURI||"")+" "+x.name; return /premium/i.test(u)?2:/enhanced|улучш|natural|neural/i.test(u)?1:0; };
+function voiceScore(x){ let s=0; s+=vTier(x)*12; if(V_GOOD.test(x.name)) s+=4; if(V_FEM.test(x.name)) s+=5; if(V_MALE.test(x.name)) s-=20; if(/google/i.test(x.name)) s+=3; if(!x.localService) s+=1; if(/eloquence|novelty|bad news|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|albert|fred|junior|ralph|grandma|grandpa|flo|reed|rocko|sandy|shelley/i.test(x.name)) s-=30; return s; }
 function femaleVoice(lang){
   const v=voicesFor(lang); if(!v.length) return null;
   const want=S&&S["v_"+lang]; if(want){ const w=v.find(x=>x.voiceURI===want||x.name===want); if(w) return w; }
@@ -2959,19 +2961,28 @@ function voiceScreen(){
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
   const list=lang=>{ const v=voicesFor(lang).filter(x=>voiceScore(x)>-25).sort((a,b)=>voiceScore(b)-voiceScore(a)); const cur=femaleVoice(lang);
     if(!v.length) return `<div class="note">Голосов для ${lang==="ja"?"японского":"русского"} нет. ${isIOS?"Скачай их в настройках (см. ниже).":""}</div>`;
-    return v.map(x=>`<div class="vrow ${cur&&cur.voiceURI===x.voiceURI?"on":""}"><button class="vpick" data-l="${lang}" data-u="${esc(x.voiceURI)}"><b>${esc(x.name)}</b><small>${V_GOOD.test(x.name)?"⭐ улучшенный · ":""}${V_MALE.test(x.name)?"мужской · ":""}${x.localService?"на устройстве":"онлайн"}</small></button><button class="mini" data-t="${lang}" data-u="${esc(x.voiceURI)}">▶</button></div>`).join(""); };
+    return v.map(x=>`<div class="vrow ${cur&&cur.voiceURI===x.voiceURI?"on":""}"><button class="vpick" data-l="${lang}" data-u="${esc(x.voiceURI)}"><b>${esc(x.name)}</b><small>${vTier(x)===2?"⭐⭐ премиум · ":vTier(x)===1?"⭐ улучшенный · ":"обычный (робот) · "}${V_MALE.test(x.name)?"мужской · ":""}${x.localService?"на устройстве":"онлайн"}</small></button><button class="mini" data-t="${lang}" data-u="${esc(x.voiceURI)}">▶</button></div>`).join(""); };
   const p=S.vPitch!=null?S.vPitch:1.05;
   app.innerHTML=`<section class="screen">
     <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Голос альтухи</h2></div>
     <div class="note">Альтуха говорит голосом, который есть у тебя в телефоне. Стандартный — робот. <b>Улучшенные</b> голоса звучат как живая девушка, но их надо один раз скачать (бесплатно, ~100–300 МБ).</div>
     ${isIOS?`<div class="vhow"><b>📱 На айфоне:</b><ol><li>Настройки → Универсальный доступ → Устный контент → Голоса</li><li><b>Японский</b> → Kyoko → скачай <b>«Kyoko (улучшенный)»</b> или <b>O-ren (улучшенный)</b></li><li><b>Русский</b> → скачай <b>«Milena (улучшенный)»</b> или Katya</li><li>Полностью закрой Safari (смахни) и открой сайт снова — выбери голос тут ⬇️</li></ol></div>`
       :`<div class="vhow"><b>💻 На компе:</b> лучше всего звучат голоса <b>Google 日本語</b> и <b>Google русский</b> в Chrome, или <b>Microsoft Nanami Online (Natural)</b> в Edge. На Маке ещё можно скачать улучшенные Kyoko/Milena: Настройки → Универсальный доступ → Устный контент → Системный голос → Управлять голосами.</div>`}
+    <div class="note" id="vDiag">Нашла голосов: японских ${voicesFor("ja").length}, русских ${voicesFor("ru").length}. Улучшенных: ${voicesFor("ja").concat(voicesFor("ru")).filter(x=>vTier(x)>0).length}. ${voicesFor("ja").concat(voicesFor("ru")).some(x=>vTier(x)>0)?"✅ Есть, выбирай со звёздочкой.":"❌ Safari пока не видит скачанные. Смотри «если не появился» внизу."}</div>
     <div class="label">Японский голос</div>${list("ja")}
     <div class="label">Русский голос</div>${list("ru")}
     <div class="label">Высота голоса: ${p.toFixed(2)}</div>
     <div class="chips">${[0.95,1,1.05,1.12,1.2].map(v=>`<button class="mini ${Math.abs(v-p)<.001?"on":""}" data-p="${v}">${v===1?"обычная":v<1?"ниже":v<1.1?"чуть выше":v<1.15?"выше":"писклявая"}</button>`).join("")}</div>
     <button class="big" id="vTest" style="margin-top:14px">▶ Послушать альтуху</button>
     <button class="ghost" id="vAuto">Вернуть автовыбор</button>
+    <details class="vhow"><summary><b>Скачал, а голос не появился?</b></summary><ol>
+      <li>Проверь, что скачалось до конца: в списке голосов у «Kyoko (улучшенный)» не должно быть кружка загрузки.</li>
+      <li>Закрой Safari полностью: смахни его из списка приложений, не просто вкладку. Иногда нужно перезагрузить айфон — Safari подхватывает новые голоса только после этого.</li>
+      <li>Если сайт открыт с экрана «Домой» как приложение — закрой и его тоже.</li>
+      <li>Проверь, что залил свежий index.html на GitHub: внизу этого экрана должна быть «версия ${APP_VER}».</li>
+      <li>Если и после перезагрузки звёздочек нет — значит твоя iOS не отдаёт улучшенные голоса сайтам (так бывает на некоторых версиях). Тогда выбери обычную Kyoko/Milena и поставь высоту «обычная» — меньше робота.</li>
+    </ol></details>
+    <div class="note" style="text-align:center;opacity:.6">версия ${APP_VER} · голосов всего: ${VOICES.length}</div>
   </section>`;
   document.getElementById("back").onclick=home;
   const TEST={ja:"はじめまして。わたしは ユキ です。きょうは いっしょに べんきょう しよう。",ru:"Привет, долбоёб. Ну что, учим японский или опять залипаешь?"};
@@ -2980,7 +2991,7 @@ function voiceScreen(){
   app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ S.vPitch=+b.dataset.p; save(); voiceScreen(); speakP(TEST.ru,"ru"); });
   document.getElementById("vTest").onclick=async()=>{ try{speechSynthesis.cancel()}catch(e){} await speakP(TEST.ru,"ru"); await speakP(TEST.ja,"ja"); };
   document.getElementById("vAuto").onclick=()=>{ delete S.v_ja; delete S.v_ru; delete S.vPitch; save(); voiceScreen(); };
-  if(!VOICES.length) setTimeout(()=>{ loadVoices(); if(VOICES.length&&document.querySelector(".vhow")) voiceScreen(); },700);
+  if(!VOICES.length||!AK._vRetry){ AK._vRetry=true; setTimeout(()=>{ const n=VOICES.length; loadVoices(); if(VOICES.length!==n&&document.getElementById("vDiag")) voiceScreen(); },900); }
   window.scrollTo(0,0);
 }
 function progressScreen(){
