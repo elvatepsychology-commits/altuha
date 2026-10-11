@@ -940,7 +940,7 @@ const V=(jp,ru)=>({jp,ru});
 let VOICES=[];
 function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
 try{loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
-const APP_VER="31";
+const APP_VER="32";
 const V_MALE=/hattori|otoya|ichiro|keita|daichi|naoki|yuri\b|maxim|dmitr|pavel|male(?!.*female)/i;
 const V_GOOD=/premium|enhanced|улучш|natural|neural|online|siri/i;
 const V_FEM=/female|kyoko|o-ren|haruka|ayumi|nanami|sayaka|mizuki|aoi|shiori|milena|katya|irina|svetlana|dariya|alena|ekaterina|google/i;
@@ -1474,8 +1474,15 @@ function kvOk(alts,item){
   return alts.some(a0=>{ let a=String(a0).trim().replace(/[。、.!！?？\s]/g,""); if(!a) return false;
     for(const [kj,rd] of KV_KANJI) if(a===kj) a=rd;
     if(/^[a-z]+$/i.test(a)) return item.r.includes(a.toLowerCase())||kvKey(a)===want;
-    return kvKey(a)===want; });
+    if(kvKey(a)===want) return true;
+    // распознавалка на один слог выдаёт слова: る → ブルー, の → ノー. Засчитываем, если наш слог там есть, а слово короткое
+    const m=kvMorae(a); return m.length>=1&&m.length<=3&&m.includes(want); });
 }
+function kvMorae(s){ const M=romaMap(); s=toHira(String(s)); for(const [kj,rd] of KV_KANJI) s=s.split(kj).join(rd); const out=[]; let i=0;
+  while(i<s.length){ const two=s.substr(i,2); if(M[two]&&/[ゃゅょぁぃぅぇぉ]/.test(two[1])){ out.push(kvKey(two)); i+=2; continue; } const c=s[i]; if(c==="っ"||c==="ー"){i++;continue;} if(M[c]) out.push(kvKey(c)); else if(/[一-鿿]/.test(c)) out.push("?"); i++; }
+  return out; }
+/* ответ чистый одним слогом, но не тот — значит реально ошибся; иначе распознавалка просто не поняла */
+function kvClearWrong(alts){ return alts.some(a=>{ const m=kvMorae(String(a).replace(/[。、.!！?？\s]/g,"")); return m.length===1&&m[0]!=="?"; }); }
 function kvScreen(){
   hfStop(); hideSheet();
   app.innerHTML=`<section class="screen">
@@ -1512,10 +1519,11 @@ function kvRender(){
     <div class="top"><button class="x" id="kvQuit" aria-label="Стоп">✕</button><div class="hfmode">${eyes?"👀🎤 называю":"🎧🎤 на слух"} · №${KV.n} · ✅${KV.ok} ❌${KV.bad} · 🔥${KV.streak}</div></div>
     <div class="kvstage"><div class="kvgirl">${girlSVG(KV.mood)}</div>${big}</div>
     <div class="kvbubble ${KV.wasBad&&reveal?"bad":""}">${esc(KV.msg||"")}${reveal&&q?`<div class="kvans"><span class="kana">${q.item.k}</span> · ${esc(kvRu(q.item.k))} · ${esc(q.item.disp)}</div>`:""}</div>
-    ${KV.state==="listen"||KV.state==="echo"?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${KV.state==="listen"?(KV.mode==="eyes"?"Прочитай букву вслух":"Скажи по-японски"):"Повтори правильно"} <small>· жду сколько угодно</small></b><span id="micTxt">${esc(KV.said||"слушаю…")}</span></span></div><div class="cmdhint">команды: «повтори» · «не помню» · «пропусти»</div>`:`<div class="micbar" style="opacity:.45"><span class="mtx"><b>${KV.said?"услышала: "+esc(KV.said):"…"}</b></span></div>`}
+    ${KV.state==="listen"||KV.state==="echo"?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${KV.state==="listen"?(KV.mode==="eyes"?"Прочитай букву вслух":"Скажи по-японски"):"Повтори правильно"} <small>· жду сколько угодно</small></b><span id="micTxt">${esc(KV.said||"слушаю…")}</span></span></div><div class="cmdhint">команды: «повтори» · «не помню» · «пропусти»</div><button class="mini" id="kvForce" style="display:block;margin:8px auto 0">✅ Я сказал правильно — засчитай</button>`:`<div class="micbar" style="opacity:.45"><span class="mtx"><b>${KV.said?"услышала: "+esc(KV.said):"…"}</b></span></div>`}
     <div class="hfctl"><button class="big" id="kvPause">${KV.paused?"▶ Дальше":"⏸ Пауза"}</button><button class="ghost" id="kvStop">Стоп, хватит</button></div>
   </section>`;
   document.getElementById("kvQuit").onclick=kvScreen;
+  { const f=document.getElementById("kvForce"); if(f) f.onclick=()=>{ KV.force=true; cancelListen(); }; }
   document.getElementById("kvStop").onclick=kvScreen;
   document.getElementById("kvPause").onclick=()=>{ if(KV.paused){KV.paused=false;wakeOn();kvLoop(true);} else {KV.paused=true;HF.token++;stopListen();try{speechSynthesis.cancel()}catch(e){};wakeOff();kvRender();} };
 }
@@ -1532,8 +1540,9 @@ async function kvLoop(resume){
     if(q.rep){ await kanaSayP(q.item.k); if(!alive())return; }
     let tries=0, verdict=null;
     while(alive()&&!verdict){
-      KV.state="listen"; KV.said=""; kvRender();
+      KV.state="listen"; KV.said=""; KV.force=false; kvRender();
       const h=await listenUntil("ja",alive); if(!alive())return;
+      if(KV.force){ KV.force=false; verdict="ok"; break; }
       if(h.cancel||h.dead) return;
       if(VOICE.denied){ KV.msg="❌ "+voiceNote(); KV.state="ask"; kvRender(); await speakP("Микрофон не работает. Разреши доступ.","ru"); KV.paused=true; kvRender(); return; }
       const alts=(h.alts||[]).filter(Boolean); KV.said=alts[0]||""; kvRender();
@@ -1541,7 +1550,10 @@ async function kvLoop(resume){
       if(cmd==="repeat"){ if(!await say(pick(VOICE_REPEAT)))return; if(q.rep||!q.show) { if(q.rep) await kanaSayP(q.item.k); else await speakP(q.ask,"ru"); } if(!alive())return; continue; }
       if(cmd==="forgot"){ verdict="forgot"; break; }
       if(kvOk(alts,q.item)) verdict="ok";
-      else { tries++; if(tries>=1) verdict="bad"; }
+      else { tries++;
+        if(kvClearWrong(alts)||tries>=3) verdict="bad";
+        else { if(!await say(pick(["Не поняла, что ты сказал. Чётче, и потяни звук.","Чё? Не расслышала. Ещё раз, громче.","Скажи нормально, я не поняла. Можно два раза подряд."]),"calm"))return; }
+      }
     }
     if(!alive())return;
     const s=st(q.item.k);
@@ -1559,14 +1571,16 @@ async function kvLoop(resume){
       if(!await say("Правильно:"))return;
       await kanaSayP(q.item.k); if(!alive())return;
       // повтори правильно — до двух попыток
-      for(let e=0;e<2&&alive();e++){
+      for(let e=0;e<3&&alive();e++){
         KV.state="echo"; KV.msg=e?"Ещё раз. Нормально скажи.":"Повтори."; kvRender(); await speakP(KV.msg,"ru"); if(!alive())return;
-        KV.state="echo"; KV.said=""; kvRender();
-        const h=await listenUntil("ja",alive); if(!alive())return; if(h.cancel||h.dead) return;
+        KV.state="echo"; KV.said=""; KV.force=false; kvRender();
+        const h=await listenUntil("ja",alive); if(!alive())return;
+        if(KV.force){ KV.force=false; await say("Ладно, верю. Поехали дальше.","happy"); break; }
+        if(h.cancel||h.dead) return;
         const alts=(h.alts||[]).filter(Boolean); KV.said=alts[0]||""; kvRender();
         if(voiceCmd(alts)==="forgot") break;
         if(kvOk(alts,q.item)){ await say(pick(["Вот, можешь же.","Ну вот. Запомни, долбоёб.","Норм. Не забывай.","Ага, так. Запомнил?"]),"happy"); break; }
-        if(e===1){ await say(pick(["Ладно, похуй, потом ещё спрошу.","Окей, вернусь к ней позже. Не расслабляйся."]),"pout"); }
+        if(e===2){ await say(pick(["Ладно, похуй, потом ещё спрошу.","Окей, вернусь к ней позже. Не расслабляйся."]),"pout"); }
         else await kanaSayP(q.item.k);
       }
       if(!alive())return;
