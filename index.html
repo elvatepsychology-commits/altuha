@@ -453,7 +453,7 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .tile b{font-weight:900;font-size:15px;line-height:1.2}
 .tile small{font-size:12px;color:var(--muted);line-height:1.3;margin-top:auto}
 .tiles.small .tile{min-height:0}
-.hftr{font-size:30px;margin-top:6px;color:var(--pink)!important;opacity:1!important;animation:pop .25s ease-out}
+.hftr{font-size:42px;margin-top:6px;color:var(--pink)!important;opacity:1!important;animation:pop .25s ease-out}
 .hftr b{font-weight:900}
 @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 .hfcard.on{border-color:var(--pink);background:#fff0f6}
@@ -943,7 +943,7 @@ const V=(jp,ru)=>({jp,ru});
 let VOICES=[];
 function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
 try{loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
-const APP_VER="34";
+const APP_VER="35";
 const V_MALE=/hattori|otoya|ichiro|keita|daichi|naoki|yuri\b|maxim|dmitr|pavel|male(?!.*female)/i;
 const V_GOOD=/premium|enhanced|улучш|natural|neural|online|siri/i;
 const V_FEM=/female|kyoko|o-ren|haruka|ayumi|nanami|sayaka|mizuki|aoi|shiori|milena|katya|irina|svetlana|dariya|alena|ekaterina|google/i;
@@ -1429,6 +1429,7 @@ function liveEnd(left){
    ================================================================= */
 if(!S.hfT) S.hfT={ears:5,eyes:7};
 const hfT=m=>Math.min(9,Math.max(1,S.hfT[m]||5));
+const hfR=()=>Math.min(9,Math.max(1,S.hfR||2));
 const HF={token:0,mode:null,content:"kana",count:0,wake:null};
 const NUM_RU=["Один","Два","Три","Четыре"];
 function speakP(text,lang,rate,pitch){
@@ -1643,11 +1644,12 @@ function hfMenu(){
       <button class="mode" data-c="phr" aria-pressed="${HF.content==="phr"}"><span class="k">恋</span><span class="t">Фразы и предложения</span><span class="d">всё из «Пикапим альтух»</span></button>
     </div>
     <div class="label">Секундомер на ответ</div>
-    <div class="timerset">${["ears","eyes"].map(m=>`<div class="tsrow"><span class="tsl">${m==="ears"?"🎧 наушники":"👀 экран"}</span><div class="tschips">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="tsc" data-tm="${m}" data-n="${n}" aria-pressed="${hfT(m)===n}">${n}</button>`).join("")}</div></div>`).join("")}</div>
+    <div class="timerset">${["ears","eyes"].map(m=>`<div class="tsrow"><span class="tsl">${m==="ears"?"🎧 наушники":"👀 экран"}</span><div class="tschips">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="tsc" data-tm="${m}" data-n="${n}" aria-pressed="${hfT(m)===n}">${n}</button>`).join("")}</div></div>`).join("")}
+      <div class="tsrow"><span class="tsl">👁 сколько висит ответ (буквы)</span><div class="tschips">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="tsc" data-rv="${n}" aria-pressed="${hfR()===n}">${n}</button>`).join("")}</div></div></div>
     <div class="label">Ты сейчас кто? Жми — и поехали</div>
     <div class="hfpick">
       <button class="hfcard" data-m="ears"><span class="ic">🎧</span><b>Я в наушниках</b><small>Глаза заняты, руки заняты. Только слушаю. Фразы для альтух: вопрос, три варианта, ${hfT("ears")} сек, ответ.</small></button>
-      <button class="hfcard" data-m="eyes"><span class="ic">👀</span><b>Смотрю в экран</b><small>Пальцем ткнуть не могу, но вижу. Кана или фразы: ${hfT("eyes")} сек, правильный подсвечивается сам.</small></button>
+      <button class="hfcard" data-m="eyes"><span class="ic">👀</span><b>Смотрю в экран</b><small>Пальцем ткнуть не могу, но вижу. Буквы: видишь букву, называешь сам, через ${hfT("eyes")} сек — ответ на ${hfR()} сек. Фразы: с вариантами.</small></button>
     </div>
     <button class="hf-entry" id="kvE2" style="margin-top:12px"><span class="k">🎤</span><span><b>Азбука голосом</b><small>Буквы отвечаешь вслух, руки не нужны</small></span></button>
     <div class="foot">В наушниках без голоса гоняются фразы, буквы — в «Азбуке голосом»</div>
@@ -1656,7 +1658,8 @@ function hfMenu(){
   app.querySelectorAll(".mode[data-c]").forEach(b=>b.onclick=()=>{ if(b.dataset.c==="mine"&&!myPool().length) return pickerScreen("hf"); HF.content=b.dataset.c;app.querySelectorAll(".mode[data-c]").forEach(x=>x.setAttribute("aria-pressed",x===b));});
   app.querySelectorAll(".hfcard").forEach(b=>b.onclick=()=>hfStart(b.dataset.m));
   { const e=document.getElementById("kvE2"); if(e) e.onclick=kvScreen; }
-  app.querySelectorAll(".tsc").forEach(b=>b.onclick=()=>{S.hfT[b.dataset.tm]=+b.dataset.n;save();hfMenu();});
+  app.querySelectorAll(".tsc[data-tm]").forEach(b=>b.onclick=()=>{S.hfT[b.dataset.tm]=+b.dataset.n;save();hfMenu();});
+  app.querySelectorAll(".tsc[data-rv]").forEach(b=>b.onclick=()=>{S.hfR=+b.dataset.rv;save();hfMenu();});
   window.scrollTo(0,0);
 }
 function hfPhrasePool(){const seen=new Set();return ALLV().filter(v=>{const k=plain(v.jp);if(seen.has(k))return false;seen.add(k);return true;});}
@@ -1711,22 +1714,24 @@ function hfRender(q,state,sec,total){
     ? (q.kind==="jr"?`<div class="hfq jp">${rb(q.show)}</div>`
       :q.kind==="rj"?`<div class="hfq ru">${esc(q.showRu)}</div>`
       :q.kind==="twin"?`<div class="hfq kana">${q.show}</div><div class="hfsub">найди пару</div>`
-      :q.kind==="read"?`<div class="hfq kana">${q.show}</div>${reveal?`<div class="hftr"><b>${esc(q.item.disp)}</b> · <b>${esc(kanaRu(q.item.k)||"")}</b></div>`:""}<div class="hfsub">как читается? · ${q.hint}</div>`
+      :q.kind==="read"?`<div class="hfq kana">${q.show}</div><div class="hftr" style="visibility:${reveal?"visible":"hidden"}"><b>${esc(q.item.disp)}</b> · <b>${esc(kanaRu(q.item.k)||"")}</b></div>`
       :`<div class="hfq listen">🔊</div><div class="hfsub">слушай и найди · ${q.hint}</div>`)
     : `<div class="hfq ears">🎧</div><div class="hfsub">${q.kind==="jr"?"переведи на слух":"как сказать по-японски"}</div>`;
-  const opts=`<div class="hfopts ${eyes?"":"dim"}">${q.opts.map((o,i)=>`<div class="hfo ${reveal?(o.ok?"ok":"no"):""}"><span class="num">${i+1}</span><span class="${o.kana?"kana":o.jp?"jp":"ru"}">${o.kana?o.label:o.jp?rb(o.label):esc(o.label)}</span></div>`).join("")}</div>`;
+  const opts=q.kind==="read"?"":`<div class="hfopts ${eyes?"":"dim"}">${q.opts.map((o,i)=>`<div class="hfo ${reveal?(o.ok?"ok":"no"):""}"><span class="num">${i+1}</span><span class="${o.kana?"kana":o.jp?"jp":"ru"}">${o.kana?o.label:o.jp?rb(o.label):esc(o.label)}</span></div>`).join("")}</div>`;
   const pct=state==="count"?Math.round(sec/total*100):state==="reveal"?0:100;
   app.innerHTML=`<section class="screen hf">
     <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="hfmode">${eyes?"👀 смотрю в экран":"🎧 в наушниках"} · №${HF.count}</div></div>
     <div class="hfstage">${head}<div class="timer"><i style="width:${pct}%"></i></div>${state==="count"?`<div class="sec">${sec}</div>`:reveal?`<div class="sec ok">✓</div>`:`<div class="sec">…</div>`}</div>
     ${opts}
     <div class="tsrun"><button class="mini" id="tminus" aria-label="Меньше секунд">−</button><span>⏱ ${hfT(HF.mode)} сек на ответ</span><button class="mini" id="tplus" aria-label="Больше секунд">+</button></div>
+    ${q.kind==="read"?`<div class="tsrun"><button class="mini" id="rminus" aria-label="Меньше">−</button><span id="rlbl">👁 ответ висит ${hfR()} сек</span><button class="mini" id="rplus" aria-label="Больше">+</button></div>`:""}
     <div class="hfctl"><button class="big" id="pause">${HF.paused?"▶ Дальше":"⏸ Пауза"}</button><button class="ghost" id="stop">Стоп, хватит</button></div>
   </section>`;
   document.getElementById("quit").onclick=hfMenu;
   document.getElementById("stop").onclick=hfMenu;
   const adj=d=>{S.hfT[HF.mode]=Math.min(9,Math.max(1,hfT(HF.mode)+d));save();const el=app.querySelector(".tsrun span");if(el)el.textContent=`⏱ ${hfT(HF.mode)} сек на ответ`;};
   document.getElementById("tminus").onclick=()=>adj(-1);
+  { const rm=document.getElementById("rminus"), rp=document.getElementById("rplus"); const ra=d=>{S.hfR=Math.min(9,Math.max(1,hfR()+d));save();const el=document.getElementById("rlbl");if(el)el.textContent=`👁 ответ висит ${hfR()} сек`;}; if(rm) rm.onclick=()=>ra(-1); if(rp) rp.onclick=()=>ra(1); }
   document.getElementById("tplus").onclick=()=>adj(1);
   document.getElementById("pause").onclick=()=>{ if(HF.paused){HF.paused=false;wakeOn();hfLoop();} else {HF.paused=true;HF.token++;try{speechSynthesis.cancel()}catch(e){};wakeOff();hfRender(q,state,sec,total);} };
 }
@@ -1744,6 +1749,14 @@ async function hfLoop(){
       await speakP(q.v.jp,"ja",.9); if(!alive())return;
       await sleep(Math.max(2,S.repPause)*1000); if(!alive())return;
       srsSeen(q.v.jp);
+    }
+    if(q.kind==="read"){
+      for(let s=T;s>0;s--){ hfRender(q,"count",s,T); tick(false); await sleep(1000); if(!alive())return; }
+      tick(true); hfRender(q,"reveal",0,T);
+      speakP(q.answerJa,"ja",.8).then(()=>{ if(alive()) speakP(kanaRu(q.answerJa)||"","ru",.9); });
+      await sleep(hfR()*1000); if(!alive())return;
+      try{speechSynthesis.cancel()}catch(e){}
+      continue;
     }
     hfRender(q,"ask",T,T);
     await speakP(q.sayIntro,"ru"); if(!alive())return;
