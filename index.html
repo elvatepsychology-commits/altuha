@@ -453,6 +453,9 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .tile b{font-weight:900;font-size:15px;line-height:1.2}
 .tile small{font-size:12px;color:var(--muted);line-height:1.3;margin-top:auto}
 .tiles.small .tile{min-height:0}
+.hftr{font-size:30px;margin-top:6px;color:var(--pink)!important;opacity:1!important;animation:pop .25s ease-out}
+.hftr b{font-weight:900}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 .hfcard.on{border-color:var(--pink);background:#fff0f6}
 .kv .kvstage{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#ffe98a,#ffd04d);border-radius:24px;padding:14px;min-height:230px;margin-top:8px;overflow:hidden}
 .kv .kvgirl{width:130px;flex:none}
@@ -940,7 +943,7 @@ const V=(jp,ru)=>({jp,ru});
 let VOICES=[];
 function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
 try{loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
-const APP_VER="32";
+const APP_VER="34";
 const V_MALE=/hattori|otoya|ichiro|keita|daichi|naoki|yuri\b|maxim|dmitr|pavel|male(?!.*female)/i;
 const V_GOOD=/premium|enhanced|улучш|natural|neural|online|siri/i;
 const V_FEM=/female|kyoko|o-ren|haruka|ayumi|nanami|sayaka|mizuki|aoi|shiori|milena|katya|irina|svetlana|dariya|alena|ekaterina|google/i;
@@ -1483,11 +1486,40 @@ function kvMorae(s){ const M=romaMap(); s=toHira(String(s)); for(const [kj,rd] o
   return out; }
 /* ответ чистый одним слогом, но не тот — значит реально ошибся; иначе распознавалка просто не поняла */
 function kvClearWrong(alts){ return alts.some(a=>{ const m=kvMorae(String(a).replace(/[。、.!！?？\s]/g,"")); return m.length===1&&m[0]!=="?"; }); }
+/* слушаем ПО-РУССКИ: русская распознавалка нормально пишет «ру», «хэ», «фу», а японская на один слог выдаёт 収集 и 支援 */
+const KV_C={k:["к"],g:["г"],s:["с"],z:["з","дз"],t:["т"],d:["д"],n:["н"],h:["х"],b:["б"],p:["п"],m:["м"],r:["р","л"],w:["в","у"],f:["ф","х"],v:["в","б"],sh:["ш","с","щ"],ch:["ч","т"],ts:["ц","тс"],j:["дж","дз","ж","з"],dz:["дз","з"]};
+const KV_V={a:["а"],i:["и"],u:["у"],e:["э","е"],o:["о"]};
+const KV_Y={a:["я"],u:["ю"],o:["ё"]};
+function kvCyr(r){ const out=new Set();
+  if(r==="n") return ["н","эн","нн","нь","м"];
+  if(r==="wo") return ["о","во","уо"];
+  let m=r.match(/^(sh|ch|ts|dz|j)?([kgsztdnhbpmrwfv]?)(y?)([aiueo])$/); if(!m) return [];
+  const cons=m[1]||m[2]||"", y=m[3], v=m[4];
+  if(!cons){ if(y) (KV_Y[v]||[]).forEach(x=>{out.add(x);out.add("й"+(KV_V[v]||[v])[0]);}); else KV_V[v].forEach(x=>out.add(x)); return [...out]; }
+  const C=KV_C[cons]||[cons];
+  if(y){ C.forEach(c=>(KV_Y[v]||[]).forEach(x=>{out.add(c+x); out.add(c+"ь"+x);})); }
+  else if(["sh","ch","j"].includes(cons)&&v!=="i"){ C.forEach(c=>{ if(/[шчжщ]$/.test(c)) out.add(c+KV_V[v][0]); else (KV_Y[v]||[]).forEach(x=>out.add(c+x)); }); }
+  else C.forEach(c=>KV_V[v].forEach(x=>out.add(c+x)));
+  if(v==="i") C.forEach(c=>out.add(c+"ы"));
+  return [...out]; }
+const KV_ALLCYR=()=>KV._all||(KV._all=ITEMS.map(i=>({k:i.k,v:new Set(i.r.flatMap(kvCyr))})));
+const kvNormRu=s=>String(s).toLowerCase().replace(/ё/g,"ё").replace(/[^а-яёa-z]/g,"");
+function kvRuMatch(norm,vars){ for(const v of vars){ if(!v) continue; if(norm===v) return true;
+    if(new RegExp("^("+v+")+$").test(norm)) return true;               // «руру», «ру-ру»
+    const last=v.slice(-1); if(/[аиуэеоёюяы]/.test(last)&&new RegExp("^"+v+last+"+$").test(norm)) return true; // «руууу»
+    if(norm===v.replace(/е/g,"э")) return true; }
+  return false; }
+function kvOkRu(alts,item){ const vars=new Set(item.r.flatMap(kvCyr)); [...vars].forEach(v=>{ vars.add(v.replace(/э/g,"е")); });
+  return alts.some(a=>{ if(/^[a-z\s-]+$/i.test(a)&&item.r.includes(a.toLowerCase().replace(/[^a-z]/g,""))) return true;
+    const words=String(a).toLowerCase().split(/[\s,.!?-]+/).filter(Boolean);
+    return kvRuMatch(kvNormRu(a),vars)||(words.length<=3&&words.some(w=>kvRuMatch(kvNormRu(w),vars))); }); }
+/* чётко сказал другую букву — это ошибка; любая другая хрень — «не поняла» */
+function kvClearWrongRu(alts,item){ return alts.slice(0,2).some(a=>{ const n=kvNormRu(a); if(!n||n.length>4) return false; return KV_ALLCYR().some(o=>o.k!==item.k&&BYK[o.k].r[0]!==item.r[0]&&kvRuMatch(n,o.v)); }); }
 function kvScreen(){
   hfStop(); hideSheet();
   app.innerHTML=`<section class="screen">
     <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Азбука голосом</h2></div>
-    <div class="note">Руки не нужны. Альтуха спрашивает — ты отвечаешь вслух, микрофон включается сам. Ошибся — получаешь пизды и повторяешь. Команды: «повтори», «не помню», «пропусти».</div>
+    <div class="note">Руки не нужны. Альтуха спрашивает — ты отвечаешь вслух, микрофон включается сам. Говори как читается: «ру», «хэ», «фу», «кя» — она слушает по-русски, так букву понимает намного лучше. Ошибся — получаешь пизды и повторяешь. Команды: «повтори», «не помню», «пропусти».</div>
     <div class="label">Как гоняем</div>
     <div class="hfpick">
       <button class="hfcard ${KV.mode==="eyes"?"on":""}" data-kv="eyes"><span class="ic">👀🎤</span><b>Вижу букву — называю</b><small>На экране буква, ты её читаешь вслух. Ни одного нажатия.</small></button>
@@ -1519,7 +1551,7 @@ function kvRender(){
     <div class="top"><button class="x" id="kvQuit" aria-label="Стоп">✕</button><div class="hfmode">${eyes?"👀🎤 называю":"🎧🎤 на слух"} · №${KV.n} · ✅${KV.ok} ❌${KV.bad} · 🔥${KV.streak}</div></div>
     <div class="kvstage"><div class="kvgirl">${girlSVG(KV.mood)}</div>${big}</div>
     <div class="kvbubble ${KV.wasBad&&reveal?"bad":""}">${esc(KV.msg||"")}${reveal&&q?`<div class="kvans"><span class="kana">${q.item.k}</span> · ${esc(kvRu(q.item.k))} · ${esc(q.item.disp)}</div>`:""}</div>
-    ${KV.state==="listen"||KV.state==="echo"?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${KV.state==="listen"?(KV.mode==="eyes"?"Прочитай букву вслух":"Скажи по-японски"):"Повтори правильно"} <small>· жду сколько угодно</small></b><span id="micTxt">${esc(KV.said||"слушаю…")}</span></span></div><div class="cmdhint">команды: «повтори» · «не помню» · «пропусти»</div><button class="mini" id="kvForce" style="display:block;margin:8px auto 0">✅ Я сказал правильно — засчитай</button>`:`<div class="micbar" style="opacity:.45"><span class="mtx"><b>${KV.said?"услышала: "+esc(KV.said):"…"}</b></span></div>`}
+    ${KV.state==="listen"||KV.state==="echo"?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${KV.state==="listen"?(KV.mode==="eyes"?"Прочитай букву вслух":"Скажи, как будет"):"Повтори правильно"} <small>· жду сколько угодно</small></b><span id="micTxt">${esc(KV.said||"слушаю…")}</span></span></div><div class="cmdhint">команды: «повтори» · «не помню» · «пропусти»</div><button class="mini" id="kvForce" style="display:block;margin:8px auto 0">✅ Я сказал правильно — засчитай</button>`:`<div class="micbar" style="opacity:.45"><span class="mtx"><b>${KV.said?"услышала: "+esc(KV.said):"…"}</b></span></div>`}
     <div class="hfctl"><button class="big" id="kvPause">${KV.paused?"▶ Дальше":"⏸ Пауза"}</button><button class="ghost" id="kvStop">Стоп, хватит</button></div>
   </section>`;
   document.getElementById("kvQuit").onclick=kvScreen;
@@ -1541,7 +1573,7 @@ async function kvLoop(resume){
     let tries=0, verdict=null;
     while(alive()&&!verdict){
       KV.state="listen"; KV.said=""; KV.force=false; kvRender();
-      const h=await listenUntil("ja",alive); if(!alive())return;
+      const h=await listenUntil("ru",alive); if(!alive())return;
       if(KV.force){ KV.force=false; verdict="ok"; break; }
       if(h.cancel||h.dead) return;
       if(VOICE.denied){ KV.msg="❌ "+voiceNote(); KV.state="ask"; kvRender(); await speakP("Микрофон не работает. Разреши доступ.","ru"); KV.paused=true; kvRender(); return; }
@@ -1549,9 +1581,15 @@ async function kvLoop(resume){
       const cmd=voiceCmd(alts);
       if(cmd==="repeat"){ if(!await say(pick(VOICE_REPEAT)))return; if(q.rep||!q.show) { if(q.rep) await kanaSayP(q.item.k); else await speakP(q.ask,"ru"); } if(!alive())return; continue; }
       if(cmd==="forgot"){ verdict="forgot"; break; }
-      if(kvOk(alts,q.item)) verdict="ok";
+      if(kvOkRu(alts,q.item)||kvOk(alts,q.item)) verdict="ok";
       else { tries++;
-        if(kvClearWrong(alts)||tries>=3) verdict="bad";
+        if(kvClearWrongRu(alts,q.item)) verdict="bad";
+        else if(tries>=2){ // два раза не разобрала — спросим да/нет, руки всё равно не нужны
+          KV.state="reveal"; KV.wasOk=false; await say("Не разобрала. Правильно:","calm"); if(!alive())return; await kanaSayP(q.item.k); if(!alive())return;
+          if(!await say("Ты так и сказал? Да или нет?"))return;
+          KV.state="listen"; KV.said=""; kvRender(); const yn=await listenUntil("ru",alive); if(!alive())return;
+          const ya=(yn.alts||[]).filter(Boolean); KV.said=ya[0]||""; kvRender();
+          verdict=(KV.force||ruOk(ya,"да"))?"ok":"bad"; KV.force=false; break; }
         else { if(!await say(pick(["Не поняла, что ты сказал. Чётче, и потяни звук.","Чё? Не расслышала. Ещё раз, громче.","Скажи нормально, я не поняла. Можно два раза подряд."]),"calm"))return; }
       }
     }
@@ -1574,12 +1612,12 @@ async function kvLoop(resume){
       for(let e=0;e<3&&alive();e++){
         KV.state="echo"; KV.msg=e?"Ещё раз. Нормально скажи.":"Повтори."; kvRender(); await speakP(KV.msg,"ru"); if(!alive())return;
         KV.state="echo"; KV.said=""; KV.force=false; kvRender();
-        const h=await listenUntil("ja",alive); if(!alive())return;
+        const h=await listenUntil("ru",alive); if(!alive())return;
         if(KV.force){ KV.force=false; await say("Ладно, верю. Поехали дальше.","happy"); break; }
         if(h.cancel||h.dead) return;
         const alts=(h.alts||[]).filter(Boolean); KV.said=alts[0]||""; kvRender();
         if(voiceCmd(alts)==="forgot") break;
-        if(kvOk(alts,q.item)){ await say(pick(["Вот, можешь же.","Ну вот. Запомни, долбоёб.","Норм. Не забывай.","Ага, так. Запомнил?"]),"happy"); break; }
+        if(kvOkRu(alts,q.item)||kvOk(alts,q.item)){ await say(pick(["Вот, можешь же.","Ну вот. Запомни, долбоёб.","Норм. Не забывай.","Ага, так. Запомнил?"]),"happy"); break; }
         if(e===2){ await say(pick(["Ладно, похуй, потом ещё спрошу.","Окей, вернусь к ней позже. Не расслабляйся."]),"pout"); }
         else await kanaSayP(q.item.k);
       }
@@ -1633,7 +1671,8 @@ function hfMakeQ(){
       return {kind:"twin",show:item.k,sayIntro:"Найди пару.",sayJa:item.k,opts:opts.map(o=>({label:o.k,kana:true,ok:o===tw})),answerJa:tw.k,answerRu:null};
     }
     const opts=shuffle([item,...distractors(item,item.s,n-1)]);
-    return {kind:"listen",show:null,sayIntro:"Найди.",sayJa:item.k,opts:opts.map(o=>({label:o.k,kana:true,ok:o===item})),answerJa:item.k,answerRu:null,hint:item.s==="h"?"хирагана":"катакана"};
+    const tr=o=>`${o.disp} · ${kanaRu(o.k)||""}`;
+    return {kind:"read",item,show:item.k,sayIntro:pick(["Как читается?","Что за буква?","Читай.","Ну, как она звучит?"]),sayJa:null,opts:opts.map(o=>({label:tr(o),ok:o===item})),answerJa:item.k,answerRu:null,hint:item.s==="h"?"хирагана":"катакана"};
   }
   const pool=hfPhrasePool();
   // умный выбор: новая фраза только изредка и сначала разбирается, остальное — повтор того, что пора освежить
@@ -1672,6 +1711,7 @@ function hfRender(q,state,sec,total){
     ? (q.kind==="jr"?`<div class="hfq jp">${rb(q.show)}</div>`
       :q.kind==="rj"?`<div class="hfq ru">${esc(q.showRu)}</div>`
       :q.kind==="twin"?`<div class="hfq kana">${q.show}</div><div class="hfsub">найди пару</div>`
+      :q.kind==="read"?`<div class="hfq kana">${q.show}</div>${reveal?`<div class="hftr"><b>${esc(q.item.disp)}</b> · <b>${esc(kanaRu(q.item.k)||"")}</b></div>`:""}<div class="hfsub">как читается? · ${q.hint}</div>`
       :`<div class="hfq listen">🔊</div><div class="hfsub">слушай и найди · ${q.hint}</div>`)
     : `<div class="hfq ears">🎧</div><div class="hfsub">${q.kind==="jr"?"переведи на слух":"как сказать по-японски"}</div>`;
   const opts=`<div class="hfopts ${eyes?"":"dim"}">${q.opts.map((o,i)=>`<div class="hfo ${reveal?(o.ok?"ok":"no"):""}"><span class="num">${i+1}</span><span class="${o.kana?"kana":o.jp?"jp":"ru"}">${o.kana?o.label:o.jp?rb(o.label):esc(o.label)}</span></div>`).join("")}</div>`;
@@ -1719,6 +1759,7 @@ async function hfLoop(){
     const idx=q.opts.findIndex(o=>o.ok);
     if(eyes){
       if(q.answerRu){ await speakP("Ответ: "+q.answerRu,"ru"); }
+      else if(q.kind==="read"){ await speakP("Это","ru"); if(!alive())return; await speakP(q.answerJa+"。 "+q.answerJa,"ja",.55); if(!alive())return; await speakP(kanaRu(q.answerJa)||"","ru",.8); }
       else { await speakP("Ответ:","ru"); if(!alive())return; if(q.kind==="listen"||q.kind==="twin") await kanaSayP(q.answerJa); else await speakP(q.answerJa,"ja"); }
     } else if(q.kind==="rj"){
       await speakP("Ответ.","ru"); if(!alive())return;
