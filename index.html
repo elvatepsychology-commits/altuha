@@ -453,6 +453,18 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .tile b{font-weight:900;font-size:15px;line-height:1.2}
 .tile small{font-size:12px;color:var(--muted);line-height:1.3;margin-top:auto}
 .tiles.small .tile{min-height:0}
+.hfcard.on{border-color:var(--pink);background:#fff0f6}
+.kv .kvstage{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#ffe98a,#ffd04d);border-radius:24px;padding:14px;min-height:230px;margin-top:8px;overflow:hidden}
+.kv .kvgirl{width:130px;flex:none}
+.kv .kvgirl svg{width:100%;height:auto;display:block}
+.kv .kvk{font-family:var(--f-jp);font-size:110px;line-height:1;font-weight:700;color:var(--ink);min-width:120px;text-align:center}
+.kv .kvk.ears{font-size:64px}
+.kv .kvk.ok{color:#159a54}.kv .kvk.bad{color:#e23b3b}
+.kv .kvhint{position:absolute;bottom:10px;right:14px;font-weight:800;background:#fff;border-radius:99px;padding:4px 12px;font-size:14px}
+.kv .kvbubble{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 14px;margin:12px 0;font-weight:800;font-size:18px;min-height:52px}
+.kv .kvbubble.bad{border-color:#e23b3b}
+.kv .kvans{font-weight:600;font-size:15px;color:var(--muted);margin-top:6px}
+.kv .kvans .kana{font-family:var(--f-jp);font-size:22px;color:var(--ink)}
 .vrow{display:flex;gap:8px;align-items:stretch;margin:6px 0}
 .vrow .vpick{flex:1;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 .vrow.on .vpick{border-color:var(--pink);background:#fff0f6}
@@ -840,12 +852,14 @@ function kanaScreen(){
     <div class="minebar"><button class="mode wide" data-m="mine" aria-pressed="${S.mode==="mine"}"><span class="k">我</span><span><span class="t">Мои буквы</span><span class="d">${myPool().length?`${myPool().length} букв · только то, что не ебу`:"отметь буквы, которые не знаешь"}</span></span></button><button class="ghost cfg" id="pickK">Настроить</button></div>
     <button class="big" id="go">Погнали, сука</button>
     <button class="ghost" id="cheat">Шпаргалка (для слабаков)</button>
+    <button class="hf-entry" id="kvE"><span class="k">🎤</span><span><b>Азбука голосом</b><small>Без рук, в наушниках: отвечаешь вслух, она материт</small></span></button>
     <button class="hf-entry" id="hf"><span class="k">手</span><span><b>Азбука без рук</b><small>В наушниках или глазами: сама спрашивает, сама отвечает</small></span></button>
     <div class="foot">12 букв за урок · 5 жизней · ошибки возвращаются в конец</div>
   </section>`;
   app.querySelectorAll(".mode").forEach(b=>b.onclick=()=>{ if(b.dataset.m==="mine"&&!myPool().length){S.mode="mine";save();return pickerScreen();} S.mode=b.dataset.m;save();app.querySelectorAll(".mode").forEach(x=>x.setAttribute("aria-pressed",x===b));});
   document.getElementById("pickK").onclick=pickerScreen;
   document.getElementById("go").onclick=startLesson;
+  { const e=document.getElementById("kvE"); if(e) e.onclick=kvScreen; }
   document.getElementById("cheat").onclick=sheetScreen;
   document.getElementById("hf").onclick=hfMenu;
   document.getElementById("kback").onclick=home;
@@ -895,12 +909,13 @@ function home(){
     </div>
     <div class="label">Ещё</div>
     <div class="tiles small">
+      ${tile("kv","🎤","Азбука голосом","без рук, отвечаешь вслух")}
       ${tile("hf","手","Азбука без рук","фоном, в наушниках")}
       ${tile("prog","💾","Мой прогресс","сохранить / перенести")}
       ${tile("voice","🔊","Голос альтухи","выбрать голос получше")}
     </div>
   </section>`;
-  const go={kana:kanaScreen,talk:()=>akMenu("talk"),verbs:()=>akMenu("verbs"),gram:()=>akMenu("gram"),nums:()=>akMenu("nums"),read:readPracScreen,listen:listenScreen,final:()=>akMenu("final"),hf:hfMenu,prog:progressScreen,voice:voiceScreen};
+  const go={kana:kanaScreen,talk:()=>akMenu("talk"),verbs:()=>akMenu("verbs"),gram:()=>akMenu("gram"),nums:()=>akMenu("nums"),read:readPracScreen,listen:listenScreen,final:()=>akMenu("final"),hf:hfMenu,kv:kvScreen,prog:progressScreen,voice:voiceScreen};
   app.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go[b.dataset.go]());
   const tr=document.getElementById("tRev"); if(tr) tr.onclick=akReviewStart;
   const tn=document.getElementById("tNext"); if(tn) tn.onclick=()=>{ AK.sec=nx.sec; chapterScreen(nx.ci,nx.tab); };
@@ -925,7 +940,7 @@ const V=(jp,ru)=>({jp,ru});
 let VOICES=[];
 function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
 try{loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
-const APP_VER="30";
+const APP_VER="31";
 const V_MALE=/hattori|otoya|ichiro|keita|daichi|naoki|yuri\b|maxim|dmitr|pavel|male(?!.*female)/i;
 const V_GOOD=/premium|enhanced|улучш|natural|neural|online|siri/i;
 const V_FEM=/female|kyoko|o-ren|haruka|ayumi|nanami|sayaka|mizuki|aoi|shiori|milena|katya|irina|svetlana|dariya|alena|ekaterina|google/i;
@@ -1433,6 +1448,135 @@ async function wakeOn(){try{if(navigator.wakeLock) HF.wake=await navigator.wakeL
 function wakeOff(){try{HF.wake&&HF.wake.release();}catch(e){} HF.wake=null;}
 function hfStop(){HF.token++;try{stopListen()}catch(e){}try{speechSynthesis.cancel()}catch(e){};setTalk(false);wakeOff();}
 
+/* =================================================================
+   АЗБУКА ГОЛОСОМ: без рук, отвечаешь своим голосом, она материт
+   ================================================================= */
+const KV_KANJI="亜あ|胃い|鵜う|絵え|尾お|蚊か|木き|気き|区く|句く|九く|毛け|子こ|個こ|差さ|市し|詩し|四し|死し|巣す|酢す|背せ|瀬せ|素そ|田た|血ち|津つ|手て|戸と|名な|菜な|二に|荷に|根ね|野の|葉は|歯は|日ひ|火ひ|府ふ|屁へ|帆ほ|間ま|身み|実み|無む|目め|藻も|矢や|湯ゆ|世よ|夜よ|等ら|理り|里り|留る|礼れ|炉ろ|輪わ|我が|蛾が|儀ぎ|具ぐ|下げ|碁ご|五ご|語ご|座ざ|字じ|地じ|図ず|是ぜ|打だ|出で|度ど|土ど|場ば|美び|部ぶ|辺べ|母ぼ|派ぱ|客きゃ|今日きょ|京きょ|社しゃ|車しゃ|週しゅ|書しょ|茶ちゃ|中ちゅ|著ちょ|百ひゃ|表ひょ|脈みゃ|略りゃ|旅りょ|牛ぎゅ|行ぎょ|蛇じゃ|十じゅ|女じょ|乳にゅ|尿にょ|票ひょ|病びょ".split("|").map(x=>[x.replace(/[ぁ-ゖ]+$/,""),x.replace(/^[^ぁ-ゖ]+/,"")]);
+const KV={pool:"all",mode:"eyes",streak:0,ok:0,bad:0,n:0,cur:null,said:"",msg:"",mood:"happy",state:"ask"};
+const KV_ASK_EYES=["Чё за буква?","Читай, сука.","Ну, что это?","Назови.","Это что?","Давай, вслух.","Читай, гений.","Ну?"];
+const KV_RIGHT=["Да, бля!","Охуенно.","Чётко.","Красава.","Пиздато.","Есть!","Умничка.","Ебать, да.","Правильно, сладкий.","Ну наконец-то.","Вот, можешь же.","Ммм, правильно.","Японец ебаный.","Огонь.","Чисто."];
+const KV_WRONG=["Ты долбоёб? Это не она.","Мимо, еблан.","Пиздец. Нет.","Ебать ты слепой.","Не, хуйня.","Ну ты и лошара.","Глаза разуй, самурай хуев.","Ты японцев позоришь.","Это ты сейчас что сказал?","Сэнсэй плачет.","Ну ёпта, нет.","Блядь, ну мы же это учили!","Не угадал, клоун.","Мои уши, сука.","Ха. Нет. Дебил."];
+const KV_COMBO={3:"Три подряд, ебать!",5:"Пять подряд. Ты чё, японец?",8:"Восемь! Не проеби серию, сука.",10:"Десять подряд. Самурай нахуй.",15:"Пятнадцать! Император каны.",20:"Двадцать. Ты вообще человек?",30:"Тридцать подряд. Я влюбилась, блять."};
+const KV_BROKE=["Серию проебал, клоун.","И серия в пизду. Молодец.","Всё, серия сдохла. Из-за тебя."];
+const KV_SMALL={"ゃ":"я","ゅ":"ю","ょ":"ё","ャ":"я","ュ":"ю","ョ":"ё"};
+function kvPool(){ const m=MODES[KV.pool]||MODES.all; let p=ITEMS.filter(m.f); if(KV.pool==="mine"&&!p.length) p=ITEMS; return p; }
+function kvRu(k){ return kanaRu(k)||k; }
+function kvQ(item){
+  if(KV.mode==="eyes") return {item,show:item.k,ask:pick(KV_ASK_EYES)};
+  // уши: точки/кружки и маленькие буквы собираем на слух, остальное — повтори
+  if(item.grp==="mod"){ const b=baseOf(item.k), maru=/^p/.test(item.r[0]); return {item,ask:`${kvRu(b)} плюс ${maru?"кружочек":"тэн-тэн"}. Как будет?`,hint:`${kvRu(b)} + ${maru?"゜":"゛"}`}; }
+  if(item.grp==="yoon"){ return {item,ask:`${kvRu(item.k[0])} плюс маленькая ${KV_SMALL[item.k[1]]||""}. Как будет?`,hint:`${kvRu(item.k[0])} + маленькая ${KV_SMALL[item.k[1]]||""}`}; }
+  return {item,rep:true,ask:"Повтори.",hint:"повтори за ней"};
+}
+const kvKey=s=>jaRoma(s).toLowerCase().replace(/dzi|di/g,"zi").replace(/dzu|du/g,"zu").replace(/shi/g,"si").replace(/chi/g,"ti").replace(/tsu/g,"tu").replace(/fu/g,"hu").replace(/ji/g,"zi").replace(/sh/g,"sy").replace(/ch/g,"ty").replace(/j/g,"zy").replace(/vu/g,"bu").replace(/^wo$/,"o").replace(/([aiueo])\1+$/,"$1").replace(/ou$/,"o").replace(/ei$/,"e");
+function kvOk(alts,item){
+  const want=kvKey(item.k);
+  return alts.some(a0=>{ let a=String(a0).trim().replace(/[。、.!！?？\s]/g,""); if(!a) return false;
+    for(const [kj,rd] of KV_KANJI) if(a===kj) a=rd;
+    if(/^[a-z]+$/i.test(a)) return item.r.includes(a.toLowerCase())||kvKey(a)===want;
+    return kvKey(a)===want; });
+}
+function kvScreen(){
+  hfStop(); hideSheet();
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Азбука голосом</h2></div>
+    <div class="note">Руки не нужны. Альтуха спрашивает — ты отвечаешь вслух, микрофон включается сам. Ошибся — получаешь пизды и повторяешь. Команды: «повтори», «не помню», «пропусти».</div>
+    <div class="label">Как гоняем</div>
+    <div class="hfpick">
+      <button class="hfcard ${KV.mode==="eyes"?"on":""}" data-kv="eyes"><span class="ic">👀🎤</span><b>Вижу букву — называю</b><small>На экране буква, ты её читаешь вслух. Ни одного нажатия.</small></button>
+      <button class="hfcard ${KV.mode==="ears"?"on":""}" data-kv="ears"><span class="ic">🎧🎤</span><b>Только уши</b><small>Экран не нужен: «ка плюс тэн-тэн» → ты говоришь «га», «ки плюс маленькая я» → «кя». Обычные буквы — повторяешь за ней.</small></button>
+    </div>
+    <div class="label">Какие буквы</div>
+    <div class="modes">${Object.entries(MODES).map(([k,m])=>`<button class="mode" data-p="${k}" aria-pressed="${KV.pool===k}"><span class="k">${m.k}</span><span class="t">${m.t}</span><span class="d">${k==="mine"?(myPool().length?myPool().length+" букв":"не выбраны"):ITEMS.filter(m.f).length+" букв"}</span></button>`).join("")}</div>
+    ${SR?"":`<div class="note">❌ ${esc(voiceErrText())}</div>`}
+    <button class="big" id="kvGo" ${SR?"":"disabled"}>🎤 Погнали голосом</button>
+    <div class="foot">${KV.mode==="ears"?"В «только уши» лучше брать «Точки и кружки» или «Сочетания» — там есть что собирать.":"Экран не гаси — со спящим экраном браузер глохнет."}</div>
+  </section>`;
+  document.getElementById("back").onclick=kanaScreen;
+  app.querySelectorAll("[data-kv]").forEach(b=>b.onclick=()=>{KV.mode=b.dataset.kv; if(KV.mode==="ears"&&(KV.pool==="hira"||KV.pool==="kata"||KV.pool==="all")) KV.pool="mods"; kvScreen();});
+  app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ if(b.dataset.p==="mine"&&!myPool().length) return pickerScreen(); KV.pool=b.dataset.p; kvScreen(); });
+  document.getElementById("kvGo").onclick=kvStart;
+  window.scrollTo(0,0);
+}
+function kvStart(){
+  S.voice=true; save(); voicePrime();
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
+  wakeOn(); KV.streak=0;KV.ok=0;KV.bad=0;KV.n=0;KV.recent=[];
+  kvLoop();
+}
+function kvRender(){
+  const q=KV.cur, eyes=KV.mode==="eyes", reveal=KV.state==="reveal"||KV.state==="echo";
+  const big=eyes?`<div class="kvk ${reveal?(KV.wasOk?"ok":"bad"):""}">${q?q.show:""}</div>`
+    :`<div class="kvk ears">${reveal&&q?q.item.k:"🎧"}</div><div class="kvhint">${q&&q.hint?esc(q.hint):""}</div>`;
+  app.innerHTML=`<section class="screen kv">
+    <div class="top"><button class="x" id="kvQuit" aria-label="Стоп">✕</button><div class="hfmode">${eyes?"👀🎤 называю":"🎧🎤 на слух"} · №${KV.n} · ✅${KV.ok} ❌${KV.bad} · 🔥${KV.streak}</div></div>
+    <div class="kvstage"><div class="kvgirl">${girlSVG(KV.mood)}</div>${big}</div>
+    <div class="kvbubble ${KV.wasBad&&reveal?"bad":""}">${esc(KV.msg||"")}${reveal&&q?`<div class="kvans"><span class="kana">${q.item.k}</span> · ${esc(kvRu(q.item.k))} · ${esc(q.item.disp)}</div>`:""}</div>
+    ${KV.state==="listen"||KV.state==="echo"?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${KV.state==="listen"?(KV.mode==="eyes"?"Прочитай букву вслух":"Скажи по-японски"):"Повтори правильно"} <small>· жду сколько угодно</small></b><span id="micTxt">${esc(KV.said||"слушаю…")}</span></span></div><div class="cmdhint">команды: «повтори» · «не помню» · «пропусти»</div>`:`<div class="micbar" style="opacity:.45"><span class="mtx"><b>${KV.said?"услышала: "+esc(KV.said):"…"}</b></span></div>`}
+    <div class="hfctl"><button class="big" id="kvPause">${KV.paused?"▶ Дальше":"⏸ Пауза"}</button><button class="ghost" id="kvStop">Стоп, хватит</button></div>
+  </section>`;
+  document.getElementById("kvQuit").onclick=kvScreen;
+  document.getElementById("kvStop").onclick=kvScreen;
+  document.getElementById("kvPause").onclick=()=>{ if(KV.paused){KV.paused=false;wakeOn();kvLoop(true);} else {KV.paused=true;HF.token++;stopListen();try{speechSynthesis.cancel()}catch(e){};wakeOff();kvRender();} };
+}
+async function kvLoop(resume){
+  const my=++HF.token; const alive=()=>HF.token===my&&!KV.paused;
+  const say=async(t,mood)=>{ if(mood) KV.mood=mood; KV.msg=t; kvRender(); await speakP(t,"ru"); return alive(); };
+  while(alive()){
+    let q=resume&&KV.cur?KV.cur:null; resume=false;
+    if(!q){ const pool=kvPool(); const cand=pool.filter(i=>!(KV.recent||[]).includes(i.k)); const item=pickItems(cand.length?cand:pool,1)[0];
+      KV.recent.push(item.k); if(KV.recent.length>Math.min(6,pool.length-1)) KV.recent.shift();
+      q=kvQ(item); KV.cur=q; KV.n++; }
+    KV.said=""; KV.wasOk=false; KV.wasBad=false; KV.state="ask"; KV.mood="happy";
+    if(!await say(q.ask))return;
+    if(q.rep){ await kanaSayP(q.item.k); if(!alive())return; }
+    let tries=0, verdict=null;
+    while(alive()&&!verdict){
+      KV.state="listen"; KV.said=""; kvRender();
+      const h=await listenUntil("ja",alive); if(!alive())return;
+      if(h.cancel||h.dead) return;
+      if(VOICE.denied){ KV.msg="❌ "+voiceNote(); KV.state="ask"; kvRender(); await speakP("Микрофон не работает. Разреши доступ.","ru"); KV.paused=true; kvRender(); return; }
+      const alts=(h.alts||[]).filter(Boolean); KV.said=alts[0]||""; kvRender();
+      const cmd=voiceCmd(alts);
+      if(cmd==="repeat"){ if(!await say(pick(VOICE_REPEAT)))return; if(q.rep||!q.show) { if(q.rep) await kanaSayP(q.item.k); else await speakP(q.ask,"ru"); } if(!alive())return; continue; }
+      if(cmd==="forgot"){ verdict="forgot"; break; }
+      if(kvOk(alts,q.item)) verdict="ok";
+      else { tries++; if(tries>=1) verdict="bad"; }
+    }
+    if(!alive())return;
+    const s=st(q.item.k);
+    if(verdict==="ok"){
+      s.c++; KV.ok++; KV.streak++; S.xp+=2; if(KV.streak>S.best) S.best=KV.streak; save();
+      KV.wasOk=true; KV.state="reveal"; beep(true);
+      const cm=KV_COMBO[KV.streak];
+      if(!await say(cm||(Math.random()<.35?pick(AK_PRAISE):pick(KV_RIGHT)),pick(["blush","laugh","happy"])))return;
+      if(KV.mode==="ears"&&!q.rep){ await kanaSayP(q.item.k); if(!alive())return; }
+    } else {
+      s.w++; KV.bad++; const broke=KV.streak>=3; KV.streak=0; save();
+      KV.wasBad=true; KV.state="reveal"; beep(false); buzz();
+      const ins=verdict==="forgot"?pick(VOICE_FORGOT):broke?pick(KV_BROKE):(KV.bad%4===0?pick(HER_RU[1]):pick(KV_WRONG));
+      if(!await say(ins,KV.bad>=3?"angry":"pout"))return;
+      if(!await say("Правильно:"))return;
+      await kanaSayP(q.item.k); if(!alive())return;
+      // повтори правильно — до двух попыток
+      for(let e=0;e<2&&alive();e++){
+        KV.state="echo"; KV.msg=e?"Ещё раз. Нормально скажи.":"Повтори."; kvRender(); await speakP(KV.msg,"ru"); if(!alive())return;
+        KV.state="echo"; KV.said=""; kvRender();
+        const h=await listenUntil("ja",alive); if(!alive())return; if(h.cancel||h.dead) return;
+        const alts=(h.alts||[]).filter(Boolean); KV.said=alts[0]||""; kvRender();
+        if(voiceCmd(alts)==="forgot") break;
+        if(kvOk(alts,q.item)){ await say(pick(["Вот, можешь же.","Ну вот. Запомни, долбоёб.","Норм. Не забывай.","Ага, так. Запомнил?"]),"happy"); break; }
+        if(e===1){ await say(pick(["Ладно, похуй, потом ещё спрошу.","Окей, вернусь к ней позже. Не расслабляйся."]),"pout"); }
+        else await kanaSayP(q.item.k);
+      }
+      if(!alive())return;
+      KV.recent=KV.recent.filter(k=>k!==q.item.k); // вернётся скоро
+    }
+    markDay&&markDay();
+    KV.cur=null; await sleep(350);
+  }
+}
+
 function hfMenu(){
   hfStop(); hideSheet();
   app.innerHTML=`<section class="screen">
@@ -1453,11 +1597,13 @@ function hfMenu(){
       <button class="hfcard" data-m="ears"><span class="ic">🎧</span><b>Я в наушниках</b><small>Глаза заняты, руки заняты. Только слушаю. Фразы для альтух: вопрос, три варианта, ${hfT("ears")} сек, ответ.</small></button>
       <button class="hfcard" data-m="eyes"><span class="ic">👀</span><b>Смотрю в экран</b><small>Пальцем ткнуть не могу, но вижу. Кана или фразы: ${hfT("eyes")} сек, правильный подсвечивается сам.</small></button>
     </div>
-    <div class="foot">В наушниках всегда гоняются фразы: кану на слух не увидишь</div>
+    <button class="hf-entry" id="kvE2" style="margin-top:12px"><span class="k">🎤</span><span><b>Азбука голосом</b><small>Буквы отвечаешь вслух, руки не нужны</small></span></button>
+    <div class="foot">В наушниках без голоса гоняются фразы, буквы — в «Азбуке голосом»</div>
   </section>`;
   document.getElementById("back").onclick=home;
   app.querySelectorAll(".mode[data-c]").forEach(b=>b.onclick=()=>{ if(b.dataset.c==="mine"&&!myPool().length) return pickerScreen("hf"); HF.content=b.dataset.c;app.querySelectorAll(".mode[data-c]").forEach(x=>x.setAttribute("aria-pressed",x===b));});
   app.querySelectorAll(".hfcard").forEach(b=>b.onclick=()=>hfStart(b.dataset.m));
+  { const e=document.getElementById("kvE2"); if(e) e.onclick=kvScreen; }
   app.querySelectorAll(".tsc").forEach(b=>b.onclick=()=>{S.hfT[b.dataset.tm]=+b.dataset.n;save();hfMenu();});
   window.scrollTo(0,0);
 }
