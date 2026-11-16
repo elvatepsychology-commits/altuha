@@ -580,6 +580,8 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .chc.final{border-style:dashed;border-color:var(--gold)}
 .chc.final.cur{border-style:solid}
 .chc.lvsoon{opacity:.4}
+.chc.skip{border-style:dashed;opacity:.75}
+.chc.skip .chp{color:var(--gold)}
 .chh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px}
 .chn{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-size:19px;background:var(--surface2);color:var(--ink)}
 .chc.cur .chn{background:var(--pink);color:#fff}
@@ -4371,7 +4373,8 @@ function nOld(n,exclude){ const S5=NS().srs, ex=exclude||new Set(); const ids=Ob
 /* ---------- прогресс и замки ---------- */
 const nLesDone=l=>{ const d=NS().done[l.id]||{}; return !!(d.tap&&d.voice); };
 const nChDone=c=>!!(NS().ch[c.id]||{}).call;
-function nChOpen(c){ if(NS().openAll) return true; if(c.ci===0) return true; return nChDone(N5C[c.ci-1]); }
+const nChSkip=c=>!nChDone(c)&&!!(NS().ch[c.id]||{}).skipped;
+function nChOpen(c){ if(NS().openAll) return true; if(c.ci===0) return true; const p=N5C[c.ci-1]; return nChDone(p)||nChSkip(p); }
 function nSteps(c){ // все шаги главы по порядку
   const n=NS(), st=[];
   c.L.forEach((l,li)=>{ const d=n.done[l.id]||{};
@@ -4381,12 +4384,14 @@ function nSteps(c){ // все шаги главы по порядку
   st.push({k:"exam",c,done:!!ch.exam,label:"Экзамен главы",sub:"тыкаешь ответы"});
   st.push({k:"call",c,done:!!ch.call,label:"📞 Созвон с Юки",sub:c.kana?"все буквы вслух":"вся глава голосом"});
   // замок: шаг открыт, если все предыдущие пройдены
-  let ok=nChOpen(c); st.forEach(s=>{ s.open=ok||s.done||NS().openAll; if(!s.done) ok=false; });
+  let ok=nChOpen(c); const chOpen=ok; st.forEach(s=>{ s.open=ok||s.done||NS().openAll; if(!s.done) ok=false; });
+  // экзамен главы можно сдать сразу, если уже всё знаешь; созвон — после экзамена
+  const ex=st.find(s=>s.k==="exam"), cl=st.find(s=>s.k==="call"); if(chOpen){ ex.open=true; if(ex.done) cl.open=true; }
   return st;
 }
-function nNext(){ for(const c of N5C){ if(!nChOpen(c)) return null; const s=nSteps(c).find(x=>!x.done); if(s) return s; } return {k:"final"}; }
+function nNext(){ for(const c of N5C){ if(!nChOpen(c)) return null; if(nChSkip(c)) continue; const s=nSteps(c).find(x=>!x.done); if(s) return s; } return {k:"final"}; }
 function nCounts(){ const all=N5_ALL(); const l=all.filter(t=>nLearned(t.id)).length; return {n:all.length,l}; }
-const nAllChaptersDone=()=>N5C.every(nChDone);
+const nAllChaptersDone=()=>N5C.every(c=>nChDone(c)||nChSkip(c));
 
 /* ---------- голос: распознавание с поблажками ---------- */
 const N5KJ=(()=>{ const m=new Map();
@@ -5154,9 +5159,10 @@ function home(){
   const kjT=nKjToday(), kjLeft=Math.max(0,n.kjDay-kjT), kjN=Object.keys(n.kj).length;
   const doneCh=N5C.filter(nChDone).length;
   const chHTML=N5C.map(c=>{ const open=nChOpen(c); const st=nSteps(c); const dn=st.filter(s=>s.done).length; const cur=nx&&nx.c===c;
-    return `<div class="chc ${open?"":"lock"} ${nChDone(c)?"done":""} ${cur?"cur":""}">
-      <button class="chh" data-ch="${c.ci}"><span class="chn">${c.kana?(c.kana==="h"?"あ":"ア"):N5_CONTENT.indexOf(c)+1}</span><span class="cht"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></span><span class="chp">${nChDone(c)?"✓":open?`${dn}/${st.length}`:"🔒"}</span></button>
-      ${(cur||n.openCh===c.ci)&&open?`<div class="chsteps">${c.story?`<div class="chstory">${esc(c.story)}</div>`:""}${(()=>{ const isNx=s=>nx&&nx.c===c&&nx.k===s.k&&nx.l===s.l; const btn=(s,i,ic,lbl)=>`<button class="sb ${s.done?"ok":""} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span>${s.done?"✓":ic}</span>${lbl}</button>`; let out=""; c.L.forEach((l,li)=>{ const a=st[li*2], b=st[li*2+1]; out+=`<div class="lrow ${a.done&&b.done?"ok":""}"><span class="lt"><b>${li+1}. ${esc(l.t)}</b><small>${l.items.length} ${c.kana?"букв":"слов и фраз"}</small></span>${btn(a,li*2,"✋","руками")}${btn(b,li*2+1,"🎤",c.kana?"вслух":"голосом")}</div>`; }); const E=st.length-2; [E,E+1].forEach(i=>{ const s=st[i]; out+=`<button class="stp ${s.done?"ok":""} ${s.open?"":"lk"} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span class="si">${s.done?"✓":s.k==="exam"?"📝":"📞"}</span><span class="st"><b>${esc(s.label)}</b><small>${esc(s.sub)}</small></span></button>`; }); if(c.kana&&!nChDone(c)) out+=`<button class="mini skipk" data-skip="${c.ci}">Я знаю ${c.kana==="h"?"хирагану":"катакану"} — сразу на созвон-проверку всех букв</button><button class="mini skipk" data-skipnow="${c.ci}">${n.skipArm===c.ci?"Точно? Нажми ещё раз — глава будет закрыта":"⏭ Пропустить "+(c.kana==="h"?"хирагану":"катакану")+" без проверки"}</button>`; return out; })()}</div>`:""}
+    return `<div class="chc ${open?"":"lock"} ${nChDone(c)?"done":""} ${nChSkip(c)?"skip":""} ${cur?"cur":""}">
+      <button class="chh" data-ch="${c.ci}"><span class="chn">${c.kana?(c.kana==="h"?"あ":"ア"):N5_CONTENT.indexOf(c)+1}</span><span class="cht"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></span><span class="chp">${nChDone(c)?"✓":nChSkip(c)?"⏭ пропущена":open?`${dn}/${st.length}`:"🔒"}</span></button>
+      ${(cur||n.openCh===c.ci)&&open?`<div class="chsteps">${c.story?`<div class="chstory">${esc(c.story)}</div>`:""}${(()=>{ const isNx=s=>nx&&nx.c===c&&nx.k===s.k&&nx.l===s.l; const btn=(s,i,ic,lbl)=>`<button class="sb ${s.done?"ok":""} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span>${s.done?"✓":ic}</span>${lbl}</button>`; let out=""; c.L.forEach((l,li)=>{ const a=st[li*2], b=st[li*2+1]; out+=`<div class="lrow ${a.done&&b.done?"ok":""}"><span class="lt"><b>${li+1}. ${esc(l.t)}</b><small>${l.items.length} ${c.kana?"букв":"слов и фраз"}</small></span>${btn(a,li*2,"✋","руками")}${btn(b,li*2+1,"🎤",c.kana?"вслух":"голосом")}</div>`; }); const E=st.length-2; [E,E+1].forEach(i=>{ const s=st[i]; out+=`<button class="stp ${s.done?"ok":""} ${s.open?"":"lk"} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span class="si">${s.done?"✓":s.k==="exam"?"📝":"📞"}</span><span class="st"><b>${esc(s.label)}</b><small>${esc(s.sub)}</small></span></button>`; }); if(!c.kana&&!nChDone(c)&&!nChSkip(c)&&!st[st.length-2].done) out+=`<div class="tline">Уже всё это знаешь? Жми «Экзамен главы» сразу: сдашь его и созвон — глава закроется целиком, уроки засчитаются.</div>`;
+    if(nChSkip(c)) out+=`<button class="mini skipk" data-unskip="${c.ci}">↩ Вернуть главу в курс (сейчас пропущена)</button>`; else if(c.kana&&!nChDone(c)) out+=`<button class="mini skipk" data-skip="${c.ci}">Я знаю ${c.kana==="h"?"хирагану":"катакану"} — сразу на созвон-проверку всех букв</button><button class="mini skipk" data-skipnow="${c.ci}">${n.skipArm===c.ci?"Точно? Нажми ещё раз — глава будет закрыта":"⏭ Пропустить "+(c.kana==="h"?"хирагану":"катакану")+" без проверки"}</button>`; return out; })()}</div>`:""}
     </div>`; }).join("");
   app.innerHTML=`<section class="screen n5home">
     <div class="brand"><h1>Кана,<br><span>блять</span></h1><div class="hstats"><span class="fire">🔥 ${streak}</span><span>${S.xp} XP</span></div></div>
@@ -5197,10 +5203,10 @@ function home(){
   app.querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{ const ci=+b.dataset.ch; if(!nChOpen(N5C[ci])){ b.parentElement.classList.remove("shake"); void b.offsetWidth; b.parentElement.classList.add("shake"); return; } n.openCh=n.openCh===ci?null:ci; save(); const y=window.scrollY; home(); window.scrollTo(0,y); });
   app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{ const [ci,i]=b.dataset.s.split(":").map(Number); nRunStep(nSteps(N5C[ci])[i]); });
   g("fin").onclick=n5Final;
+  app.querySelectorAll("[data-unskip]").forEach(b=>b.onclick=()=>{ const c=N5C[+b.dataset.unskip]; delete (n.ch[c.id]||{}).skipped; save(); const y=window.scrollY; home(); window.scrollTo(0,y); });
   app.querySelectorAll("[data-skipnow]").forEach(b=>b.onclick=()=>{ const ci=+b.dataset.skipnow, c=N5C[ci]; const y=window.scrollY;
     if(n.skipArm!==ci){ n.skipArm=ci; home(); window.scrollTo(0,y); return; }
-    n.skipArm=null; const now=Date.now(); const ch=n.ch[c.id]||(n.ch[c.id]={}); ch.exam=ch.exam||now; ch.call=ch.call||now; ch.skipped=now;
-    c.L.forEach(l=>{ const d=n.done[l.id]||(n.done[l.id]={}); d.tap=d.tap||now; d.voice=d.voice||now; });
+    n.skipArm=null; const ch=n.ch[c.id]||(n.ch[c.id]={}); ch.skipped=Date.now();
     n.openCh=null; save(); home(); });
   app.querySelectorAll("[data-skip]").forEach(b=>b.onclick=()=>{ const c=N5C[+b.dataset.skip]; vGate({k:"call",c,skip:true}); });
   app.querySelectorAll("details.fc,details.skl").forEach(d=>d.ontoggle=()=>{ if(d.classList.contains("fc")) n.fcOpen=d.open; else n.sklOpen=d.open; save(); });
@@ -5354,7 +5360,7 @@ vGate=function(s){
 })();
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
-{ const n=NS(); N5C.filter(c=>c.kana&&(n.ch[c.id]||{}).skipped).forEach(c=>c.L.forEach(l=>l.items.forEach(it=>{ delete n.srs[it.id]; }))); save(); }
+{ const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
 
 home();
 </script>
