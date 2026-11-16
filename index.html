@@ -716,6 +716,8 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .cdic{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:22px}
 .cdic small{font-size:11px;font-weight:700;opacity:.85;letter-spacing:.02em}
 .cdic.on{animation:micp 1.2s infinite}
+.cvoice{display:flex;flex-direction:column;gap:4px;background:var(--bg);border-radius:12px;padding:10px}
+.cvoice b{font-weight:900;font-size:14px}.cvoice small{font-size:12px;color:var(--muted)}
 .cinfo{background:color-mix(in srgb,var(--good) 12%,var(--surface));border-color:var(--good)}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -4422,6 +4424,7 @@ const nKey=s=>jaSnd(NUM_CANON(jaNorm(s))).replace(/わ/g,"は").replace(/え/g,"
 const nNeg=s=>/ません|ない|じゃ|いけ|いや/.test(s);
 function nOk(alts,targets){
   alts=(alts||[]).filter(Boolean).map(String); if(!alts.length) return false;
+  alts=alts.flatMap(a=>/[а-яё]/i.test(a)?[a,r2k(nCyr2Roma(a))]:[a]);
   const A=[]; alts.forEach(a=>{ nVariants(nNum(a)).forEach(v=>A.push(v)); });
   for(const T0 of targets){ const T=String(T0);
     if(jaOk(A,T,false)) return true;
@@ -4436,6 +4439,9 @@ function nOk(alts,targets){
   }
   return false;
 }
+function nCyr2Roma(s){ const M={"а":"a","б":"b","в":"w","г":"g","д":"d","е":"e","ё":"yo","ж":"j","з":"z","и":"i","й":"y","к":"k","л":"r","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"sh","ъ":"","ы":"i","ь":"","э":"e","ю":"yu","я":"ya"};
+  let x=String(s).toLowerCase().replace(/ё/g,"ё").replace(/дзи/g,"ji").replace(/дз/g,"z").replace(/си/g,"shi").replace(/ти/g,"chi").replace(/цу/g,"tsu").replace(/(^|[^а-я])ва(?=[^а-я]|$)/g,"$1wa").replace(/сё/g,"sho").replace(/сю/g,"shu").replace(/ся/g,"sha").replace(/тё/g,"cho").replace(/тю/g,"chu").replace(/тя/g,"cha").replace(/дзё/g,"jo").replace(/дзю/g,"ju").replace(/дзя/g,"ja");
+  x=x.replace(/([^аеёиоуыэюя\s])(?=[еёюя])/g,"$1"); let o=""; for(const c of x) o+=M[c]!=null?M[c]:c; return o.replace(/([kgsztdnhbpmr])ye/g,"$1e").replace(/mas(?![aiueo])/g,"masu").replace(/des(?![aiueo])/g,"desu"); }
 const nKanaOk=(alts,it)=>kvOkRu(alts,it.kana)||kvOk(alts,it.kana);
 
 /* ---------- романдзи → кана (для письма) ---------- */
@@ -5214,7 +5220,7 @@ async function cSpeak(text,lang,rate){
   if(!txt) return;
   if(C_DIC&&C_DIC.active()) { try{ await C_DIC.stop(); }catch(e){} }
   setTalk(true);
-  try{ await Promise.race([C_TTS.speak(txt.slice(0,1990),{language:lang==="ja"?"ja":"ru",rate:Math.min(1.5,Math.max(.7,rate||(lang==="ja"?.85:1.1)))}),C_SLEEP(4000+txt.length*260)]); }
+  try{ await Promise.race([C_TTS.speak(txt.slice(0,1990),{voice:S.cVoice||"airy",language:lang==="ja"?"ja":"ru",rate:Math.min(1.5,Math.max(.7,rate||(lang==="ja"?.85:1.1)))}),C_SLEEP(4000+txt.length*260)]); }
   catch(e){ if(e&&e.code==="rate_limited") await C_SLEEP(400); if(e&&e.code==="not_granted") C_TTS=null; }
   finally{ setTalk(false); }
 }
@@ -5232,9 +5238,22 @@ function cDicToggle(){
   if(C_DIC.active()){ C_DIC.stop().catch(()=>{}); return; }
   CD.buf=""; CD.text=null; CD.err=null;
   if(C_TTS) C_TTS.stop().catch(()=>{});
-  const lang=NV.wantInput==="ja"?"ja":"ru";
-  C_DIC.start({language:lang}).catch(e=>{ CD.err=e&&e.code||"upstream_error"; if(CD.err==="not_granted"||CD.err==="unavailable"){ NS().noDic=true; save(); } if(NV){ NV.cmd="switch"; } });
+  const lang=NV.wantInput==="ja"?(NS().dicJa===false?null:"ja"):"ru";
+  C_DIC.start(lang?{language:lang}:{}).catch(e=>{ const c=e&&e.code||"upstream_error";
+    if(c==="unavailable"&&lang==="ja"){ NS().dicJa=false; save(); CD.err="ja_unavail"; }
+    else if(c==="unavailable"&&!lang){ NS().noDic=true; save(); CD.err="unavailable"; }
+    else if(c==="not_granted"){ NS().noDic=true; save(); CD.err=c; }
+    else CD.err=c;
+    if(NV){ NV.cmd="switch"; } });
 }
+const C_ERR={ja_unavail:"Японская диктовка в Claude для тебя недоступна. Нажми «Говори» ещё раз — буду слушать по-русски: просто говори японские слова, как слышишь («аригато», «коннитива»), я сама переведу в японский.",
+  not_granted:"Микрофон для этой страницы запрещён. Нажми на название страницы вверху → Permissions (Разрешения) → включи диктовку. Пока отвечай текстом.",
+  unavailable:"Диктовка Claude для твоего аккаунта сейчас недоступна. Отвечай текстом — латиницей.",
+  dismissed:"Ты закрыл вопрос про микрофон — нажми «Говори» ещё раз и разреши.",
+  no_gesture:"Нажми кнопку «Говори» пальцем/мышкой ещё раз.",
+  rate_limited:"Слишком много диктовок подряд — подожди пару секунд.",
+  upstream_error:"Микрофон или распознавание сбоит. Проверь, что микрофон не занят другой программой, и нажми ещё раз.",
+  stopped:"Остановилось раньше времени — нажми ещё раз."};
 function cDicInit(){
   C_DIC.onPartial(({text})=>{ const el=document.getElementById("vHeard"); if(el) el.textContent=(CD.buf+" "+text).trim()||"…"; });
   C_DIC.onFinal(({text})=>{ CD.buf+=text; const el=document.getElementById("vHeard"); if(el) el.textContent=CD.buf.trim(); clearTimeout(CD.t); CD.t=setTimeout(()=>{ if(C_DIC.active()) C_DIC.stop().catch(()=>{}); },1100); });
@@ -5272,17 +5291,36 @@ vRender=function(){
     const b=mb.querySelector("b"); if(b) b.innerHTML=(NV.listening==="ru"?"Ответ по-русски":NV.listening==="kana"?"Прочитай букву":"Ответ по-японски")+" <small>· нажми кнопку или пробел и говори</small>";
   }
   document.querySelectorAll(".nv .micerr").forEach(e=>e.remove());
-  if(CD.err&&!NS().noDic){ const n=document.createElement("div"); n.className="micerr"; n.textContent=({rate_limited:"Слишком много диктовок подряд — подожди пару секунд.",upstream_error:"Микрофон или распознавание сбоит — попробуй ещё раз.",dismissed:"Ты закрыл вопрос про микрофон — нажми «говори» ещё раз."})[CD.err]||("Диктовка: "+CD.err); const st=document.querySelector(".nv .stage"); if(st) st.after(n); }
+  if(CD.err){ const n=document.createElement("div"); n.className="micerr"; n.textContent=C_ERR[CD.err]||("Диктовка: "+CD.err); const st=document.querySelector(".nv .stage"); if(st) st.after(n); }
+  else if(NS().dicJa===false&&NV.listening==="ja"){ const n=document.createElement("div"); n.className="micerr cinfo"; n.textContent="Слушаю по-русски: говори японские слова как слышишь — «аригато годзаимас»."; const st=document.querySelector(".nv .stage"); if(st) st.after(n); }
 };
 /* экран перед созвоном: объясняем, как работает голос в Claude */
+const _home0=home;
+home=function(){ _home0(); if(!C_MODE||!C_TTS||N5_MENU) return; const set=document.querySelector(".n5home details.settings"); if(!set) return;
+  const box=document.createElement("div"); box.className="cvoice";
+  box.innerHTML=`<b>Голос Юки в Claude</b><small>Нажми, послушай и оставь женский</small><div class="tschips">${[["airy","1"],["glassy","2"],["rounded","3"],["buttery","4"]].map(([v,n])=>`<button class="tsc cv" data-v="${v}" aria-pressed="${(S.cVoice||"airy")===v}">${n}</button>`).join("")}</div>`;
+  set.querySelector("summary").after(box);
+  box.querySelectorAll(".cv").forEach(b=>b.onclick=()=>{ S.cVoice=b.dataset.v; save(); box.querySelectorAll(".cv").forEach(x=>x.setAttribute("aria-pressed",x===b)); C_TTS.speak("Привет, сладкий. Это мой голос? こんにちは、ユキです。",{voice:S.cVoice}).catch(()=>{}); });
+};
 const _vGate0=vGate;
 vGate=function(s){
+  if(C_MODE&&NS().noDic&&C_DIC){ NS().noDic=false; save(); }
   _vGate0(s);
   if(!C_MODE) return;
   app.querySelectorAll(".switch,.mictest,.micerr").forEach(e=>{ if(!e.querySelector("#vh")) e.remove(); });
   const note=document.createElement("div"); note.className="micerr cinfo";
   note.innerHTML=C_DIC&&!NS().noDic?"🎧 Ты в Claude: Юки говорит голосом Claude, а отвечаешь через диктовку Claude. Нажми <b>«Говори»</b> или <b>пробел</b>, скажи ответ — она сама поймёт, что ты закончил. Первый раз Claude спросит разрешение на микрофон.":C_TTS?"🎧 Ты в Claude: Юки говорит голосом, а отвечать придётся текстом (латиницей) — диктовка работает только в Chrome на компе и в приложении Claude для компа. Для полного «без рук» открой github.io.":"В этом окне Claude нет ни голоса, ни микрофона — отвечаешь текстом. Голос работает в Chrome на компе или в приложении Claude для компа.";
   const go=document.getElementById("go"); if(go) go.before(note);
+  if(C_TTS){ const vb=document.createElement("div"); vb.className="cvoice"; vb.innerHTML=`<b>Голос Юки</b><small>Если звучит мужской — выбери другой номер</small><div class="tschips">${[["airy","1"],["glassy","2"],["rounded","3"],["buttery","4"]].map(([v,n])=>`<button class="tsc cv" data-v="${v}" aria-pressed="${(S.cVoice||"airy")===v}">${n}</button>`).join("")}</div>`; note.after(vb);
+    vb.querySelectorAll(".cv").forEach(b=>b.onclick=()=>{ S.cVoice=b.dataset.v; save(); vb.querySelectorAll(".cv").forEach(x=>x.setAttribute("aria-pressed",x===b)); C_TTS.speak("Привет, сладкий. Это мой голос? こんにちは、ユキです。",{voice:S.cVoice}).catch(()=>{}); }); }
+  if(C_DIC){ const box=document.createElement("div"); box.className="mictest"; box.innerHTML=`<button class="mini" id="cdt">🎤 Проверить микрофон</button><span id="cdr">Нажми и скажи по-японски «こんにちは»</span>`; note.after(box);
+    document.getElementById("cdt").onclick=()=>{ const r=document.getElementById("cdr"); let buf=""; const lang=NS().dicJa===false?null:"ja";
+      const u1=C_DIC.onFinal(({text})=>{ buf+=text; r.textContent="✅ Услышала: «"+buf.trim()+"»"+(lang?"":" (по-русски)"); setTimeout(()=>C_DIC.stop().catch(()=>{}),900); });
+      const u2=C_DIC.onState(({state,reason})=>{ if(state==="listening") r.textContent="🎤 Слушаю… скажи «こんにちは»"; if(state==="idle"){ u1(); u2(); if(!buf.trim()) r.textContent="Ничего не услышала"+(reason?" ("+reason+")":"")+(C_ERR[reason]?": "+C_ERR[reason]:""); } });
+      if(C_TTS) C_TTS.stop().catch(()=>{});
+      C_DIC.start(lang?{language:lang}:{}).catch(e=>{ const c=e&&e.code; u1(); u2(); if(c==="unavailable"&&lang){ NS().dicJa=false; save(); r.textContent="Японская диктовка недоступна — буду слушать по-русски. Нажми ещё раз."; } else { if(c==="not_granted"){ NS().noDic=true; save(); } r.textContent="❌ "+(C_ERR[c]||c); } }); };
+  }
+  if(!C_DIC){ const d=document.createElement("div"); d.className="micerr"; d.textContent="Диктовка в этом окне недоступна (так бывает в Safari, в мобильном приложении Claude и в отдельных окнах). Открой страницу в Chrome на компе или в главном окне приложения Claude."; note.after(d); }
 };
 (async()=>{
   try{
