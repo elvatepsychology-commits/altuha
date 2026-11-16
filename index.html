@@ -5366,8 +5366,8 @@ vGate=function(s){
 (async()=>{
   try{
     if(!(window.claude&&typeof window.claude.use==="function")) return;
-    const [t,d]=await Promise.all([window.claude.use("tts").catch(()=>null),window.claude.use("dictation").catch(()=>null)]);
-    C_TTS=t||null; C_DIC=d||null;
+    const t=null, d=await window.claude.use("dictation").catch(()=>null);
+    C_TTS=null; C_DIC=d||null; // голос Claude выключен по просьбе: только мгновенный голос браузера
     if(!C_TTS&&!C_DIC) return;
     C_MODE=true; VOICE.denied=true; VOICE.lastErr="claude";
     const pr=async()=>{ document.removeEventListener("pointerdown",pr,true); document.removeEventListener("keydown",pr,true); C_BR=await cProbe(); loadVoices(); if(!NV&&!NT&&!MK&&!N5_MENU&&document.querySelector(".n5home")){ const y=window.scrollY; home(); window.scrollTo(0,y); } };
