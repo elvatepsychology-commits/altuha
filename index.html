@@ -604,6 +604,15 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .stb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px}
 .stb i{display:block;width:100%;background:var(--pink);border-radius:4px 4px 0 0;min-height:2px}
 .stb small{font-size:9.5px;color:var(--muted)}
+.mnbox{display:flex;flex-direction:column;gap:6px;margin-top:8px;text-align:left;width:100%}
+.mnsyl{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.mntx{font-size:14px;line-height:1.4;background:color-mix(in srgb,var(--gold) 14%,var(--surface));border-radius:12px;padding:8px 10px;font-weight:600;color:var(--ink)}
+.mntx button{background:none;border:0;padding:0 2px;font-size:14px;cursor:pointer}
+.mnbtns{display:flex;gap:6px;flex-wrap:wrap}
+.mnbtns .mini{font-size:12.5px;padding:7px 10px}
+.mned textarea{width:100%;font:inherit;font-size:14px;border-radius:10px;border:2px solid var(--line);padding:8px;background:var(--bg);color:var(--ink);resize:vertical}
+.speech .mnbox .mnsyl{color:#5A5470}.speech .mntx{background:#FFF4CC;color:#1B1530}
+.sheet .mnbox .mnsyl{color:inherit;opacity:.8}
 .chc.skip{border-style:dashed;opacity:.75}
 .chc.skip .chp{color:var(--gold)}
 .chh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px}
@@ -4599,7 +4608,7 @@ function tapRender(){
   if(q.intro){ const it=q.intro;
     body=`<div class="prompt">${it.kind==="k"?"Новая буква":it.kind==="w"?"Новое слово":"Новая фраза"}</div>
       <div class="card nqcard intro"><button class="say" id="say" aria-label="Озвучить">🔊</button>
-      ${it.kind==="k"?`<div class="glyph">${it.jp}</div><div class="nqru"><b>${esc(it.ru)}</b> · «${esc(it.cyr)}»</div>`:`<div class="jpbig">${rb(it.jp)}</div><div class="nqru">${esc(it.ru)}</div>`}</div>
+      ${it.kind==="k"?`<div class="glyph">${it.jp}</div><div class="nqru"><b>${esc(it.ru)}</b> · «${esc(it.cyr)}»</div>`:`<div class="jpbig">${rb(it.jp)}</div><div class="nqru">${esc(it.ru)}</div>`}${typeof nMnBox==="function"?nMnBox(it.id):""}</div>
       <div class="note">${it.kind==="k"?"Запомни форму. Сейчас спрошу.":"Послушай, скажи вслух пару раз. Сейчас спрошу."}</div>`;
     ans=`<button class="big" id="go">ЗАПОМНИЛ, ДАЛЬШЕ</button>`;
   } else if(q.kintro){ const k=q.kintro;
@@ -4677,7 +4686,7 @@ function tapAnswer(ok,typed){
       let nq=null; if(q.it){ const types=nTypesFor(q.it,2).filter(t=>t!==q.type); nq=nQ(q.it,pick(types.length?types:[q.type])); } else if(q.kj) nq=nKjQ(q.kj,q.type==="km"?"kd":"km"); else if(q.tk) nq=nTalkQ(q.tk);
       if(nq){ NT.qs.splice(Math.min(NT.qs.length,NT.i+3+Math.floor(Math.random()*3)),0,nq); NT.total++; }
     }
-    showSheet(false,pick(WRONG),`${pick(WRONG_SUB)} ${right}${q.type==="ty"?`<br><small>латиницей: <b>${esc(jaRoma(kanaOf(q.it.jp)))}</b></small>`:""}${typed?`<br><small>ты написал: ${esc(typed)}</small>`:""}`,"ПОНЯЛ",()=>{ NT.i++; tapNext(); });
+    showSheet(false,pick(WRONG),`${pick(WRONG_SUB)} ${right}${(q.it||q.tk)&&typeof nMnBox==="function"?nMnBox((q.it||q.tk).id):""}${q.type==="ty"?`<br><small>латиницей: <b>${esc(jaRoma(kanaOf(q.it.jp)))}</b></small>`:""}${typed?`<br><small>ты написал: ${esc(typed)}</small>`:""}`,"ПОНЯЛ",()=>{ NT.i++; tapNext(); });
   }
   if(!(q.kj||q.tk)&&q.it&&q.it.kind!=="k"){ try{speechSynthesis.cancel()}catch(e){} sayQ(q.it.jp,"ja"); }
   save();
@@ -4773,8 +4782,8 @@ function vRender(){
   const v=NV.view||{}, total=NV.queue.length+NV.asked, pct=total?Math.round(NV.asked/total*100):0;
   const showTxt=NS().showTxt;
   let bub="";
-  if(v.kanaBig) bub=`<div class="speech"><span class="vkana">${v.kanaBig}</span>${v.ru?`<span class="akru">${esc(v.ru)}</span>`:""}${v.heard?`<span class="said">ты сказал: «${esc(v.heard)}»</span>`:""}</div>`;
-  else bub=`<div class="speech">${v.ja?(showTxt?`<span class="jp akjp">${rb(v.ja)}</span>`:`<span class="akru">🔊 слушай</span>`):""}${v.ru?`<span class="akru">${esc(v.ru)}</span>`:""}${v.hint?`<span class="hint">💡 ${esc(v.hint)}</span>`:""}${v.ans?`<span class="jp akjp vans">${rb(v.ans)}</span>`:""}${v.heard?`<span class="said">ты сказал: «${esc(v.heard)}»</span>`:""}</div>`;
+  if(v.kanaBig) bub=`<div class="speech"><span class="vkana">${v.kanaBig}</span>${v.ru?`<span class="akru">${esc(v.ru)}</span>`:""}${v.bad&&NV.cur&&NV.cur.it&&typeof nMnBox==="function"?nMnBox(NV.cur.it.id):""}${v.heard?`<span class="said">ты сказал: «${esc(v.heard)}»</span>`:""}</div>`;
+  else bub=`<div class="speech">${v.ja?(showTxt?`<span class="jp akjp">${rb(v.ja)}</span>`:`<span class="akru">🔊 слушай</span>`):""}${v.ru?`<span class="akru">${esc(v.ru)}</span>`:""}${v.hint?`<span class="hint">💡 ${esc(v.hint)}</span>`:""}${v.ans?`<span class="jp akjp vans">${rb(v.ans)}</span>`:""}${(v.bad||v.canSkip||v.ans)&&NV.cur&&(NV.cur.it||NV.cur.tk)&&typeof nMnBox==="function"&&!(NV.cur.t==="kana")?nMnBox((NV.cur.it||NV.cur.tk).id):""}${v.heard?`<span class="said">ты сказал: «${esc(v.heard)}»</span>`:""}</div>`;
   const listening=NV.listening&&NV.listening!=="__t"?NV.listening:null;
   app.innerHTML=`<section class="screen live-screen nv">
     <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="prog"><i style="width:${pct}%;background:var(--pink)"></i></div><div class="nqcount">${NV.round>1?`круг ${NV.round}`:""}${NV.errs.size?` ✗${NV.errs.size}`:""}</div></div>
@@ -5511,6 +5520,58 @@ function studyBadge(){ const days=studyDays(); return `⏱ <b>${fmtStudy(days[da
     <div class="fcn">Считаю только живое время: если 15 секунд ничего не нажимаешь и не отвечаешь — таймер на паузе. В созвонах твои ответы голосом тоже считаются. Всё хранится в облаке.</div>`;
   box.ontoggle=()=>{ NS().studyOpen=box.open; save(); };
   today.querySelector(".th").after(box); }; }
+
+
+/* =================================================================
+   ЗАПОМИНАЛКИ: слоги русскими буквами + ассоциация (Claude придумывает, можно свою)
+   ================================================================= */
+function nCyrSyl(jp){ const s=toHira(kanaOf(String(jp))).replace(/[、。？！…]/g,"").split(" ").map(t=>t.length>1?t.replace(/は$/,"わ").replace(/へ$/,"え"):t).join(" ").replace(/を/g,"お"); const out=[]; let dbl=false;
+  for(let i=0;i<s.length;i++){ const c=s[i];
+    if(c===" "){ out.push(" "); continue; }
+    if(c==="っ"){ dbl=true; continue; }
+    if(c==="ー"){ if(out.length) out[out.length-1]+="-"; continue; }
+    let m=c; if(i+1<s.length&&/[ゃゅょぁぃぅぇぉ]/.test(s[i+1])&&BYK[c+s[i+1]]){ m=c+s[i+1]; i++; }
+    let r=kanaRu(m)||kanaRu(c)||c; if(dbl&&r){ r=r[0]+r; dbl=false; } out.push(r); }
+  // склеиваем как слышится: сай, то:, хон, мас
+  const V=/[аэиоуяеёюы]$/; const res=[];
+  for(const x of out){ const p=res.length?res[res.length-1]:null;
+    if(x===" "||!p||p===" "){ res.push(x); continue; }
+    if(x==="и"&&/[ао]$/.test(p)){ res[res.length-1]=p+"й"; continue; }
+    if(x==="у"&&/[оё]$/.test(p)){ res[res.length-1]=p+"-"; continue; }
+    if(x==="и"&&/[эе]$/.test(p)){ res[res.length-1]=p+"-"; continue; }
+    if(x==="н"){ res[res.length-1]=p+"н"; continue; }
+    res.push(x); }
+  return res.join("·").replace(/·? ·?/g,"  ").replace(/(ма|дэ)·су(?=\s|$)/g,"$1с").replace(/-/g,"\u02D0").replace(/^·|·$/g,""); }
+let C_SAMPLE=null;
+(async()=>{ try{ if(window.claude&&typeof window.claude.use==="function") C_SAMPLE=await window.claude.use("sample"); }catch(e){} })();
+function nMnTarget(id){ const it=N5I[id]; if(it) return {jp:it.kind==="k"?it.jp:kanaOf(it.jp), ru:it.ru, kana:it.kind==="k", disp:it.jp};
+  for(const c of N5C) for(const tk of c.T||[]) if(tk.id===id) return {jp:tk.ans[0],ru:tk.hint,kana:false,disp:tk.ans[0]}; return null; }
+function nMnBox(id){ const t=nMnTarget(id); if(!t) return ""; const n=NS(); n.mn=n.mn||{}; const m=n.mn[id];
+  return `<div class="mnbox" data-mn="${esc(id)}">${t.kana?"":`<div class="mnsyl">🔊 ${esc(nCyrSyl(t.jp))}</div>`}${m?`<div class="mntx">🧠 ${esc(m)} <button class="mnedit" type="button" aria-label="Изменить">✏️</button><button class="mngen mnre" type="button" aria-label="Другую">🔄</button></div>`:`<div class="mnbtns">${C_SAMPLE?`<button class="mini mngen" type="button">🧠 Как запомнить?</button>`:""}<button class="mini mnedit" type="button">✏️ Своя ассоциация</button></div>`}</div>`; }
+const MN_AUTO=new Set();
+setInterval(()=>{ if(!C_SAMPLE) return; const b=document.querySelector("[data-mn] .mngen:not(.mnre)"); if(!b) return; const box=b.closest("[data-mn]"); const id=box.dataset.mn; if(MN_AUTO.has(id)) return; MN_AUTO.add(id); nMnGen(id,box); },700);
+function nMnRefresh(id){ document.querySelectorAll(`[data-mn="${CSS.escape(id)}"]`).forEach(b=>{ b.outerHTML=nMnBox(id); }); }
+async function nMnGen(id,box){ const t=nMnTarget(id); if(!t||!C_SAMPLE) return; const mat=!S.noMat;
+  box.innerHTML=`<div class="mnsyl">🧠 Придумываю…</div>`;
+  const prompt=t.kana?`Придумай запоминалку для японской буквы «${t.disp}» (читается «${t.ru}», по-русски примерно «${kanaRu(t.disp)||""}»). Нужно связать ФОРМУ буквы и её ЗВУК в одну яркую смешную картинку на русском. 1 предложение, до 20 слов. ${mat?"Можно грубо и с матом, главное — смешно и запоминается.":"Без мата."} Ответь только самой запоминалкой, без кавычек и пояснений.`
+    :`Ты помогаешь русскоязычному парню запоминать японские слова. Слово: «${t.disp}», звучит примерно «${nCyrSyl(t.jp)}», значит: «${t.ru}».
+Придумай ОДНУ запоминалку в его любимом стиле: разбей звучание на кусочки, похожие на знакомые РУССКИЕ или АНГЛИЙСКИЕ слова, и свяжи их со значением короткой яркой картинкой.
+Примеры его стиля:
+はい (хай) = «да» → как английское hi: «Хай!» — да, привет, согласен.
+いもうと (имо:то) = «младшая сестра» → «и мото»: младшая сестра вечно просится на мото.
+おやすみなさい (оясуми насай) = «спокойной ночи» → «Ой, я сумки на сайт» — выложил сумки на сайт и спать.
+Правила: созвучие должно реально звучать похоже; коротко — до 20 слов; формат «кусочки → картинка». ${mat?"Можно грубо и с матом, если так смешнее и лучше запомнится.":"Без мата."} Ответь только запоминалкой, без кавычек и пояснений.`;
+  try{ const r=await C_SAMPLE(prompt,{modelTier:"quick"}); let txt=String(r&&r.text||"").trim(); if(/^[«"“].*[»"”]$/.test(txt)&&!/[«"“]/.test(txt.slice(1,-1))) txt=txt.slice(1,-1); txt=txt.slice(0,300);
+    if(txt){ const n=NS(); n.mn=n.mn||{}; n.mn[id]=txt; save(); } nMnRefresh(id);
+  }catch(e){ box.innerHTML=`<div class="mnsyl">${e&&e.code==="rate_limited"?"Подожди пару секунд и нажми ещё раз.":e&&e.code==="not_granted"?"Claude не разрешено придумывать — впиши свою.":"Не получилось, попробуй ещё раз."}</div>`; if(e&&e.code==="not_granted") C_SAMPLE=null; setTimeout(()=>nMnRefresh(id),2500); } }
+function nMnEdit(id,box){ const n=NS(); n.mn=n.mn||{}; const cur=n.mn[id]||"";
+  box.innerHTML=`<div class="mned"><textarea rows="2" placeholder="Как ты это запомнишь? Например: «Ой, я сумки на сайт» — ложусь спать с сумками">${esc(cur)}</textarea><div class="mnbtns"><button class="mini mnsave" type="button">💾 Сохранить</button><button class="mini mncancel" type="button">Отмена</button></div></div>`;
+  const ta=box.querySelector("textarea"); setTimeout(()=>ta.focus(),30);
+  box.querySelector(".mnsave").onclick=e=>{ e.stopPropagation(); const v=ta.value.trim(); if(v) n.mn[id]=v; else delete n.mn[id]; save(); nMnRefresh(id); };
+  box.querySelector(".mncancel").onclick=e=>{ e.stopPropagation(); nMnRefresh(id); }; }
+document.addEventListener("click",e=>{ const b=e.target.closest(".mngen,.mnedit"); if(!b) return; const box=b.closest("[data-mn]"); if(!box) return; e.stopPropagation(); e.preventDefault();
+  const id=box.dataset.mn; if(b.classList.contains("mngen")) nMnGen(id,box); else nMnEdit(id,box); },true);
+document.addEventListener("keydown",e=>{ if(e.target&&e.target.closest&&e.target.closest(".mned")) e.stopPropagation(); },true);
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
