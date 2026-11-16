@@ -585,6 +585,12 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .nqgirl .gav svg{width:96px;height:auto;margin:-8px 0 0 -17px;display:block;animation:none}
 .nqgirl .gbub{position:relative;flex:1;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:10px 12px;font-weight:700;font-size:14px;line-height:1.3}
 .nqgirl .gbub::before{content:"";position:absolute;left:-9px;top:50%;margin-top:-8px;border:8px solid transparent;border-right-color:var(--line);border-left:0}
+.cloudst{font-size:11px;font-weight:700;color:var(--muted)}
+.nqstage{height:210px;min-height:0;margin-bottom:-4px}
+.nqstage .girlwrap{width:min(46%,170px)}
+.nqstage .speech{padding:9px 12px}
+.nqstage .speech .akru{font-size:15px;font-weight:800}
+.nq .nqcard{min-height:110px}
 .chc.skip{border-style:dashed;opacity:.75}
 .chc.skip .chp{color:var(--gold)}
 .chh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px}
@@ -781,7 +787,7 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(M
 const LS="kana-blyat-v1";
 let S={xp:0,streak:0,last:null,best:0,stats:{},mode:"all",lessons:0};
 try{const d=JSON.parse(localStorage.getItem(LS)||"null"); if(d) S=Object.assign(S,d);}catch(e){}
-const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
+let save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
 const dayKey=(d=new Date())=>d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return dayKey(d)};
 function liveStreak(){ return (S.last===dayKey()||S.last===yesterday())?S.streak:0; }
@@ -4475,7 +4481,7 @@ const nTypeOk=(typed,targets)=>{ const a=nTypeNorm(r2k(typed)); if(targets.some(
 const nJaSpeak=t=>String(t).replace(/[（(][^）)]*[）)]/g,"");
 const nFast=t=>/очень быстро/.test(t);
 async function nSayJa(t,rate){ return speakP(nJaSpeak(t),"ja",rate||(nFast(t)?1.35:.85)); }
-function nSpeakBtn(t){ try{speechSynthesis.cancel()}catch(e){} sayQ(nJaSpeak(t),"ja"); }
+function nSpeakBtn(t){ try{speechSynthesis.cancel()}catch(e){} speakP(nJaSpeak(t),"ja",.8); }
 
 /* =================================================================
    УРОК РУКАМИ (как в Дуолинго, только без левых слов)
@@ -4592,7 +4598,8 @@ function tapRender(){
   }
   const NQ_SAY={tr:["Ответь мне. Нормально.","Я сказала — ты отвечаешь.","Ну? Что скажешь?"],sit:["Что ты скажешь в такой ситуации?","Давай, представь, что я рядом."],au:["Слушай внимательно, глухой.","Ушами, не глазами."],ak:["Слушай, какую букву говорю."],ty:["Пиши, грамотей.","Латиницей, я сама переведу."],bd:["Собери фразу, не тупи.","Из кусочков. Ты сможешь."],gp:["Какую частицу воткнёшь?","Частица. Думай."]};
   const bub=NT.bub!=null?NT.bub:(q.intro||q.kintro)?pick(["Запоминай, сладкий.","Смотри и слушай.","Новое. Запомни, спрошу."]):pick(NQ_SAY[q.type]||TAUNTS);
-  const girl=`<div class="nqgirl"><div class="gav ${NT.mood==="angry"?"shake":""}">${girlSVG(NT.mood||"happy")}</div><div class="gbub">${esc(bub)}</div></div>`;
+  const nbg=(N5C[NT.ci!=null?NT.ci:0]||{}).bg||"home";
+  const girl=`<div class="stage nqstage bg-${nbg}">${sceneDeco(nbg)}<div class="speech"><span class="akru" id="nqBub">${esc(bub)}</span></div><div class="girlwrap" id="nqGirl">${girlSVG(NT.mood||"happy")}</div></div>`;
   NT.bub=null; NT.mood=null;
   app.innerHTML=`<section class="screen nq">${top}${girl}${body}${ans}</section>`;
   document.getElementById("quit").onclick=()=>{ hfStop(); NT=null; home(); };
@@ -4624,7 +4631,7 @@ function tapAnswer(ok,typed){
   else if(q.tk) right=`<span class="jfont">${esc(q.tk.ans[0])}</span>`;
   else if(q.it.kind==="k") right=`<span class="k">${q.it.jp}</span> = ${esc(q.it.ru)} («${esc(q.it.cyr)}»)`;
   else right=`<span class="jfont">${rb(q.it.jp)}</span> — ${esc(q.it.ru)}`;
-  { const gv=document.querySelector(".nqgirl .gav"), gb=document.querySelector(".nqgirl .gbub"); if(gv) gv.innerHTML=girlSVG(ok?pick(["blush","laugh","happy"]):"angry"); if(gv&&!ok){ gv.classList.remove("shake"); void gv.offsetWidth; gv.classList.add("shake"); } if(gb) gb.textContent=ok?pick(["Умничка.","Красава!","Да, бля!","Ммм, правильно.","Вот, можешь же."]):pick(["Ты долбоёб? Не то.","Мимо, сладкий.","Пиздец. Нет.","Ну ты и лошара."]); }
+  { const gv=document.getElementById("nqGirl"), gb=document.getElementById("nqBub"); if(gv) gv.innerHTML=girlSVG(ok?pick(["blush","laugh","happy"]):"angry"); if(gv&&!ok){ gv.classList.remove("shake"); void gv.offsetWidth; gv.classList.add("shake"); } if(gb) gb.textContent=ok?pick(["Умничка.","Красава!","Да, бля!","Ммм, правильно.","Вот, можешь же."]):pick(["Ты долбоёб? Не то.","Мимо, сладкий.","Пиздец. Нет.","Ну ты и лошара."]); }
   if(ok){ NT.ok++; NT.combo++; NT.xp+=10;
     if(q.it&&NT.mode!=="exam"){ if(nGrade(q.it.id,true,NT.mode==="lesson"&&NT.items.includes(q.it))) NT.newL++; }
     beep(true); stampIt(NT.combo>=5?"神":"良",true);
@@ -5389,6 +5396,45 @@ new MutationObserver(ms=>{ if(!S.noMat) return; ms.forEach(m=>{ if(m.type==="cha
   noMatDom(document.body); }; }
 { const _o=oldHome; oldHome=function(){ _o(); const t=document.querySelector(".today"); if(t){ const b=document.createElement("button"); b.className="ghost"; b.textContent=S.noMat?"🤬 Маты: выключены — включить":"🤬 Маты: включены — выключить"; b.onclick=()=>{ S.noMat=!S.noMat; save(); location.reload(); }; t.after(b); } noMatDom(document.body); }; }
 noMatDom(document.body);
+
+
+/* =================================================================
+   ОБЛАКО: прогресс хранится в базе Claude (как в «Штабе»)
+   ================================================================= */
+const CLOUD={db:null,state:"off",timer:null,chain:Promise.resolve(),dirty:false};
+const CLOUD_LOCAL_TS0=S._ts||0; // время локального прогресса ДО любых сохранений на этой загрузке
+{ const _save0=save; save=function(){ S._ts=Date.now(); _save0(); if(CLOUD.db&&CLOUD.state!=="loading"){ CLOUD.dirty=true; clearTimeout(CLOUD.timer); CLOUD.timer=setTimeout(cloudPush,2000); } }; }
+function cloudSplit(){ const main=Object.assign({},S); delete main.n5; return {main:{v:1,ts:S._ts||0,s:main},n5:{v:1,ts:S._ts||0,n5:S.n5||{}}}; }
+function cloudPush(){ if(!CLOUD.db||!CLOUD.dirty) return CLOUD.chain; CLOUD.dirty=false;
+  const {main,n5}=cloudSplit();
+  CLOUD.chain=CLOUD.chain.then(async()=>{ try{ cloudMark("saving"); await CLOUD.db.doc("kana/main").set(main); await CLOUD.db.doc("kana/n5").set(n5); cloudMark("ok"); }
+    catch(e){ const c=e&&e.code; if(c==="unavailable"){ CLOUD.dirty=true; clearTimeout(CLOUD.timer); CLOUD.timer=setTimeout(cloudPush,4000+Math.random()*2000); } cloudMark(c==="revoked"||c==="not_granted"?"off":"err"); } });
+  return CLOUD.chain; }
+function cloudMark(st){ CLOUD.state=st; let el=document.getElementById("cloudSt"); if(!el){ const hs=document.querySelector(".n5home .hstats"); if(hs){ el=document.createElement("span"); el.id="cloudSt"; el.className="cloudst"; hs.appendChild(el); } } if(el) el.innerHTML=cloudBadge(); }
+function cloudBadge(){ return {ok:"☁️ сохранено",saving:"☁️ сохраняю…",loading:"☁️ загружаю…",err:"☁️ ⚠ не сохранилось",off:""}[CLOUD.state]||""; }
+async function cloudInit(){
+  try{
+    if(!(window.claude&&typeof window.claude.use==="function")) return;
+    const db=await window.claude.use("db"); if(!db) return;
+    CLOUD.db=db; cloudMark("loading");
+    const to=new Promise(r=>setTimeout(()=>r("timeout"),10000));
+    const got=await Promise.race([Promise.all([db.doc("kana/main").get(),db.doc("kana/n5").get()]),to]);
+    if(got==="timeout"){ cloudMark("err"); CLOUD.state="ok"; return; }
+    const [m,n]=got; const rm=m.exists?m.data():null, rn=n.exists?n.data():null;
+    const localTs=CLOUD_LOCAL_TS0, remoteTs=rm&&rm.ts||0;
+    if(rm&&remoteTs>localTs){
+      const keep={}; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,JSON.parse(JSON.stringify(rm.s||{})));
+      if(rn&&rn.n5) S.n5=JSON.parse(JSON.stringify(rn.n5));
+      try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){}
+      CLOUD.state="ok"; cloudMark("ok");
+      if(!NV&&!NT&&!MK){ N5_MENU=false; home(); }
+    } else { CLOUD.state="ok"; CLOUD.dirty=true; cloudPush(); }
+  }catch(e){ CLOUD.state="err"; }
+}
+window.addEventListener("pagehide",()=>{ if(CLOUD.dirty) cloudPush(); });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&CLOUD.dirty) cloudPush(); });
+{ const _h=home; home=function(){ _h(); if(N5_MENU||!CLOUD.db) return; const hs=document.querySelector(".n5home .hstats"); if(hs&&!document.getElementById("cloudSt")){ const s=document.createElement("span"); s.id="cloudSt"; s.className="cloudst"; s.innerHTML=cloudBadge(); hs.appendChild(s); } }; }
+cloudInit();
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
