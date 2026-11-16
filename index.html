@@ -5225,9 +5225,14 @@ async function cSpeak(text,lang,rate){
   finally{ setTalk(false); }
 }
 const _speakP0=speakP, _sayQ0=sayQ, _say0=say, _hfStop0=hfStop;
-speakP=function(text,lang,rate,pitch){ return C_TTS?cSpeak(text,lang,rate):_speakP0(text,lang,rate,pitch); };
-sayQ=function(text,lang){ if(C_TTS){ cSpeak(text,lang); return; } _sayQ0(text,lang); };
-say=function(text,lang="ja"){ if(C_TTS){ cSpeak(text,lang); return; } _say0(text,lang); };
+/* мгновенный голос браузера, если он работает внутри Claude; голос Claude — запасной (он с задержкой) */
+let C_BR=false;
+const cUseClaude=()=>C_TTS&&!(C_BR&&S.cVoiceMode!=="claude");
+function cProbe(){ return new Promise(res=>{ try{ if(!window.speechSynthesis) return res(false); const u=new SpeechSynthesisUtterance("а"); u.lang="ru-RU"; u.volume=0; let ok=false; u.onstart=()=>{ ok=true; res(true); }; u.onend=()=>{ if(!ok){ ok=true; res(true); } }; u.onerror=()=>res(false); speechSynthesis.speak(u); setTimeout(()=>{ if(!ok) { try{speechSynthesis.cancel()}catch(e){} res(false); } },1500); }catch(e){ res(false); } }); }
+async function cSpeakBr(text,lang,rate,pitch){ if(C_DIC&&C_DIC.active()) { try{ await C_DIC.stop(); }catch(e){} } return _speakP0(text,lang,rate,pitch); }
+speakP=function(text,lang,rate,pitch){ return !C_MODE?_speakP0(text,lang,rate,pitch):cUseClaude()?cSpeak(text,lang,rate):cSpeakBr(text,lang,rate,pitch); };
+sayQ=function(text,lang){ if(C_MODE&&cUseClaude()){ cSpeak(text,lang); return; } _sayQ0(text,lang); };
+say=function(text,lang="ja"){ if(C_MODE&&cUseClaude()){ cSpeak(text,lang); return; } _say0(text,lang); };
 hfStop=function(){ _hfStop0(); if(C_TTS) C_TTS.stop().catch(()=>{}); if(C_DIC&&C_DIC.active()) C_DIC.stop().catch(()=>{}); };
 const _nVoiceOn0=nVoiceOn; const _voicePrime0=voicePrime; voicePrime=function(){ if(!C_MODE) _voicePrime0(); };
 nVoiceOn=function(){ return C_MODE?!!C_DIC&&!NS().noDic:_nVoiceOn0(); };
@@ -5295,12 +5300,19 @@ vRender=function(){
   else if(NS().dicJa===false&&NV.listening==="ja"){ const n=document.createElement("div"); n.className="micerr cinfo"; n.textContent="Слушаю по-русски: говори японские слова как слышишь — «аригато годзаимас»."; const st=document.querySelector(".nv .stage"); if(st) st.after(n); }
 };
 /* экран перед созвоном: объясняем, как работает голос в Claude */
+function cVoiceHTML(){ const br=C_BR&&S.cVoiceMode!=="claude";
+  return `<b>Голос Юки</b><small>${C_BR?"⚡ Мгновенный — голос браузера, без задержки. Claude — красивее, но 2–5 сек ждать.":"Голос браузера тут не работает — только голос Claude (он с задержкой)."}</small>
+  <div class="tschips">${C_BR?`<button class="tsc cvm" data-m="br" aria-pressed="${br}">⚡</button>`:""}${[["airy","1"],["glassy","2"],["rounded","3"],["buttery","4"]].map(([v,n])=>`<button class="tsc cv" data-v="${v}" aria-pressed="${!br&&(S.cVoice||"airy")===v}">${n}</button>`).join("")}</div>${br?`<button class="mini cvpick">Выбрать голос браузера (женский)</button>`:""}`; }
+function cVoiceBind(box){ const re=()=>{ box.innerHTML=cVoiceHTML(); cVoiceBind(box); }; const test="Привет, сладкий. Это мой голос? こんにちは、ユキです。";
+  box.querySelectorAll(".cvm").forEach(b=>b.onclick=()=>{ S.cVoiceMode="br"; save(); re(); _speakP0("Привет, сладкий. Это мой голос.","ru").then(()=>_speakP0("こんにちは、ユキです。","ja")); });
+  box.querySelectorAll(".cv").forEach(b=>b.onclick=()=>{ S.cVoice=b.dataset.v; S.cVoiceMode="claude"; save(); re(); if(C_TTS) C_TTS.speak(test,{voice:S.cVoice}).catch(()=>{}); });
+  const pk=box.querySelector(".cvpick"); if(pk) pk.onclick=voiceScreen; }
 const _home0=home;
 home=function(){ _home0(); if(!C_MODE||!C_TTS||N5_MENU) return; const set=document.querySelector(".n5home details.settings"); if(!set) return;
   const box=document.createElement("div"); box.className="cvoice";
-  box.innerHTML=`<b>Голос Юки в Claude</b><small>Нажми, послушай и оставь женский</small><div class="tschips">${[["airy","1"],["glassy","2"],["rounded","3"],["buttery","4"]].map(([v,n])=>`<button class="tsc cv" data-v="${v}" aria-pressed="${(S.cVoice||"airy")===v}">${n}</button>`).join("")}</div>`;
+  box.innerHTML=cVoiceHTML();
   set.querySelector("summary").after(box);
-  box.querySelectorAll(".cv").forEach(b=>b.onclick=()=>{ S.cVoice=b.dataset.v; save(); box.querySelectorAll(".cv").forEach(x=>x.setAttribute("aria-pressed",x===b)); C_TTS.speak("Привет, сладкий. Это мой голос? こんにちは、ユキです。",{voice:S.cVoice}).catch(()=>{}); });
+  cVoiceBind(box);
 };
 const _vGate0=vGate;
 vGate=function(s){
@@ -5309,10 +5321,10 @@ vGate=function(s){
   if(!C_MODE) return;
   app.querySelectorAll(".switch,.mictest,.micerr").forEach(e=>{ if(!e.querySelector("#vh")) e.remove(); });
   const note=document.createElement("div"); note.className="micerr cinfo";
-  note.innerHTML=C_DIC&&!NS().noDic?"🎧 Ты в Claude: Юки говорит голосом Claude, а отвечаешь через диктовку Claude. Нажми <b>«Говори»</b> или <b>пробел</b>, скажи ответ — она сама поймёт, что ты закончил. Первый раз Claude спросит разрешение на микрофон.":C_TTS?"🎧 Ты в Claude: Юки говорит голосом, а отвечать придётся текстом (латиницей) — диктовка работает только в Chrome на компе и в приложении Claude для компа. Для полного «без рук» открой github.io.":"В этом окне Claude нет ни голоса, ни микрофона — отвечаешь текстом. Голос работает в Chrome на компе или в приложении Claude для компа.";
+  note.innerHTML=C_DIC&&!NS().noDic?"🎧 Ты в Claude: Юки говорит вслух, а отвечаешь через диктовку Claude. Нажми <b>«Говори»</b> или <b>пробел</b>, скажи ответ — она сама поймёт, что ты закончил. Первый раз Claude спросит разрешение на микрофон.":C_TTS?"🎧 Ты в Claude: Юки говорит голосом, а отвечать придётся текстом (латиницей) — диктовка работает только в Chrome на компе и в приложении Claude для компа. Для полного «без рук» открой github.io.":"В этом окне Claude нет ни голоса, ни микрофона — отвечаешь текстом. Голос работает в Chrome на компе или в приложении Claude для компа.";
   const go=document.getElementById("go"); if(go) go.before(note);
-  if(C_TTS){ const vb=document.createElement("div"); vb.className="cvoice"; vb.innerHTML=`<b>Голос Юки</b><small>Если звучит мужской — выбери другой номер</small><div class="tschips">${[["airy","1"],["glassy","2"],["rounded","3"],["buttery","4"]].map(([v,n])=>`<button class="tsc cv" data-v="${v}" aria-pressed="${(S.cVoice||"airy")===v}">${n}</button>`).join("")}</div>`; note.after(vb);
-    vb.querySelectorAll(".cv").forEach(b=>b.onclick=()=>{ S.cVoice=b.dataset.v; save(); vb.querySelectorAll(".cv").forEach(x=>x.setAttribute("aria-pressed",x===b)); C_TTS.speak("Привет, сладкий. Это мой голос? こんにちは、ユキです。",{voice:S.cVoice}).catch(()=>{}); }); }
+  if(C_TTS){ const vb=document.createElement("div"); vb.className="cvoice"; vb.innerHTML=cVoiceHTML(); note.after(vb);
+    cVoiceBind(vb); }
   if(C_DIC){ const box=document.createElement("div"); box.className="mictest"; box.innerHTML=`<button class="mini" id="cdt">🎤 Проверить микрофон</button><span id="cdr">Нажми и скажи по-японски «こんにちは»</span>`; note.after(box);
     document.getElementById("cdt").onclick=()=>{ const r=document.getElementById("cdr"); let buf=""; const lang=NS().dicJa===false?null:"ja";
       const u1=C_DIC.onFinal(({text})=>{ buf+=text; r.textContent="✅ Услышала: «"+buf.trim()+"»"+(lang?"":" (по-русски)"); setTimeout(()=>C_DIC.stop().catch(()=>{}),900); });
@@ -5329,6 +5341,8 @@ vGate=function(s){
     C_TTS=t||null; C_DIC=d||null;
     if(!C_TTS&&!C_DIC) return;
     C_MODE=true; VOICE.denied=true; VOICE.lastErr="claude";
+    const pr=async()=>{ document.removeEventListener("pointerdown",pr,true); document.removeEventListener("keydown",pr,true); C_BR=await cProbe(); loadVoices(); if(!NV&&!NT&&!MK&&!N5_MENU&&document.querySelector(".n5home")){ const y=window.scrollY; home(); window.scrollTo(0,y); } };
+    document.addEventListener("pointerdown",pr,true); document.addEventListener("keydown",pr,true);
     if(C_DIC) cDicInit();
     if(!NV&&!NT&&!MK&&!N5_MENU) home();
   }catch(e){}
