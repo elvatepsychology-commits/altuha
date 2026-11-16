@@ -4519,7 +4519,7 @@ function tapStart(cfg){ // cfg: {mode:"lesson"|"exam"|"review"|"kanji", title, i
   const qs=[]; const n=NS();
   if(cfg.mode==="lesson"){
     const ex=new Set(cfg.items.map(t=>t.id));
-    const old=nOld(5,ex).filter(t=>t.kind===cfg.items[0].kind||cfg.items[0].kind!=="k");
+    const isK=cfg.items[0].kind==="k"; const old=nOld(40,ex).filter(t=>isK?t.kind==="k":t.kind!=="k").slice(0,5);
     const kjOld=Object.keys(n.kj).map(k=>N5K.find(x=>x.k===k)).filter(Boolean); const kj2=shuffle(kjOld).slice(0,2);
     if(old.length||kj2.length){ qs.push({say:"Быстрый повтор старого — чтоб не протухло. Тыкай быстро."}); old.forEach(t=>qs.push(nQ(t,pick(nTypesFor(t,2))))); kj2.forEach(k=>qs.push(nKjQ(k,pick(["km","kd"])))); qs.push({say:"Разогрелся. Теперь новое."}); }
     const items=cfg.items; const later=[];
@@ -5200,7 +5200,7 @@ function home(){
   app.querySelectorAll("[data-skipnow]").forEach(b=>b.onclick=()=>{ const ci=+b.dataset.skipnow, c=N5C[ci]; const y=window.scrollY;
     if(n.skipArm!==ci){ n.skipArm=ci; home(); window.scrollTo(0,y); return; }
     n.skipArm=null; const now=Date.now(); const ch=n.ch[c.id]||(n.ch[c.id]={}); ch.exam=ch.exam||now; ch.call=ch.call||now; ch.skipped=now;
-    c.L.forEach(l=>{ const d=n.done[l.id]||(n.done[l.id]={}); d.tap=d.tap||now; d.voice=d.voice||now; l.items.forEach(it=>{ if(!n.srs[it.id]) n.srs[it.id]={b:3,d:now+N_INT[3],t:now}; }); });
+    c.L.forEach(l=>{ const d=n.done[l.id]||(n.done[l.id]={}); d.tap=d.tap||now; d.voice=d.voice||now; });
     n.openCh=null; save(); home(); });
   app.querySelectorAll("[data-skip]").forEach(b=>b.onclick=()=>{ const c=N5C[+b.dataset.skip]; vGate({k:"call",c,skip:true}); });
   app.querySelectorAll("details.fc,details.skl").forEach(d=>d.ontoggle=()=>{ if(d.classList.contains("fc")) n.fcOpen=d.open; else n.sklOpen=d.open; save(); });
@@ -5354,6 +5354,7 @@ vGate=function(s){
 })();
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
+{ const n=NS(); N5C.filter(c=>c.kana&&(n.ch[c.id]||{}).skipped).forEach(c=>c.L.forEach(l=>l.items.forEach(it=>{ delete n.srs[it.id]; }))); save(); }
 
 home();
 </script>
