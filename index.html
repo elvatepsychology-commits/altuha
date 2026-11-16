@@ -530,6 +530,190 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .micerr{background:color-mix(in srgb,var(--bad) 14%,var(--surface));border:2px solid var(--bad);border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.4;font-weight:500}
 .micerr b{font-weight:900}
 
+
+/* ===== ОСНОВНОЙ КУРС N5 ===== */
+.jfont{font-family:var(--f-jp);font-weight:700}
+.kfont{font-family:var(--f-display);font-weight:400;font-size:34px}
+.muted{color:var(--muted)}
+.lvcard{background:var(--surface);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px;border:2px solid color-mix(in srgb,var(--gold) 45%,var(--line))}
+.lvtrack{display:flex;align-items:center;gap:4px}
+.lvnode{flex:none;width:64px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:14px;background:var(--surface2);border:2px solid var(--line);text-align:center}
+.lvnode b{font-family:var(--f-display);font-weight:400;font-size:20px;line-height:1}
+.lvnode small{font-size:9.5px;font-weight:700;color:var(--muted);line-height:1.1}
+.lvnode.on{background:color-mix(in srgb,var(--pink) 16%,var(--surface));border-color:var(--pink)}
+.lvnode.on b{color:var(--pink)}
+.lvnode.done{background:color-mix(in srgb,var(--good) 18%,var(--surface));border-color:var(--good)}
+.lvnode.done b{color:var(--good)}
+.lvnode.lock{opacity:.55}
+.lvnode.glow{border-color:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 30%,transparent);animation:pop .6s ease-out}
+.lvline{flex:1;height:4px;border-radius:99px;background:var(--line);overflow:hidden}
+.lvline.dim{opacity:.5}
+.lvline i{display:block;height:100%;background:var(--good)}
+.lvbar{height:12px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.lvbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--accent));border-radius:99px;transition:width .4s}
+.lvsub{font-size:12.5px;color:var(--muted);font-weight:500;line-height:1.4}
+.lvsub b{color:var(--ink)}
+.fc,.skl{background:var(--surface);border-radius:16px;padding:10px 12px}
+.lvcard .fc{background:var(--surface2);padding:10px}
+.fc summary,.skl summary{cursor:pointer;font-weight:900;font-size:14px;list-style:none;display:flex;flex-direction:column;gap:1px}
+.fc summary::-webkit-details-marker,.skl summary::-webkit-details-marker{display:none}
+.fc summary small,.skl summary small{font-weight:600;font-size:11.5px;color:var(--muted)}
+.fcl{display:flex;flex-direction:column;gap:1px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px}
+.fcl:first-of-type{margin-top:6px}
+.fcl span{color:var(--muted);font-weight:600}
+.fcl b{font-size:14px;font-weight:900}
+.fcn{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:6px}
+.skr{display:grid;grid-template-columns:1fr 34%;grid-template-areas:"t b" "s p";gap:2px 10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:13px;font-weight:700}
+.skr:first-of-type{margin-top:6px}
+.skr span{grid-area:t}
+.skr i{grid-area:b;display:block;height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.skr em{display:block;height:100%;background:var(--good);border-radius:99px}
+.skr b{grid-area:p;justify-self:end;font-size:12px;font-variant-numeric:tabular-nums}
+.skr small{grid-area:s;font-size:11px;color:var(--muted);font-weight:600}
+.tbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tbtns .ghost{padding:12px 8px;font-size:14px}
+.chpath{display:flex;flex-direction:column;gap:8px;position:relative}
+.chc{background:var(--surface);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.chc.cur{border-color:var(--pink);box-shadow:0 4px 0 color-mix(in srgb,var(--pink) 40%,transparent)}
+.chc.done{border-color:color-mix(in srgb,var(--good) 55%,var(--line))}
+.chc.lock{opacity:.55}
+.chc.final{border-style:dashed;border-color:var(--gold)}
+.chc.final.cur{border-style:solid}
+.chc.lvsoon{opacity:.4}
+.chh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px}
+.chn{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-size:19px;background:var(--surface2);color:var(--ink)}
+.chc.cur .chn{background:var(--pink);color:#fff}
+.chc.done .chn{background:var(--good);color:#fff}
+.cht{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.cht b{font-weight:900;font-size:15.5px;line-height:1.2}
+.cht small{font-size:12px;color:var(--muted);line-height:1.3}
+.chp{flex:none;font-size:12px;font-weight:900;color:var(--muted);font-variant-numeric:tabular-nums}
+.chc.done .chp{color:var(--good);font-size:18px}
+.chsteps{display:flex;flex-direction:column;gap:6px;padding:0 10px 12px}
+.chstory{font-size:13px;line-height:1.45;color:var(--muted);background:var(--surface2);border-radius:12px;padding:10px 12px;font-style:italic}
+.stp{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:9px 10px}
+.stp .si{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface2);font-size:15px}
+.stp .st{display:flex;flex-direction:column;gap:0;min-width:0}
+.stp .st b{font-size:14px;font-weight:800}
+.stp .st small{font-size:11.5px;color:var(--muted)}
+.stp.ok{border-color:color-mix(in srgb,var(--good) 50%,var(--line))}
+.stp.ok .si{background:var(--good);color:#fff;font-weight:900}
+.stp.nx{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 10%,var(--surface))}
+.stp.nx .si{background:var(--pink);color:#fff}
+.stp.lk{opacity:.45}
+.menu-old{font-size:14px}
+.lrow{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:7px 8px}
+.lrow.ok{border-color:color-mix(in srgb,var(--good) 50%,var(--line))}
+.lrow .lt{display:flex;flex-direction:column;min-width:0}
+.lrow .lt b{font-size:14px;font-weight:800}
+.lrow .lt small{font-size:11px;color:var(--muted)}
+.sb{display:flex;flex-direction:column;align-items:center;gap:0;min-width:58px;padding:5px 6px;border-radius:11px;border:2px solid var(--line);background:var(--surface);font-size:10.5px;font-weight:800;color:var(--muted)}
+.sb span{font-size:16px;line-height:1.2}
+.sb.ok{background:var(--good);border-color:var(--good);color:#fff}
+.sb.nx{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 14%,var(--surface));color:var(--pink);animation:pop .5s ease-out}
+.sb:disabled{opacity:.4}
+.skipk{align-self:stretch;text-align:center;padding:10px}
+
+.nq .nqtag{align-self:center;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:var(--surface);border:2px solid var(--line);padding:3px 10px;border-radius:99px;color:var(--muted);margin-bottom:-8px}
+.nqcount{font-weight:900;font-size:13px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;min-width:36px;text-align:right}
+.nqcard{min-height:150px;justify-content:center}
+.nqcard .say{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:12px;background:var(--surface2);font-size:18px}
+.nqcard .big-say{position:static;width:auto;height:auto;padding:16px 26px;font-size:20px;font-weight:900;border-radius:16px;background:color-mix(in srgb,var(--pink) 15%,var(--surface2))}
+.nqcard .glyph.kj{font-family:var(--f-jp);font-weight:700}
+.nqru{font-size:15px;color:var(--muted);font-weight:600;text-align:center;padding-inline:10px}
+.nqru b{color:var(--ink)}
+.nqex{font-size:15px;text-align:center}
+.nqhide{font-size:12px;color:var(--muted);font-weight:600}
+.nopts{display:flex;flex-direction:column;gap:8px}
+.nopt{background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:13px 14px;font-size:16px;font-weight:700;text-align:left;line-height:1.35;transition:transform .08s}
+.nopt .jfont{font-size:19px}
+.nopt:active{transform:translateY(2px)}
+.nopt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface))}
+.nopt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--surface))}
+.nopt .kfont{font-size:30px}
+.nslot{min-height:58px;border-bottom:2px dashed var(--line);display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding-bottom:10px}
+.npool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ntile{background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;padding:8px 12px;font-family:var(--f-jp);font-weight:700;font-size:18px}
+.ntile.used{opacity:.25;pointer-events:none}
+.nkana{text-align:center;font-family:var(--f-jp);font-weight:700;font-size:24px;min-height:34px;color:var(--pink)}
+.nwrong{display:flex;flex-direction:column;gap:6px;text-align:left}
+.nwrong div{background:var(--surface);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:1px}
+.nwrong .jfont{font-size:17px}
+.nwrong small{font-size:12px;color:var(--muted)}
+.nv .vkana{font-family:var(--f-display);font-size:86px;line-height:1;text-align:center;color:#1B1530}
+.nv .speech{max-height:62%;overflow:auto}
+.nv .vans{color:#0F9D4E}
+.vbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.vbtns .mini{padding:9px 4px;font-size:12px;font-weight:800}
+.vtype input{font-size:20px;text-transform:none}
+.nrev{gap:12px}
+.nrevh{margin:0;font-family:var(--f-display);font-weight:400;font-size:26px;line-height:1.1;text-align:center}
+.rvlist{display:flex;flex-direction:column;gap:6px}
+.rvi{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+.rvi .chk{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:#fff;margin-top:2px}
+.rvi.on{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--surface))}
+.rvi.on .chk{background:var(--bad);border-color:var(--bad)}
+.rvi .tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rvi .jfont{font-size:18px}
+.rvi .kfont{font-size:30px}
+.rvi small{font-size:12px;color:var(--muted);line-height:1.3}
+.rvi .hd{font-style:italic}
+.rvi .fx{color:var(--good);font-weight:700}
+.kjgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.kjgrid span{aspect-ratio:1;display:grid;place-items:center;border-radius:8px;background:var(--surface);font-family:var(--f-jp);font-weight:700;font-size:17px;color:var(--muted);opacity:.5}
+.kjgrid span.on{opacity:1;color:var(--ink);background:color-mix(in srgb,var(--good) 18%,var(--surface))}
+.mk{gap:12px}
+.mkhead{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 12px}
+.mkhead b{display:block;font-family:var(--f-jp);font-size:14px}
+.mkhead small{font-size:11px;opacity:.8}
+.mktime{font-weight:900;font-variant-numeric:tabular-nums;font-size:18px;white-space:nowrap}
+.mkprog{display:flex;flex-wrap:wrap;gap:3px}
+.mkprog i{width:14px;height:14px;border-radius:4px;background:var(--surface2);border:2px solid transparent;cursor:pointer}
+.mkprog i.a{background:var(--ink)}
+.mkprog i.c{border-color:var(--pink)}
+.exnum{font-size:12px;font-weight:800;color:var(--muted)}
+.excard{background:var(--surface);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.exjp{font-family:var(--f-jp);font-weight:500;font-size:21px;line-height:1.7}
+.exjp u{text-decoration-thickness:2px;text-underline-offset:5px;font-weight:700;font-size:30px}
+.exjp .star{color:var(--pink)}
+.exq{font-size:17px;font-weight:700;border-top:1px dashed var(--line);padding-top:10px}
+.exru{font-size:12.5px;color:var(--muted);font-weight:600}
+.exru.big{font-size:17px;color:var(--ink);font-weight:800}
+.extext{font-family:var(--f-jp);font-size:17px;line-height:1.9;background:var(--bg);border-radius:12px;padding:12px}
+.exaud{font-size:13px;font-weight:800;color:var(--pink)}
+.exopts{display:flex;flex-direction:column;gap:8px}
+.exo{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px;font-family:var(--f-jp);font-size:18px;font-weight:600}
+.exo span{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-family:var(--f-body);font-size:13px;font-weight:900}
+.exo.on{border-color:var(--ink);background:color-mix(in srgb,var(--ink) 8%,var(--surface))}
+.exo.on span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.exnav{display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.mkend{align-self:center}
+.mk.nofuri ruby.n5k rt{visibility:hidden}
+.mkx{color:var(--bg);opacity:.8}
+.mkfuri{align-self:flex-start;font-size:11.5px}
+.mkscore{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}
+.mkscore div{background:var(--surface);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:2px}
+.mkscore b{font-size:26px;font-weight:900}
+.mkscore b.bad{color:var(--bad)}
+.mkscore small{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.25}
+.mkwrong{display:flex;flex-direction:column;gap:8px;text-align:left;margin-top:8px}
+.mkw{background:var(--bg);border-radius:12px;padding:10px;font-size:13px;display:flex;flex-direction:column;gap:6px}
+.mkw .exjp{font-size:16px}.mkw .extext{font-size:14px}
+.win{position:relative;overflow:hidden;text-align:center}
+.wint{font-family:var(--f-display);font-weight:400;font-size:clamp(40px,13vw,58px);margin:0;line-height:1;color:var(--pink);animation:pop .5s ease-out}
+.cert{background:linear-gradient(135deg,#FFF6D8,#FFE7A3);color:#3A2A00;border-radius:18px;padding:16px;border:3px double #C99A1C;display:flex;flex-direction:column;gap:6px}
+.cert>b{font-family:var(--f-display);font-weight:400;font-size:22px}
+.cert>span{font-size:13px;font-weight:600}
+.certg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.certg div{background:rgba(255,255,255,.55);border-radius:10px;padding:8px 4px;display:flex;flex-direction:column}
+.certg b{font-size:20px;font-weight:900}
+.certg small{font-size:10px;font-weight:700;opacity:.75}
+.wintxt{text-align:left;font-size:14.5px;line-height:1.55}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall 3.2s linear infinite}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(110vh) rotate(540deg)}}
+.chc.shake{animation:shake .35s}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -884,7 +1068,7 @@ function nextStep(){
       if(c.P.some(t=>lvlOf(t)===0)) return {ci,tab:"p",sec,label:`${c.t} — ${c.gram?"примеры":"фразы"}`}; } }
   return null;
 }
-function home(){
+function oldHome(){
   hfStop(); hideSheet();
   const streak=liveStreak(), doneToday=S.last===dayKey();
   const st=srsStats(), nx=nextStep();
@@ -892,7 +1076,7 @@ function home(){
   const tile=(id,k,t,sub)=>`<button class="tile" data-go="${id}"><span class="tk">${k}</span><b>${t}</b><small>${sub}</small></button>`;
   const sp=id=>{const p=secProgress(id);return `${p.l}/${p.n}`;};
   app.innerHTML=`<section class="screen">
-    <div class="brand"><h1>Кана,<br><span>блять</span></h1><div class="hstats"><span class="fire">🔥 ${streak}</span><span>${S.xp} XP</span></div></div>
+    <div class="pu-head"><button class="x" id="toMain" aria-label="Назад">←</button><h2>Все режимы</h2><div class="hstats"><span class="fire">🔥 ${streak}</span></div></div>
     <div class="today">
       <div class="th"><b>Сегодня</b><small>${doneToday?"✅ уже занимался — огонёк живой":streak?`огонёк ${streak} ${plural(streak)} — не проеби`:"начни огонёк сегодня"}</small></div>
       ${st.due?`<button class="big" id="tRev" ${pinkBtn}>🔁 Повторить ${st.due} — пора, иначе забудешь</button>`:st.learned?`<div class="tline">🔁 Повторять пока нечего — всё свежее ✓</div>`:""}
@@ -920,6 +1104,7 @@ function home(){
   </section>`;
   const go={kana:kanaScreen,talk:()=>akMenu("talk"),verbs:()=>akMenu("verbs"),gram:()=>akMenu("gram"),nums:()=>akMenu("nums"),read:readPracScreen,listen:listenScreen,final:()=>akMenu("final"),hf:hfMenu,kv:kvScreen,prog:progressScreen,voice:voiceScreen};
   app.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go[b.dataset.go]());
+  { const tm=document.getElementById("toMain"); if(tm) tm.onclick=()=>{ N5_MENU=false; home(); }; }
   const tr=document.getElementById("tRev"); if(tr) tr.onclick=akReviewStart;
   const tn=document.getElementById("tNext"); if(tn) tn.onclick=()=>{ AK.sec=nx.sec; chapterScreen(nx.ci,nx.tab); };
   window.scrollTo(0,0);
@@ -943,7 +1128,7 @@ const V=(jp,ru)=>({jp,ru});
 let VOICES=[];
 function loadVoices(){try{VOICES=speechSynthesis.getVoices()||[]}catch(e){}}
 try{loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}
-const APP_VER="35";
+const APP_VER="40-N5";
 const V_MALE=/hattori|otoya|ichiro|keita|daichi|naoki|yuri\b|maxim|dmitr|pavel|male(?!.*female)/i;
 const V_GOOD=/premium|enhanced|улучш|natural|neural|online|siri/i;
 const V_FEM=/female|kyoko|o-ren|haruka|ayumi|nanami|sayaka|mizuki|aoi|shiori|milena|katya|irina|svetlana|dariya|alena|ekaterina|google/i;
@@ -3246,6 +3431,1774 @@ function progressScreen(){
     try{ const data=JSON.parse(decodeURIComponent(escape(atob(document.getElementById("impCode").value.trim())))); if(!data||typeof data!=="object"||!("xp" in data)) throw 0; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,data); save(); r.textContent="✅ Прогресс загружен. Обновляю…"; setTimeout(()=>location.reload(),800); }
     catch(e){ r.textContent="❌ Код не подходит. Скопируй его целиком, без пробелов по краям."; } };
 }
+
+/* =================================================================
+   ОСНОВНОЙ КУРС N5
+   Предмет: [японский, перевод, доп. варианты ответа голосом]
+   Разметка {漢字|かな}: кандзи с чтением. Пробел = граница плитки.
+   Созвон: [её реплика по-японски ("" = только ситуация), что ответить, ...правильные ответы]
+   ================================================================= */
+const N5_KANA_LESSONS={
+  h:[["あ–こ","あいうえおかきくけこ"],["さ–と","さしすせそたちつてと"],["な–ほ","なにぬねのはひふへほ"],["ま–ん","まみむめもやゆよらりるれろわをん"],["が–ぞ","がぎぐげござじずぜぞ"],["だ–ぽ","だぢづでどばびぶべぼぱぴぷぺぽ"],["きゃ–にょ","きゃきゅきょしゃしゅしょちゃちゅちょにゃにゅにょ"],["ひゃ–ぴょ","ひゃひゅひょみゃみゅみょりゃりゅりょぎゃぎゅぎょじゃじゅじょびゃびゅびょぴゃぴゅぴょ"]],
+  k:[["ア–コ","アイウエオカキクケコ"],["サ–ト","サシスセソタチツテト"],["ナ–ホ","ナニヌネノハヒフヘホ"],["マ–ン","マミムメモヤユヨラリルレロワヲン"],["ガ–ゾ","ガギグゲゴザジズゼゾ"],["ダ–ポ","ダヂヅデドバビブベボパピプペポ"],["キャ–ニョ","キャキュキョシャシュショチャチュチョニャニュニョ"],["ヒャ–ピョ","ヒャヒュヒョミャミュミョリャリュリョギャギュギョジャジュジョビャビュビョピャピュピョ"]]
+};
+const N5C=[
+ {id:"h",kana:"h",t:"Хирагана",d:"Основная азбука. Без неё дальше никак",bg:"home",
+  story:"Прежде чем лететь в Японию — азбука. Хирагана должна отлетать от зубов, иначе ты даже вывеску у туалета не прочитаешь."},
+
+ {id:"c1",t:"Прилетел в Японию",d:"Приветствия, спасибо, «не понимаю»",bg:"day",
+  story:"Ты только что вышел из самолёта в Нарите. Ни хрена не понимаешь. Сначала — как поздороваться, поблагодарить и сказать, что не понял.",
+  L:[
+   {t:"Приветствия",it:[
+    ["こんにちは","Здравствуйте / добрый день"],
+    ["おはよう ございます","Доброе утро (вежливо)"],
+    ["こんばんは","Добрый вечер"],
+    ["さようなら","До свидания"],
+    ["おやすみなさい","Спокойной ночи"],
+    ["じゃあ また","Ну, до встречи"],
+    ["はじめまして","Приятно познакомиться (при первой встрече)"],
+    ["よろしく おねがいします","Рад знакомству, прошу любить и жаловать"]]},
+   {t:"Вежливые слова",it:[
+    ["すみません","Извините (позвать или извиниться)"],
+    ["ありがとう ございます","Спасибо (вежливо)"],
+    ["どういたしまして","Не за что"],
+    ["ごめんなさい","Простите, виноват"],
+    ["はい","Да"],
+    ["いいえ","Нет",["いえ","家","いや"]],
+    ["おねがいします","Пожалуйста (прошу)"],
+    ["どうぞ","Пожалуйста (прошу, берите)"],
+    ["だいじょうぶです","Всё нормально, не страшно"]]},
+   {t:"Не понимаю",it:[
+    ["わかりました","Понял"],
+    ["わかりません","Не понимаю"],
+    ["{日本語|にほんご}","Японский язык"],
+    ["{英語|えいご}","Английский язык"],
+    ["{少|すこ}し","Немного"],
+    ["{日本語|にほんご}が {少|すこ}し わかります","Немного понимаю по-японски"],
+    ["{英語|えいご}が わかりますか","Вы понимаете по-английски?"],
+    ["もう いちど おねがいします","Ещё раз, пожалуйста"],
+    ["ゆっくり おねがいします","Помедленнее, пожалуйста"]]}],
+  talk:[
+   ["こんにちは。","Поздоровайся в ответ","こんにちは"],
+   ["おはよう ございます。","Сейчас утро — ответь тем же","おはようございます","おはよう"],
+   ["はじめまして。","Ответь «приятно познакомиться»","はじめまして"],
+   ["よろしく おねがいします。","Ответь вежливо «рад знакомству»","よろしくおねがいします","こちらこそよろしくおねがいします"],
+   ["どうぞ。","Я протягиваю тебе карту. Поблагодари","ありがとうございます","ありがとう"],
+   ["ありがとう ございます。","Я благодарю тебя. Ответь «не за что»","どういたしまして"],
+   ["にほんごが わかりますか。","Ответь: немного понимаю","すこしわかります","にほんごがすこしわかります","はいすこしわかります"],
+   ["えいごが わかりますか。","Ответь «да, понимаю»","はいわかります","はい","わかります"],
+   ["わかりましたか。","Скажи, что не понял","わかりません","いいえわかりません"],
+   ["（очень быстро）だいじょうぶですか。","Попроси сказать помедленнее","ゆっくりおねがいします"],
+   ["","Попроси повторить ещё раз","もういちどおねがいします"],
+   ["すみません！","Я случайно толкнула тебя. Скажи, что всё нормально","だいじょうぶです"],
+   ["","Ты случайно наступил мне на ногу. Извинись","ごめんなさい","すみません"],
+   ["おやすみなさい。","Ответь «спокойной ночи»","おやすみなさい","おやすみ"],
+   ["さようなら。","Попрощайся","さようなら","じゃあまた"]]},
+
+ {id:"c2",t:"Знакомство",d:"Имя, откуда ты, кем работаешь",bg:"cafe",
+  story:"Кафе в Сибуе. Рядом сидит японка и улыбается. Сейчас научу представиться, сказать откуда ты и кем работаешь — чтоб не мычал.",
+  L:[
+   {t:"Я и ты",it:[
+    ["{私|わたし}","Я"],
+    ["あなた","Вы, ты"],
+    ["{名前|なまえ}","Имя"],
+    ["{私|わたし}は デニスです","Я Денис"],
+    ["お{名前|なまえ}は {何|なん}ですか","Как вас зовут?"],
+    ["{日本|にほん}","Япония"],
+    ["{日本人|にほんじん}","Японец, японка"],
+    ["ベラルーシ","Беларусь"],
+    ["ベラルーシから {来|き}ました","Я приехал из Беларуси"],
+    ["どこから {来|き}ましたか","Откуда вы приехали?"]]},
+   {t:"Работа и учёба",it:[
+    ["{学生|がくせい}","Студент"],
+    ["{会社員|かいしゃいん}","Офисный работник"],
+    ["{仕事|しごと}","Работа"],
+    ["{先生|せんせい}","Учитель"],
+    ["{医者|いしゃ}","Врач"],
+    ["{私|わたし}は {学生|がくせい}じゃ ありません","Я не студент"],
+    ["お{仕事|しごと}は {何|なん}ですか","Кем вы работаете?"],
+    ["ウェブの {仕事|しごと}です","Моя работа — веб"]]},
+   {t:"Вопросы и ответы",it:[
+    ["{友達|ともだち}","Друг"],
+    ["{私|わたし}の {友達|ともだち}","Мой друг"],
+    ["これは {何|なん}ですか","Что это?"],
+    ["そうです","Да, так"],
+    ["そうですか","Вот как?"],
+    ["ちがいます","Нет, не так"],
+    ["ユキさんは {日本人|にほんじん}ですか","Юки, ты японка?"],
+    ["デニスさんの {友達|ともだち}です","Я друг Дениса"]]}],
+  talk:[
+   ["はじめまして。ユキです。","Представься: «Приятно познакомиться, я Денис»","はじめましてデニスです","はじめましてわたしはデニスです"],
+   ["お{名前|なまえ}は {何|なん}ですか。","Скажи своё имя","デニスです","わたしはデニスです"],
+   ["どこから {来|き}ましたか。","Скажи, что приехал из Беларуси","ベラルーシからきました","ベラルーシです"],
+   ["{日本人|にほんじん}ですか。","Ответь: нет, не так","いいえちがいます","ちがいます","いいえにほんじんじゃありません"],
+   ["{学生|がくせい}ですか。","Скажи: я не студент","いいえがくせいじゃありません","がくせいじゃありません"],
+   ["お{仕事|しごと}は {何|なん}ですか。","Скажи, что твоя работа — веб","ウェブのしごとです","ウェブです"],
+   ["{私|わたし}は {学生|がくせい}です。","Удивись: «вот как?»","そうですか"],
+   ["{私|わたし}の {名前|なまえ}は？","Назови её имя — Юки","ユキさんです","ユキです","ユキさん"],
+   ["デニスさんは {医者|いしゃ}ですか。","Скажи: нет, не так","いいえちがいます","ちがいます"],
+   ["あの、ケンさんの {友達|ともだち}ですか。","Ответь: да, так","はいそうです","そうです"],
+   ["","Спроси её: «Юки, ты японка?»","ユキさんはにほんじんですか","にほんじんですか"],
+   ["はい、{日本人|にほんじん}です。{先生|せんせい}です。","Удивись: «вот как?»","そうですか"],
+   ["よろしく おねがいします。","Ответь тем же","よろしくおねがいします","こちらこそよろしくおねがいします"]]},
+
+ {id:"c3",t:"Цифры, время, деньги",d:"Считать, сколько стоит, который час",bg:"day",
+  story:"Без цифр в Японии ты лох: ни цену не поймёшь, ни время электрички. Считаем, платим, смотрим на часы.",
+  L:[
+   {t:"Числа 1–10",it:[
+    ["{一|いち}","Один (1)"],["{二|に}","Два (2)"],["{三|さん}","Три (3)"],["{四|よん}","Четыре (4)",["し"]],["{五|ご}","Пять (5)"],
+    ["{六|ろく}","Шесть (6)"],["{七|なな}","Семь (7)",["しち"]],["{八|はち}","Восемь (8)"],["{九|きゅう}","Девять (9)",["く"]],["{十|じゅう}","Десять (10)"]]},
+   {t:"Деньги",it:[
+    ["{百|ひゃく}","Сто (100)"],
+    ["{千|せん}","Тысяча (1000)"],
+    ["{万|まん}","Десять тысяч (10 000)"],
+    ["{円|えん}","Йена"],
+    ["いくらですか","Сколько стоит?"],
+    ["{千円|せんえん}です","1000 йен"],
+    ["{五百円|ごひゃくえん}です","500 йен"],
+    ["{一万円|いちまんえん}です","10 000 йен"],
+    ["{高|たか}いですね","Дорого, да?"],
+    ["{安|やす}いですね","Дёшево, да?"]]},
+   {t:"Время и возраст",it:[
+    ["{今|いま}","Сейчас"],
+    ["{何時|なんじ}ですか","Который час?"],
+    ["{三時|さんじ}です","Три часа"],
+    ["{九時半|くじはん}です","Полдесятого"],
+    ["{午前|ごぜん}","До полудня, утром"],
+    ["{午後|ごご}","После полудня"],
+    ["{何歳|なんさい}ですか","Сколько вам лет?"],
+    ["{二十五歳|にじゅうごさい}です","Мне 25 лет"]]}],
+  talk:[
+   ["いち、に、さん……","Продолжи счёт: четыре","よん","し"],
+   ["ろく、なな……","Продолжи: восемь","はち"],
+   ["なな、はち……","Продолжи: девять","きゅう","く"],
+   ["{今|いま} {何時|なんじ}ですか。（3:00）","Сейчас три часа. Ответь","さんじです","いまさんじです"],
+   ["{今|いま} {何時|なんじ}ですか。（9:30）","Сейчас полдесятого","くじはんです","いまくじはんです"],
+   ["{午前|ごぜん}ですか、{午後|ごご}ですか。（14:00）","Сейчас 14:00 — после полудня","ごごです"],
+   ["これは いくらですか。","Скажи: тысяча йен","せんえんです"],
+   ["{五百円|ごひゃくえん}です。","Скажи, что дёшево","やすいですね"],
+   ["{一万円|いちまんえん}です。","Скажи, что дорого","たかいですね"],
+   ["","Спроси, сколько это стоит","いくらですか","これはいくらですか"],
+   ["","Спроси, который час","なんじですか","いまなんじですか"],
+   ["{何歳|なんさい}ですか。","Скажи, что тебе 25","にじゅうごさいです"]]},
+
+ {id:"k",kana:"k",t:"Катакана",d:"Иностранные слова: コーヒー, ホテル, タクシー",bg:"home",
+  story:"Дальше будут кофе, отели, такси и комбини — всё это пишут катаканой. Учи, иначе даже меню не прочитаешь."},
+
+ {id:"c4",t:"Где что? Отель и метро",d:"Где туалет, станция, налево-направо",bg:"day",
+  story:"Ты потерялся между отелем и метро, хочешь ссать и ищешь комбини. Учимся спрашивать дорогу и понимать ответ.",
+  L:[
+   {t:"Здесь и там",it:[
+    ["ここ","Здесь"],["そこ","Там (у тебя)"],["あそこ","Вон там"],["どこ","Где"],
+    ["ホテル","Отель"],["{駅|えき}","Станция"],["トイレ","Туалет"],["{地下鉄|ちかてつ}","Метро"],
+    ["トイレは どこですか","Где туалет?"],
+    ["あそこです","Вон там"]]},
+   {t:"Есть и находится",it:[
+    ["あります","Есть, находится (вещи)"],
+    ["います","Есть, находится (люди, животные)"],
+    ["コンビニ","Круглосуточный магазин"],
+    ["こうえん","Парк",["公園"]],
+    ["{近|ちか}くに コンビニが ありますか","Рядом есть комбини?"],
+    ["{前|まえ}","Перед"],["{後|うし}ろ","Сзади"],["となり","Рядом, соседний",["隣"]],
+    ["{駅|えき}の {前|まえ}に あります","Находится перед станцией"],
+    ["ユキさんは ホテルに います","Юки в отеле"]]},
+   {t:"Дорога",it:[
+    ["{右|みぎ}","Направо, право"],["{左|ひだり}","Налево, лево"],["まっすぐ","Прямо"],
+    ["{近|ちか}い","Близкий"],["{遠|とお}い","Далёкий"],["{地図|ちず}","Карта"],
+    ["ホテルは {遠|とお}いですか","Отель далеко?"],
+    ["いいえ、{近|ちか}いですよ","Нет, близко"],
+    ["すみません、{駅|えき}は どこですか","Извините, где станция?"]]}],
+  talk:[
+   ["すみません、トイレは どこですか。","Скажи «вон там»","あそこです"],
+   ["{近|ちか}くに コンビニが ありますか。","Ответь: да, перед станцией","はいえきのまえにあります","えきのまえにあります"],
+   ["{駅|えき}は どこですか。","Скажи, что направо","みぎです"],
+   ["{地下鉄|ちかてつ}の {駅|えき}は {左|ひだり}ですか。","Скажи: нет, прямо","いいえまっすぐです","まっすぐです"],
+   ["ホテルは {遠|とお}いですか。","Скажи: нет, близко","いいえちかいです","いいえちかいですよ","ちかいです"],
+   ["デニスさんは {今|いま} どこに いますか。","Скажи: я в отеле","ホテルにいます","いまホテルにいます","ホテルです"],
+   ["ユキさんは どこに いますか。","Скажи: она перед станцией","えきのまえにいます"],
+   ["{地図|ちず}が ありますか。","Ответь: да, есть","はいあります","あります"],
+   ["トイレは ここですか。","Скажи: нет, там","いいえそこです","そこです"],
+   ["コンビニの となりに {何|なに}が ありますか。","Скажи: отель","ホテルがあります","ホテルです"],
+   ["こうえんは {駅|えき}の {後|うし}ろですか。","Скажи: да, так","はいそうです","そうです"],
+   ["","Ты потерялся. Спроси, где станция","すみませんえきはどこですか","えきはどこですか"]]},
+
+ {id:"c5",t:"Кафе и еда",d:"Заказать, «не ем рыбу», счёт",bg:"cafe",
+  story:"Ты голодный как собака. Заходим в кафе: заказываем, говорим что не жрёшь, хвалим еду и просим счёт.",
+  L:[
+   {t:"Еда и напитки",it:[
+    ["{食|た}べます","Есть, кушать"],["{飲|の}みます","Пить"],
+    ["{水|みず}","Вода"],["お{茶|ちゃ}","Чай"],["コーヒー","Кофе"],["ごはん","Рис, еда",["ご飯"]],
+    ["パン","Хлеб"],["{肉|にく}","Мясо"],["{魚|さかな}","Рыба"],["ラーメン","Рамен"]]},
+   {t:"Заказ",it:[
+    ["コーヒーを ください","Кофе, пожалуйста"],
+    ["{水|みず}を おねがいします","Воды, пожалуйста"],
+    ["{何|なに}を {飲|の}みますか","Что будете пить?"],
+    ["ひとつ","Одна штука",["一つ"]],["ふたつ","Две штуки",["二つ"]],
+    ["これを ひとつ ください","Вот это, одну, пожалуйста"],
+    ["おいしい","Вкусный"],
+    ["いただきます","Приятного аппетита (перед едой)"],
+    ["ごちそうさまでした","Спасибо за еду (после)"]]},
+   {t:"Нравится и не ем",it:[
+    ["{魚|さかな}を {食|た}べません","Я не ем рыбу"],
+    ["{肉|にく}が すきです","Люблю мясо"],
+    ["おなかが すきました","Я проголодался"],
+    ["ラーメンが {食|た}べたいです","Хочу рамен"],
+    ["{何|なに}を {食|た}べますか","Что будешь есть?"],
+    ["おいしいですね","Вкусно, да?"],
+    ["おかいけい おねがいします","Счёт, пожалуйста",["お会計お願いします"]]]}],
+  talk:[
+   ["こんにちは。{何|なに}を {飲|の}みますか。","Закажи кофе","コーヒーをください","コーヒーをおねがいします"],
+   ["お{茶|ちゃ}ですか、コーヒーですか。","Выбери чай","おちゃです","おちゃをください","おちゃをおねがいします"],
+   ["{何|なに}を {食|た}べますか。","Скажи: рамен, пожалуйста","ラーメンをください","ラーメンをおねがいします"],
+   ["{魚|さかな}を {食|た}べますか。","Скажи: нет, рыбу не ем","いいえたべません","いいえさかなをたべません"],
+   ["{肉|にく}が すきですか。","Скажи: да, люблю","はいすきです","はいにくがすきです"],
+   ["おなかが すきましたか。","Скажи: да, проголодался","はいすきました","はいおなかがすきました"],
+   ["パンは ひとつですか、ふたつですか。","Скажи: две","ふたつです","ふたつください"],
+   ["どうぞ。","Еду принесли. Что говорят перед едой?","いただきます"],
+   ["おいしいですか。","Скажи: да, вкусно","はいおいしいです","おいしいです"],
+   ["","Попроси воды","みずをください","みずをおねがいします"],
+   ["","Покажи на меню и закажи «вот это, одну»","これをひとつください"],
+   ["","Ты поел. Что скажешь?","ごちそうさまでした","ごちそうさま"],
+   ["","Попроси счёт","おかいけいおねがいします","おかいけいをおねがいします"]]},
+
+ {id:"c6",t:"Магазин",d:"Это, то, сколько, цвет, размер",bg:"day",
+  story:"Шопинг в Харадзюку. Показываешь пальцем, спрашиваешь цену, выбираешь цвет и размер, платишь картой.",
+  L:[
+   {t:"Это и то",it:[
+    ["これ","Это (у меня)"],["それ","То (у тебя)"],["あれ","Вон то"],["どれ","Какое (из многих)"],
+    ["この","Этот (+ слово)"],["その","Тот (+ слово)"],
+    ["シャツ","Рубашка"],["{靴|くつ}","Обувь"],["かばん","Сумка",["鞄"]],
+    ["この シャツは いくらですか","Сколько стоит эта рубашка?"],
+    ["それは {何|なん}ですか","А то что?"]]},
+   {t:"Какой",it:[
+    ["{大|おお}きい","Большой"],["{小|ちい}さい","Маленький"],
+    ["{新|あたら}しい","Новый"],["{古|ふる}い","Старый"],
+    ["いい","Хороший"],
+    ["{赤|あか}い","Красный"],["{青|あお}い","Синий"],["{白|しろ}い","Белый"],["{黒|くろ}い","Чёрный"],
+    ["{高|たか}くないです","Не дорого"],
+    ["もっと {小|ちい}さいのが ありますか","Есть поменьше?"]]},
+   {t:"Покупка",it:[
+    ["{買|か}います","Покупать"],
+    ["これを {買|か}います","Беру это"],
+    ["カードで いいですか","Можно картой?"],
+    ["げんきん","Наличные",["現金"]],
+    ["{店|みせ}","Магазин"],
+    ["ふくろ","Пакет",["袋"]],
+    ["ふくろは いりません","Пакет не нужен"],
+    ["{見|み}て いる だけです","Я просто смотрю"]]}],
+  talk:[
+   ["この シャツは {一万円|いちまんえん}です。","Скажи, что дорого","たかいですね"],
+   ["{赤|あか}い シャツですか、{白|しろ}い シャツですか。","Выбери белую","しろいシャツです","しろいです"],
+   ["この かばんは {大|おお}きいですか。","Скажи: нет, маленькая","いいえちいさいです","ちいさいです"],
+   ["それは {何|なん}ですか。","Скажи: это сумка","これはかばんです","かばんです"],
+   ["どれを {買|か}いますか。","Скажи: беру вот это","これをかいます","これです"],
+   ["カードですか、げんきんですか。","Скажи: картой","カードです","カードでおねがいします"],
+   ["ふくろは？","Скажи, что пакет не нужен","ふくろはいりません","いりません"],
+   ["この {靴|くつ}は {新|あたら}しいですか。","Скажи: нет, старые","いいえふるいです","ふるいです"],
+   ["この シャツは {高|たか}いですか。","Скажи: нет, не дорогая","いいえたかくないです","たかくないです"],
+   ["{青|あお}い {靴|くつ}は ありますか。","Ответь: да, есть","はいあります","あります"],
+   ["","Продавец подходит. Скажи, что просто смотришь","みているだけです"],
+   ["","Спроси, есть ли поменьше","もっとちいさいのがありますか"],
+   ["","Спроси, можно ли картой","カードでいいですか"]]},
+
+ {id:"c7",t:"Транспорт и дни",d:"На чём, куда, когда, вчера",bg:"park",
+  story:"Едем по Японии: электрички, автобусы, дни недели. И учимся рассказывать, куда ездил вчера.",
+  L:[
+   {t:"Транспорт",it:[
+    ["{電車|でんしゃ}","Электричка"],["バス","Автобус"],["タクシー","Такси"],["{車|くるま}","Машина"],["{自転車|じてんしゃ}","Велосипед"],
+    ["{行|い}きます","Идти, ехать"],["{来|き}ます","Приходить, приезжать"],["{帰|かえ}ります","Возвращаться домой"],
+    ["{電車|でんしゃ}で {行|い}きます","Еду на электричке"],
+    ["{東京|とうきょう}へ {行|い}きます","Еду в Токио"]]},
+   {t:"Дни недели",it:[
+    ["{今日|きょう}","Сегодня"],["{明日|あした}","Завтра"],["{昨日|きのう}","Вчера"],
+    ["{月曜日|げつようび}","Понедельник"],["{火曜日|かようび}","Вторник"],["{水曜日|すいようび}","Среда"],["{木曜日|もくようび}","Четверг"],
+    ["{金曜日|きんようび}","Пятница"],["{土曜日|どようび}","Суббота"],["{日曜日|にちようび}","Воскресенье"],
+    ["{今日|きょう}は {何曜日|なんようび}ですか","Какой сегодня день недели?"]]},
+   {t:"Куда ездил",it:[
+    ["{歩|ある}きます","Идти пешком"],
+    ["{駅|えき}から ホテルまで {歩|ある}きます","От станции до отеля иду пешком"],
+    ["{何|なん}で {行|い}きますか","На чём поедешь?"],
+    ["{昨日|きのう} {京都|きょうと}へ {行|い}きました","Вчера ездил в Киото"],
+    ["どこへ {行|い}きましたか","Куда ты ходил?"],
+    ["どこへも {行|い}きませんでした","Никуда не ходил"],
+    ["{何時|なんじ}に {帰|かえ}りますか","Во сколько вернёшься?"]]}],
+  talk:[
+   ["{今日|きょう}は {何曜日|なんようび}ですか。","Скажи: пятница","きんようびです","きょうはきんようびです"],
+   ["{明日|あした}は {何曜日|なんようび}ですか。","Скажи: суббота","どようびです","あしたはどようびです"],
+   ["{何|なん}で {行|い}きますか。","Скажи: на электричке","でんしゃでいきます","でんしゃです"],
+   ["どこへ {行|い}きますか。","Скажи: в Токио","とうきょうへいきます","とうきょうにいきます","とうきょうです"],
+   ["{昨日|きのう} どこへ {行|い}きましたか。","Скажи: в Киото","きょうとへいきました","きょうとにいきました"],
+   ["{駅|えき}から ホテルまで タクシーですか。","Скажи: нет, иду пешком","いいえあるきます","あるきます"],
+   ["{何時|なんじ}に {帰|かえ}りますか。","Скажи: в девять","くじにかえります","くじです"],
+   ["{日曜日|にちようび}に どこへ {行|い}きましたか。","Скажи: никуда не ходил","どこへもいきませんでした","どこにもいきませんでした"],
+   ["バスで {来|き}ましたか。","Скажи: нет, на машине","いいえくるまできました","くるまできました"],
+   ["{自転車|じてんしゃ}が ありますか。","Ответь: нет","いいえありません","ありません"],
+   ["","Спроси её, на чём она поедет","なんでいきますか"],
+   ["","Спроси, какой сегодня день недели","きょうはなんようびですか"]]},
+
+ {id:"c8",t:"Свидание",d:"Хобби, позвать в кино, комплименты, LINE",bg:"park",
+  story:"Вот ради чего ты всё это учишь, да? Спрашиваем про хобби, зовём в кино, делаем комплимент и берём LINE.",
+  L:[
+   {t:"Что нравится",it:[
+    ["すき","Нравится",["好き"]],["きらい","Не нравится",["嫌い"]],["だいすき","Очень нравится",["大好き"]],
+    ["{映画|えいが}","Кино"],["{音楽|おんがく}","Музыка"],["しゅみ","Хобби",["趣味"]],
+    ["アニメ","Аниме"],["ゲーム","Игры"],["スポーツ","Спорт"],
+    ["しゅみは {何|なん}ですか","Какое у тебя хобби?"],
+    ["アニメが すきです","Люблю аниме"],
+    ["どんな {音楽|おんがく}が すきですか","Какую музыку любишь?"]]},
+   {t:"Позвать",it:[
+    ["いっしょに","Вместе",["一緒に"]],
+    ["{見|み}ます","Смотреть"],
+    ["いっしょに {映画|えいが}を {見|み}ませんか","Не посмотрим вместе кино?"],
+    ["{行|い}きましょう","Пойдём!"],
+    ["いいですね","Отлично, давай"],
+    ["ちょっと…","Ну… (мягкий отказ)"],
+    ["ひま","Свободный (время)",["暇"]],
+    ["{明日|あした} ひまですか","Завтра свободна?"]]},
+   {t:"Комплименты",it:[
+    ["かわいい","Милая"],["きれい","Красивая",["綺麗"]],["やさしい","Добрая",["優しい"]],
+    ["{楽|たの}しい","Весёлый, приятный"],["しずか","Тихий",["静か"]],
+    ["{今日|きょう}は {楽|たの}しかったです","Сегодня было весело"],
+    ["ユキさんは きれいですね","Юки, ты красивая"],
+    ["ラインを こうかんしませんか","Обменяемся LINE?",["ライン交換しませんか"]],
+    ["また {会|あ}いましょう","Давай ещё встретимся"]]}],
+  talk:[
+   ["しゅみは {何|なん}ですか。","Скажи: аниме","アニメです","アニメがすきです"],
+   ["どんな {音楽|おんがく}が すきですか。","Скажи: японскую музыку","にほんのおんがくがすきです","にほんのおんがくです"],
+   ["{映画|えいが}は すきですか。","Скажи: да, очень люблю","はいだいすきです","だいすきです"],
+   ["スポーツは すきですか。","Скажи: нет, не люблю","いいえきらいです","きらいです"],
+   ["{明日|あした} ひまですか。","Скажи: да, свободен","はいひまです","ひまです"],
+   ["いっしょに {映画|えいが}を {見|み}ませんか。","Согласись: «отлично, пойдём!»","いいですねいきましょう","いいですね","いきましょう"],
+   ["{私|わたし}、かわいいですか。","Ответь: да, милая","はいかわいいです","かわいいです"],
+   ["この カフェは しずかですね。","Согласись","そうですね","しずかですね"],
+   ["{今日|きょう}は {楽|たの}しかったですか。","Скажи: да, было весело","はいたのしかったです","たのしかったです"],
+   ["ラインを こうかんしませんか。","Согласись: «отлично»","いいですね","はいいいですね"],
+   ["また {会|あ}いましょうね。","Ответь: да, давай ещё встретимся","はいまたあいましょう","またあいましょう"],
+   ["","Позови её вместе посмотреть кино","いっしょにえいがをみませんか"],
+   ["","Скажи ей, что она красивая","ユキさんはきれいですね","きれいですね"],
+   ["","Спроси, свободна ли она завтра","あしたひまですか"]]},
+
+ {id:"c9",t:"Мой день",d:"Встаю, работаю, учу, иногда, никогда",bg:"home",
+  story:"Расскажи мне свой день: когда встаёшь, где работаешь, учишь ли японский каждый день. Не ври, я проверю.",
+  L:[
+   {t:"Распорядок",it:[
+    ["{起|お}きます","Вставать"],["{寝|ね}ます","Ложиться спать"],["{働|はたら}きます","Работать"],
+    ["{勉強|べんきょう}します","Учиться, заниматься"],["{休|やす}みます","Отдыхать"],["します","Делать"],
+    ["{朝|あさ}","Утро"],["{昼|ひる}","День, обед"],["{夜|よる}","Вечер, ночь"],["{毎日|まいにち}","Каждый день"]]},
+   {t:"Во сколько",it:[
+    ["{七時|しちじ}に {起|お}きます","Встаю в 7",["ななじにおきます"]],
+    ["{何時|なんじ}に {起|お}きますか","Во сколько встаёшь?"],
+    ["{十二時|じゅうにじ}に {寝|ね}ます","Ложусь в 12"],
+    ["{朝|あさ}ごはん","Завтрак",["朝ご飯"]],["{晩|ばん}ごはん","Ужин",["晩ご飯"]],
+    ["シャワーを あびます","Принимаю душ"],
+    ["テレビを {見|み}ます","Смотрю телевизор"],
+    ["うち","Дом (мой)",["家"]],
+    ["うちで {働|はたら}きます","Работаю дома"]]},
+   {t:"Как часто",it:[
+    ["ときどき","Иногда",["時々"]],["よく","Часто"],
+    ["あまり {見|み}ません","Не очень смотрю"],["ぜんぜん","Совсем (не)",["全然"]],
+    ["{毎日|まいにち} {日本語|にほんご}を {勉強|べんきょう}します","Каждый день учу японский"],
+    ["{昨日|きのう} {勉強|べんきょう}しませんでした","Вчера не занимался"],
+    ["{本|ほん}を {読|よ}みます","Читаю книгу"],
+    ["{週末|しゅうまつ}は {何|なに}を しますか","Что делаешь на выходных?"]]}],
+  talk:[
+   ["{何時|なんじ}に {起|お}きますか。","Скажи: в семь","しちじにおきます","ななじにおきます","しちじです"],
+   ["{何時|なんじ}に {寝|ね}ますか。","Скажи: в двенадцать","じゅうにじにねます","じゅうにじです"],
+   ["{朝|あさ}ごはんを {食|た}べますか。","Скажи: нет, не ем","いいえたべません"],
+   ["{毎日|まいにち} {日本語|にほんご}を {勉強|べんきょう}しますか。","Скажи: да, каждый день","はいまいにちべんきょうします","はいまいにち"],
+   ["{昨日|きのう} {勉強|べんきょう}しましたか。","Скажи: нет, не занимался","いいえべんきょうしませんでした","いいえしませんでした"],
+   ["テレビを よく {見|み}ますか。","Скажи: не очень смотрю","いいえあまりみません","あまりみません"],
+   ["どこで {働|はたら}きますか。","Скажи: дома","うちではたらきます","うちです"],
+   ["{週末|しゅうまつ}は {何|なに}を しますか。","Скажи: отдыхаю","やすみます","うちでやすみます"],
+   ["{夜|よる} {何|なに}を しますか。","Скажи: смотрю аниме","アニメをみます"],
+   ["ゲームを しますか。","Скажи: иногда","ときどきします","ときどき"],
+   ["シャワーは {朝|あさ}ですか、{夜|よる}ですか。","Скажи: утром","あさです","あさあびます"],
+   ["{本|ほん}を {読|よ}みますか。","Скажи: совсем не читаю","ぜんぜんよみません","いいえぜんぜんよみません"]]},
+
+ {id:"c10",t:"Семья и люди",d:"Мама, папа, братья, сколько человек, кто это",bg:"home",
+  story:"Японцы любят спрашивать про семью. Учимся рассказывать о своих и спрашивать о чужих — это разные слова, не перепутай.",
+  L:[
+   {t:"Моя семья",it:[
+    ["{家族|かぞく}","Семья"],["{父|ちち}","Мой отец"],["{母|はは}","Моя мать"],
+    ["{兄|あに}","Мой старший брат"],["{姉|あね}","Моя старшая сестра"],["{弟|おとうと}","Младший брат"],["{妹|いもうと}","Младшая сестра"],
+    ["お{父|とう}さん","Отец (чужой, или обращение)"],["お{母|かあ}さん","Мать (чужая)"],["お{兄|にい}さん","Старший брат (чужой)"]]},
+   {t:"Сколько человек",it:[
+    ["{一人|ひとり}","Один человек"],["{二人|ふたり}","Два человека"],["{三人|さんにん}","Три человека"],["{四人|よにん}","Четыре человека"],
+    ["{何人|なんにん} {家族|かぞく}ですか","Сколько человек в семье?"],
+    ["{四人|よにん} {家族|かぞく}です","Семья из четырёх"],
+    ["きょうだいが いますか","Есть братья или сёстры?",["兄弟がいますか"]],
+    ["{妹|いもうと}が {一人|ひとり} います","У меня одна младшая сестра"]]},
+   {t:"Люди",it:[
+    ["{人|ひと}","Человек"],["{男|おとこ}の {人|ひと}","Мужчина"],["{女|おんな}の {人|ひと}","Женщина"],["{子|こ}ども","Ребёнок",["子供"]],
+    ["だれ","Кто",["誰"]],
+    ["あの {人|ひと}は だれですか","Кто тот человек?"],
+    ["せが {高|たか}い","Высокий (ростом)",["背が高い"]],
+    ["かみが {長|なが}い","Длинные волосы",["髪が長い"]],
+    ["{母|はは}は {先生|せんせい}です","Моя мама — учитель"]]}],
+  talk:[
+   ["{何人|なんにん} {家族|かぞく}ですか。","Скажи: четыре человека","よにんかぞくです","よにんです"],
+   ["きょうだいが いますか。","Скажи: есть одна младшая сестра","いもうとがひとりいます","はいいもうとがひとりいます"],
+   ["お{兄|にい}さんは いますか。","Ответь: нет","いいえいません","いません"],
+   ["お{父|とう}さんの お{仕事|しごと}は {何|なん}ですか。","Скажи: папа — врач","ちちはいしゃです","いしゃです"],
+   ["お{母|かあ}さんは？","Скажи: мама — учитель","はははせんせいです","せんせいです"],
+   ["あの {人|ひと}は だれですか。","Скажи: мой друг","わたしのともだちです","ともだちです"],
+   ["その {人|ひと}は せが {高|たか}いですか。","Скажи: да, высокий","はいたかいです","はいせがたかいです"],
+   ["{子|こ}どもが いますか。","Ответь: нет","いいえいません","いません"],
+   ["ユキさんは かみが {長|なが}いですか。","Скажи: да, длинные","はいながいです","ながいです"],
+   ["あそこに {女|おんな}の {人|ひと}が いますね。だれですか。","Скажи: моя старшая сестра","あねです","わたしのあねです"],
+   ["","Спроси, сколько человек в её семье","なんにんかぞくですか"],
+   ["","Спроси, есть ли у неё братья или сёстры","きょうだいがいますか"]]},
+
+ {id:"c11",t:"Погода и здоровье",d:"Жарко, холодно, вчера было, болит голова",bg:"park",
+  story:"Японцы говорят о погоде постоянно. А если заболел — надо объяснить, что болит. Плюс учимся говорить «было».",
+  L:[
+   {t:"Погода",it:[
+    ["{天気|てんき}","Погода"],["はれ","Ясно",["晴れ"]],["{雨|あめ}","Дождь"],["{雪|ゆき}","Снег"],
+    ["{暑|あつ}い","Жарко"],["{寒|さむ}い","Холодно"],["あたたかい","Тепло",["暖かい"]],["すずしい","Прохладно",["涼しい"]],
+    ["とても","Очень"],
+    ["{今日|きょう}は いい {天気|てんき}ですね","Сегодня хорошая погода, да?"]]},
+   {t:"Было",it:[
+    ["{昨日|きのう}は {寒|さむ}かったです","Вчера было холодно"],
+    ["{雨|あめ}でした","Был дождь"],
+    ["{暑|あつ}いですね","Жарко, да?"],
+    ["かさ","Зонт",["傘"]],
+    ["{春|はる}","Весна"],["{夏|なつ}","Лето"],["{秋|あき}","Осень"],["{冬|ふゆ}","Зима"],
+    ["{冬|ふゆ}が すきです","Люблю зиму"]]},
+   {t:"Здоровье",it:[
+    ["あたま","Голова",["頭"]],["おなか","Живот",["お腹"]],["{手|て}","Рука"],["{足|あし}","Нога"],
+    ["いたい","Больно",["痛い"]],
+    ["あたまが いたいです","Болит голова",["頭が痛いです"]],
+    ["びょういん","Больница",["病院"]],["くすり","Лекарство",["薬"]],
+    ["{元気|げんき}","Здоровый, бодрый"],
+    ["お{元気|げんき}ですか","Как поживаете?"],
+    ["くすりを {飲|の}みます","Пью лекарство",["薬を飲みます"]]]}],
+  talk:[
+   ["{今日|きょう}は いい {天気|てんき}ですね。","Согласись","そうですね","いいてんきですね"],
+   ["{昨日|きのう}は {雨|あめ}でしたか。","Скажи: нет, был снег","いいえゆきでした","ゆきでした"],
+   ["{夏|なつ}は {暑|あつ}いですか。","Скажи: да, очень жарко","はいとてもあついです","はいあついです"],
+   ["ベラルーシの {冬|ふゆ}は {寒|さむ}いですか。","Скажи: да, очень холодно","はいとてもさむいです","はいさむいです"],
+   ["{昨日|きのう}は {寒|さむ}かったですか。","Скажи: нет, было тепло","いいえあたたかかったです"],
+   ["{春|はる}が すきですか。","Скажи: нет, люблю зиму","いいえふゆがすきです","ふゆがすきです"],
+   ["お{元気|げんき}ですか。","Скажи: да, всё хорошо","はいげんきです","げんきです"],
+   ["だいじょうぶですか。","Скажи: болит голова","あたまがいたいです"],
+   ["どこが いたいですか。","Скажи: живот","おなかがいたいです","おなかです"],
+   ["くすりを {飲|の}みましたか。","Скажи: нет, не пил","いいえのみませんでした"],
+   ["びょういんへ {行|い}きますか。","Скажи: да, иду","はいいきます","はいびょういんへいきます"],
+   ["かさが ありますか。","Ответь: нет","いいえありません","ありません"]]},
+
+ {id:"c12",t:"Просьбы и разрешения",d:"Подождите, можно сесть?, здесь нельзя",bg:"cafe",
+  story:"Самая полезная хрень в Японии: попросить, спросить разрешения и понять, что нельзя. Тут появляется て-форма — не ссы.",
+  L:[
+   {t:"Сделайте, пожалуйста",it:[
+    ["{待|ま}って ください","Подождите, пожалуйста"],
+    ["{見|み}て ください","Посмотрите, пожалуйста"],
+    ["{聞|き}いて ください","Послушайте"],
+    ["{書|か}いて ください","Напишите, пожалуйста"],
+    ["ゆっくり {話|はな}して ください","Говорите медленнее, пожалуйста"],
+    ["もう いちど {言|い}って ください","Скажите ещё раз, пожалуйста"],
+    ["{写真|しゃしん}","Фотография"],
+    ["{写真|しゃしん}を とって ください","Сфотографируйте, пожалуйста",["写真を撮ってください"]]]},
+   {t:"Можно?",it:[
+    ["ここに すわっても いいですか","Можно сюда сесть?",["ここに座ってもいいですか"]],
+    ["{写真|しゃしん}を とっても いいですか","Можно сфотографировать?",["写真を撮ってもいいですか"]],
+    ["{入|はい}っても いいですか","Можно войти?"],
+    ["たばこを すっても いいですか","Можно курить?",["たばこを吸ってもいいですか"]],
+    ["いいですよ","Можно, конечно"],
+    ["すみません、ちょっと…","Извините, нельзя (мягко)"],
+    ["{電話|でんわ}","Телефон"],
+    ["{電話|でんわ}しても いいですか","Можно позвонить?"]]},
+   {t:"Нельзя",it:[
+    ["ここで たばこを すっては いけません","Здесь нельзя курить",["ここでたばこを吸ってはいけません"]],
+    ["わすれないで ください","Не забудьте",["忘れないでください"]],
+    ["しんぱいしないで ください","Не волнуйтесь",["心配しないでください"]],
+    ["あとで {電話|でんわ}します","Позвоню позже",["後で電話します"]]]}],
+  talk:[
+   ["","Попроси её подождать","まってください","ちょっとまってください"],
+   ["","Попроси говорить медленнее","ゆっくりはなしてください","ゆっくりおねがいします"],
+   ["","Попроси сфотографировать тебя","しゃしんをとってください"],
+   ["ここに すわっても いいですか。","Разреши: можно","いいですよ","どうぞ","はいどうぞ"],
+   ["{写真|しゃしん}を とっても いいですか。","Откажи мягко","すみませんちょっと","ちょっと"],
+   ["ここで たばこを すっても いいですか。","Скажи: здесь курить нельзя","ここでたばこをすってはいけません","すってはいけません","いいえすってはいけません"],
+   ["{私|わたし}の {名前|なまえ}を {書|か}いて ください。","Скажи «понял»","はいわかりました","わかりました"],
+   ["","Спроси, можно ли войти","はいってもいいですか"],
+   ["","Скажи ей: не волнуйся","しんぱいしないでください"],
+   ["{電話|でんわ}しても いいですか。","Скажи: «да, позвони позже»","はいあとででんわしてください","あとででんわしてください"],
+   ["","Попроси сказать ещё раз","もういちどいってください","もういちどおねがいします"],
+   ["わすれないで くださいね。","Ответь «понял»","はいわかりました","わかりました"]]},
+
+ {id:"c13",t:"Сейчас, уже, потому что",d:"Делаю сейчас, уже/ещё, хочу, почему",bg:"home",
+  story:"Финальная глава N5. Рассказываешь, что делаешь прямо сейчас, что уже сделал, чего хочешь и почему. После неё — экзамен.",
+  L:[
+   {t:"Прямо сейчас",it:[
+    ["{今|いま} {何|なに}を して いますか","Что ты сейчас делаешь?"],
+    ["{日本語|にほんご}を {勉強|べんきょう}して います","Учу японский"],
+    ["{雨|あめ}が ふって います","Идёт дождь",["雨が降っています"]],
+    ["{東京|とうきょう}に すんで います","Живу в Токио",["東京に住んでいます"]],
+    ["しって います","Знаю",["知っています"]],
+    ["しりません","Не знаю",["知りません"]],
+    ["ユキさんを しって いますか","Ты знаешь Юки?",["ユキさんを知っていますか"]]]},
+   {t:"Уже, ещё, хочу",it:[
+    ["もう","Уже"],["まだ","Ещё (не)"],
+    ["もう {食|た}べましたか","Уже поел?"],
+    ["いいえ、まだです","Нет, ещё нет"],
+    ["いつ","Когда"],["{来年|らいねん}","В следующем году"],
+    ["{日本|にほん}へ {行|い}きたいです","Хочу поехать в Японию"],
+    ["{日本|にほん}で {働|はたら}きたいです","Хочу работать в Японии"],
+    ["{新|あたら}しい スマホが ほしいです","Хочу новый смартфон",["新しいスマホが欲しいです"]]]},
+   {t:"Почему, но, до и после",it:[
+    ["どうして","Почему"],
+    ["どうして {日本語|にほんご}を {勉強|べんきょう}しますか","Почему ты учишь японский?"],
+    ["{日本|にほん}に すみたいですから","Потому что хочу жить в Японии",["日本に住みたいですから"]],
+    ["むずかしい","Сложный",["難しい"]],["おもしろい","Интересный",["面白い"]],
+    ["{日本語|にほんご}は むずかしいですが、おもしろいです","Японский сложный, но интересный",["日本語は難しいですが面白いです"]],
+    ["{寝|ね}る {前|まえ}に シャワーを あびます","Перед сном принимаю душ"],
+    ["ごはんを {食|た}べてから、{勉強|べんきょう}します","Поем, потом занимаюсь"]]}],
+  talk:[
+   ["{今|いま} {何|なに}を して いますか。","Скажи: учу японский","にほんごをべんきょうしています"],
+   ["どうして {日本語|にほんご}を {勉強|べんきょう}しますか。","Скажи: потому что хочу жить в Японии","にほんにすみたいですから","にほんにすみたいからです"],
+   ["{日本語|にほんご}は むずかしいですか。","Скажи: сложный, но интересный","むずかしいですがおもしろいです","はいむずかしいですがおもしろいです"],
+   ["どこに すんで いますか。","Скажи: живу в Беларуси","ベラルーシにすんでいます"],
+   ["もう {晩|ばん}ごはんを {食|た}べましたか。","Скажи: нет, ещё нет","いいえまだです","まだです"],
+   ["{何|なに}が ほしいですか。","Скажи: хочу новый смартфон","あたらしいスマホがほしいです"],
+   ["{私|わたし}を しって いますか。","Скажи: да, знаю","はいしっています","しっています"],
+   ["{今|いま} {雨|あめ}が ふって いますか。","Скажи: да, идёт дождь","はいあめがふっています","あめがふっています"],
+   ["{寝|ね}る {前|まえ}に {何|なに}を しますか。","Скажи: принимаю душ","シャワーをあびます"],
+   ["{日本|にほん}で {何|なに}を したいですか。","Скажи: хочу работать","はたらきたいです","にほんではたらきたいです"],
+   ["ごはんを {食|た}べてから {何|なに}を しますか。","Скажи: занимаюсь","べんきょうします"],
+   ["いつ {日本|にほん}へ {来|き}ますか。","Скажи: в следующем году","らいねんです","らいねんきます","らいねんいきます"],
+   ["ケンさんを しって いますか。","Скажи: не знаю","しりません","いいえしりません"]]}
+];
+
+/* ===== КАНДЗИ N5: [кандзи, значение, чтение, пример, чтение примера, перевод примера] ===== */
+const N5K_RAW=`一|один|いち|一つ|ひとつ|одна штука
+二|два|に|二人|ふたり|два человека
+三|три|さん|三時|さんじ|три часа
+四|четыре|よん|四人|よにん|четыре человека
+五|пять|ご|五百円|ごひゃくえん|500 йен
+六|шесть|ろく|六時|ろくじ|шесть часов
+七|семь|なな|七時|しちじ|семь часов
+八|восемь|はち|八百|はっぴゃく|восемьсот
+九|девять|きゅう|九時|くじ|девять часов
+十|десять|じゅう|十分|じゅっぷん|десять минут
+百|сто|ひゃく|三百|さんびゃく|триста
+千|тысяча|せん|千円|せんえん|1000 йен
+万|десять тысяч|まん|一万円|いちまんえん|10 000 йен
+円|йена, круг|えん|百円|ひゃくえん|100 йен
+日|день, солнце|にち|日本|にほん|Япония
+月|месяц, луна|げつ|月曜日|げつようび|понедельник
+火|огонь|か|火曜日|かようび|вторник
+水|вода|みず|水|みず|вода
+木|дерево|き|木曜日|もくようび|четверг
+金|золото, деньги|きん|金曜日|きんようび|пятница
+土|земля|ど|土曜日|どようび|суббота
+人|человек|ひと|日本人|にほんじん|японец
+口|рот|くち|口|くち|рот
+目|глаз|め|目|め|глаз
+耳|ухо|みみ|耳|みみ|ухо
+手|рука|て|手|て|рука
+足|нога|あし|足|あし|нога
+今|сейчас|いま|今|いま|сейчас
+何|что|なに|何時|なんじ|который час
+時|время, час|じ|時間|じかん|время
+分|минута; понимать|ふん|五分|ごふん|пять минут
+半|половина|はん|九時半|くじはん|полдесятого
+年|год|ねん|来年|らいねん|следующий год
+午|полдень|ご|午後|ごご|после полудня
+前|перед, до|まえ|名前|なまえ|имя
+後|после, сзади|あと|後ろ|うしろ|сзади
+上|верх|うえ|上|うえ|наверху
+下|низ|した|下|した|внизу
+中|середина, внутри|なか|中|なか|внутри
+外|снаружи|そと|外国|がいこく|заграница
+右|право|みぎ|右|みぎ|направо
+左|лево|ひだり|左|ひだり|налево
+大|большой|おお|大きい|おおきい|большой
+小|маленький|ちい|小さい|ちいさい|маленький
+山|гора|やま|山|やま|гора
+川|река|かわ|川|かわ|река
+田|рисовое поле|た|田中さん|たなかさん|господин Танака
+天|небо|てん|天気|てんき|погода
+気|дух, настроение|き|元気|げんき|бодрый
+雨|дождь|あめ|雨|あめ|дождь
+空|небо|そら|空|そら|небо
+花|цветок|はな|花|はな|цветок
+男|мужчина|おとこ|男の人|おとこのひと|мужчина
+女|женщина|おんな|女の人|おんなのひと|женщина
+子|ребёнок|こ|子ども|こども|ребёнок
+父|отец|ちち|父|ちち|мой отец
+母|мать|はは|母|はは|моя мать
+友|друг|とも|友達|ともだち|друг
+先|раньше, впереди|せん|先生|せんせい|учитель
+生|жизнь|せい|学生|がくせい|студент
+学|учёба|がく|大学|だいがく|университет
+校|школа|こう|学校|がっこう|школа
+名|имя|な|名前|なまえ|имя
+国|страна|くに|国|くに|страна
+語|язык, слово|ご|日本語|にほんご|японский язык
+本|книга, основа|ほん|本|ほん|книга
+毎|каждый|まい|毎日|まいにち|каждый день
+週|неделя|しゅう|週末|しゅうまつ|выходные
+電|электричество|でん|電話|でんわ|телефон
+車|машина|くるま|電車|でんしゃ|электричка
+駅|станция|えき|駅|えき|станция
+道|дорога|みち|道|みち|дорога
+店|магазин|みせ|店|みせ|магазин
+社|компания|しゃ|会社|かいしゃ|компания
+会|встречаться|あ|会います|あいます|встречаюсь
+見|смотреть|み|見ます|みます|смотрю
+行|идти|い|行きます|いきます|иду
+来|приходить|き|来ます|きます|прихожу
+食|есть|た|食べます|たべます|ем
+飲|пить|の|飲みます|のみます|пью
+言|говорить|い|言います|いいます|говорю
+話|разговор|はな|話します|はなします|разговариваю
+読|читать|よ|読みます|よみます|читаю
+書|писать|か|書きます|かきます|пишу
+聞|слушать|き|聞きます|ききます|слушаю
+休|отдыхать|やす|休みます|やすみます|отдыхаю
+入|входить|はい|入ります|はいります|вхожу
+出|выходить|で|出ます|でます|выхожу
+立|стоять|た|立ちます|たちます|стою
+長|длинный|なが|長い|ながい|длинный
+高|высокий, дорогой|たか|高い|たかい|дорогой
+安|дешёвый|やす|安い|やすい|дешёвый
+新|новый|あたら|新しい|あたらしい|новый
+古|старый|ふる|古い|ふるい|старый
+白|белый|しろ|白い|しろい|белый
+多|много|おお|多い|おおい|много
+少|мало|すこ|少し|すこし|немного
+東|восток|ひがし|東京|とうきょう|Токио
+西|запад|にし|西|にし|запад
+南|юг|みなみ|南|みなみ|юг
+北|север|きた|北|きた|север`;
+const N5K=N5K_RAW.split("\n").map(l=>{const [k,ru,rd,ex,exr,exru]=l.split("|");return {k,ru,rd,ex,exr,exru};});
+
+/* ===== ПРОБНИК JLPT N5: то, что не собрать из уроков ===== */
+/* перефраз: [фраза, правильный смысл, неправильные...] */
+const N5_PARA=[
+ ["この {店|みせ}は {安|やす}いです。","この {店|みせ}は {高|たか}くないです。","この {店|みせ}は {高|たか}いです。","この {店|みせ}は {大|おお}きいです。","この {店|みせ}は {新|あたら}しくないです。"],
+ ["{毎朝|まいあさ} シャワーを あびます。","{朝|あさ}は いつも シャワーを あびます。","{夜|よる}は いつも シャワーを あびます。","{朝|あさ}は ときどき シャワーを あびます。","{朝|あさ}は シャワーを あびません。"],
+ ["{父|ちち}は {医者|いしゃ}です。","{父|ちち}は びょういんで {働|はたら}いて います。","{父|ちち}は がっこうで {働|はたら}いて います。","{父|ちち}は {店|みせ}で {働|はたら}いて います。","{父|ちち}は うちで {休|やす}んで います。"],
+ ["{今日|きょう}は {寒|さむ}くないです。","{今日|きょう}は あたたかいです。","{今日|きょう}は {寒|さむ}いです。","{今日|きょう}は とても {寒|さむ}いです。","{今日|きょう}は {雪|ゆき}です。"],
+ ["{昨日|きのう}は どこへも {行|い}きませんでした。","{昨日|きのう}は ずっと うちに いました。","{昨日|きのう}は {東京|とうきょう}へ {行|い}きました。","{昨日|きのう}は {友達|ともだち}と {出|で}かけました。","{昨日|きのう}は {会社|かいしゃ}へ {行|い}きました。"]
+];
+/* грамматика с формами: [фраза с ＿, правильный, неправильные...] */
+const N5_GRAM=[
+ ["{昨日|きのう} {映画|えいが}を ＿。","{見|み}ました","{見|み}ます","{見|み}ましょう","{見|み}ません"],
+ ["{明日|あした} いっしょに {行|い}き＿か。","ません","ました","ましょう","ます"],
+ ["この ラーメンは とても おいし＿です。","い","く","かった","な"],
+ ["{昨日|きのう}は {寒|さむ}＿です。","かった","い","くない","でした"],
+ ["ここで たばこを すっては ＿。","いけません","いいです","ください","ましょう"],
+ ["ちょっと {待|ま}って ＿。","ください","います","ません","でした"],
+ ["{今|いま} {雨|あめ}が ふって ＿。","います","あります","ください","ません"],
+ ["{日本|にほん}で {働|はたら}き＿です。","たい","ます","ません","ない"],
+ ["{寝|ね}る ＿に シャワーを あびます。","{前|まえ}","{後|あと}","{中|なか}","{上|うえ}"],
+ ["ごはんを {食|た}べ＿から、{勉強|べんきょう}します。","て","た","る","ます"],
+ ["{日本語|にほんご}は むずかしいです＿、おもしろいです。","が","から","と","も"],
+ ["この {部屋|へや}は しずか＿ありません。","じゃ","く","い","な"]
+];
+/* чтение: тексты и вопросы */
+const N5_READ=[
+ {t:"{私|わたし}は デニスです。ベラルーシから {来|き}ました。{今|いま} {東京|とうきょう}に すんで います。{毎日|まいにち} {日本語|にほんご}を {勉強|べんきょう}します。{週末|しゅうまつ}は {友達|ともだち}と {映画|えいが}を {見|み}ます。",
+  q:[["デニスさんは {週末|しゅうまつ}に {何|なに}を しますか。","{友達|ともだち}と {映画|えいが}を {見|み}ます。","{日本語|にほんご}を {勉強|べんきょう}します。","ベラルーシへ {帰|かえ}ります。","{会社|かいしゃ}で {働|はたら}きます。"],
+     ["デニスさんは {今|いま} どこに すんで いますか。","{東京|とうきょう}","ベラルーシ","{京都|きょうと}","わかりません"]]},
+ {t:"ユキさんへ\n{今日|きょう} {三時|さんじ}に {駅|えき}の {前|まえ}で {待|ま}って います。バスは {遅|おそ}いですから、{電車|でんしゃ}で {来|き}て ください。\nデニス",
+  q:[["ユキさんは {何時|なんじ}に どこへ {行|い}きますか。","{三時|さんじ}に {駅|えき}の {前|まえ}","{三時|さんじ}に デニスさんの うち","{四時|よじ}に {駅|えき}の {前|まえ}","{三時|さんじ}に バスの {中|なか}"],
+     ["ユキさんは {何|なに}で {行|い}きますか。","{電車|でんしゃ}","バス","タクシー","{自転車|じてんしゃ}"]]},
+ {t:"【みどり{書店|しょてん}】\n{月曜日|げつようび}は {休|やす}みです。\n{火曜日|かようび}〜{金曜日|きんようび}：{午前|ごぜん} {十時|じゅうじ}〜{午後|ごご} {八時|はちじ}\n{土曜日|どようび}・{日曜日|にちようび}：{午前|ごぜん} {十時|じゅうじ}〜{午後|ごご} {六時|ろくじ}",
+  q:[["この {店|みせ}は いつ {休|やす}みですか。","{月曜日|げつようび}","{火曜日|かようび}","{土曜日|どようび}","{日曜日|にちようび}"],
+     ["{土曜日|どようび}は {何時|なんじ}まで ですか。","{午後|ごご} {六時|ろくじ}","{午後|ごご} {八時|はちじ}","{午前|ごぜん} {十時|じゅうじ}","{午後|ごご} {十時|じゅうじ}"]]},
+ {t:"{昨日|きのう}は {雨|あめ}でした。{私|わたし}は どこへも {行|い}きませんでした。うちで {本|ほん}を {読|よ}みました。{今日|きょう}は いい {天気|てんき}です。これから {友達|ともだち}と こうえんへ {行|い}きます。",
+  q:[["この {人|ひと}は {昨日|きのう} {何|なに}を しましたか。","うちで {本|ほん}を {読|よ}みました。","こうえんへ {行|い}きました。","{友達|ともだち}と {会|あ}いました。","{映画|えいが}を {見|み}ました。"],
+     ["{今日|きょう} この {人|ひと}は どこへ {行|い}きますか。","こうえん","{駅|えき}","がっこう","どこへも {行|い}きません"]]},
+ {t:"{田中|たなか}さんの {家族|かぞく}は {四人|よにん}です。お{父|とう}さんは {先生|せんせい}で、お{母|かあ}さんは {医者|いしゃ}です。{妹|いもうと}さんが {一人|ひとり} います。{妹|いもうと}さんは {学生|がくせい}です。",
+  q:[["{田中|たなか}さんの お{母|かあ}さんの {仕事|しごと}は {何|なん}ですか。","{医者|いしゃ}","{先生|せんせい}","{学生|がくせい}","{会社員|かいしゃいん}"]]}
+];
+/* аудирование: [вопрос, [[кто, реплика]...], правильный, неправильные...] */
+const N5_LISTEN=[
+ ["{男|おとこ}の {人|ひと}は {何|なに}を {飲|の}みますか。",[["f","{何|なに}を {飲|の}みますか。"],["m","コーヒーを ください。"],["f","すみません、コーヒーは ありません。お{茶|ちゃ}は どうですか。"],["m","じゃあ、お{茶|ちゃ}を おねがいします。"]],"お{茶|ちゃ}","コーヒー","{水|みず}","ジュース"],
+ ["{二人|ふたり}は {何時|なんじ}に {会|あ}いますか。",[["m","{明日|あした} {映画|えいが}を {見|み}ませんか。"],["f","いいですね。{何時|なんじ}に {会|あ}いますか。"],["m","{三時|さんじ}は どうですか。"],["f","{三時|さんじ}は ちょっと……。{四時|よじ}は どうですか。"],["m","いいですよ。"]],"{四時|よじ}","{三時|さんじ}","{二時|にじ}","{五時|ごじ}"],
+ ["{駅|えき}は どこですか。",[["f","すみません、{駅|えき}は どこですか。"],["m","{駅|えき}ですか。この {道|みち}を まっすぐ {行|い}って、{右|みぎ}です。"],["f","{右|みぎ}ですね。ありがとう ございます。"]],"まっすぐ {行|い}って {右|みぎ}","まっすぐ {行|い}って {左|ひだり}","{後|うし}ろ","{近|ちか}くに ありません"],
+ ["{女|おんな}の {人|ひと}は どの シャツを {買|か}いますか。",[["f","この {白|しろ}い シャツは いくらですか。"],["m","{三千円|さんぜんえん}です。"],["f","{青|あお}い シャツは？"],["m","{青|あお}いのは {二千五百円|にせんごひゃくえん}です。"],["f","じゃあ、{青|あお}いのを ください。"]],"{青|あお}い シャツ、2500{円|えん}","{青|あお}い シャツ、3000{円|えん}","{白|しろ}い シャツ、2500{円|えん}","{白|しろ}い シャツ、3000{円|えん}"],
+ ["{男|おとこ}の {人|ひと}は {昨日|きのう}の {昼|ひる} {何|なに}を しましたか。",[["f","{昨日|きのう}は {何|なに}を しましたか。"],["m","{朝|あさ}は {日本語|にほんご}を {勉強|べんきょう}しました。{昼|ひる}は {友達|ともだち}と ラーメンを {食|た}べました。"],["f","{夜|よる}は？"],["m","{夜|よる}は うちで {休|やす}みました。"]],"{友達|ともだち}と ラーメンを {食|た}べました","{日本語|にほんご}を {勉強|べんきょう}しました","うちで {休|やす}みました","{映画|えいが}を {見|み}ました"],
+ ["{女|おんな}の {人|ひと}は どうして びょういんへ {来|き}ましたか。",[["m","どうしましたか。"],["f","あたまが いたいです。"],["m","いつからですか。"],["f","{昨日|きのう}の {夜|よる}からです。"]],"あたまが いたいから","おなかが いたいから","{足|あし}が いたいから","{手|て}が いたいから"],
+ ["{明日|あした}の {天気|てんき}は どうですか。",[["f","{明日|あした}は {雨|あめ}ですか。"],["m","いいえ、{明日|あした}は はれです。でも、{寒|さむ}いですよ。"],["f","そうですか。"]],"はれで {寒|さむ}い","{雨|あめ}で {寒|さむ}い","はれで {暑|あつ}い","{雪|ゆき}"],
+ ["{男|おとこ}の {人|ひと}の {家族|かぞく}は {何人|なんにん}ですか。",[["f","{何人|なんにん} {家族|かぞく}ですか。"],["m","{父|ちち}と {母|はは}と {妹|いもうと}と {私|わたし}です。"],["f","そうですか。"]],"{四人|よにん}","{三人|さんにん}","{五人|ごにん}","{二人|ふたり}"]
+];
+/* что распознаватель пишет кандзи вместо слова: кандзи → чтения (через «/» — несколько) */
+const N5_HOMO=`家:いえ/うち|雨:あめ|飴:あめ|橋:はし|箸:はし|端:はし|髪:かみ|紙:かみ|神:かみ|木:き|気:き|目:め|芽:め|手:て|歯:は|葉:は|日:ひ|火:ひ|今:いま|居間:いま|朝:あさ|麻:あさ|夜:よる|昼:ひる|蛭:ひる|水:みず|肉:にく|魚:さかな|茶:ちゃ|お茶:おちゃ|駅:えき|液:えき|益:えき|右:みぎ|左:ひだり|前:まえ|後ろ:うしろ|隣:となり|近く:ちかく|近い:ちかい|遠い:とおい|地図:ちず|店:みせ|靴:くつ|鞄:かばん|袋:ふくろ|現金:げんきん|赤い:あかい|青い:あおい|白い:しろい|黒い:くろい|大きい:おおきい|小さい:ちいさい|新しい:あたらしい|古い:ふるい|高い:たかい|安い:やすい|良い:いい|買います:かいます|飼います:かいます|電車:でんしゃ|車:くるま|自転車:じてんしゃ|行きます:いきます|来ます:きます|帰ります:かえります|変えります:かえります|歩きます:あるきます|今日:きょう|明日:あした|昨日:きのう|好き:すき|嫌い:きらい|大好き:だいすき|映画:えいが|音楽:おんがく|趣味:しゅみ|一緒に:いっしょに|見ます:みます|暇:ひま|可愛い:かわいい|綺麗:きれい|優しい:やさしい|楽しい:たのしい|静か:しずか|会いましょう:あいましょう|起きます:おきます|寝ます:ねます|働きます:はたらきます|勉強:べんきょう|休みます:やすみます|毎日:まいにち|時々:ときどき|全然:ぜんぜん|本:ほん|読みます:よみます|週末:しゅうまつ|家族:かぞく|父:ちち|母:はは|兄:あに|姉:あね|弟:おとうと|妹:いもうと|お父さん:おとうさん|お母さん:おかあさん|お兄さん:おにいさん|一人:ひとり|二人:ふたり|三人:さんにん|四人:よにん|何人:なんにん|兄弟:きょうだい|人:ひと|男:おとこ|女:おんな|子供:こども|子ども:こども|誰:だれ|背:せ|長い:ながい|天気:てんき|晴れ:はれ|雪:ゆき|暑い:あつい|熱い:あつい|厚い:あつい|寒い:さむい|暖かい:あたたかい|温かい:あたたかい|涼しい:すずしい|傘:かさ|春:はる|夏:なつ|秋:あき|冬:ふゆ|頭:あたま|お腹:おなか|足:あし|脚:あし|痛い:いたい|病院:びょういん|美容院:びょういん|薬:くすり|元気:げんき|待って:まって|聞いて:きいて|書いて:かいて|話して:はなして|言って:いって|写真:しゃしん|撮って:とって|撮っても:とっても|座っても:すわっても|入っても:はいっても|吸っても:すっても|吸っては:すっては|電話:でんわ|忘れないで:わすれないで|心配:しんぱい|後で:あとで|降って:ふって|住んで:すんで|住みたい:すみたい|知って:しって|知りません:しりません|来年:らいねん|欲しい:ほしい|難しい:むずかしい|面白い:おもしろい|寝る:ねる|食べて:たべて|食べ:たべ|飲み:のみ|私:わたし|名前:なまえ|日本:にほん|日本人:にほんじん|日本語:にほんご|英語:えいご|少し:すこし|学生:がくせい|会社員:かいしゃいん|仕事:しごと|先生:せんせい|医者:いしゃ|友達:ともだち|違います:ちがいます|一:いち|二:に|三:さん|四:よん|五:ご|六:ろく|七:なな|八:はち|九:きゅう|十:じゅう|百:ひゃく|千:せん|万:まん|円:えん|半:はん|午前:ごぜん|午後:ごご|何時:なんじ|何歳:なんさい|何曜日:なんようび|月曜日:げつようび|火曜日:かようび|水曜日:すいようび|木曜日:もくようび|金曜日:きんようび|土曜日:どようび|日曜日:にちようび|東京:とうきょう|京都:きょうと|公園:こうえん|地下鉄:ちかてつ|朝ご飯:あさごはん|晩ご飯:ばんごはん|ご飯:ごはん|浴びます:あびます|大丈夫:だいじょうぶ|分かりました:わかりました|分かりません:わかりません|分かります:わかります|お願いします:おねがいします|御願いします:おねがいします|下さい:ください|有難う:ありがとう|今晩は:こんばんは|今日は:こんにちは/きょうは|お休みなさい:おやすみなさい|初めまして:はじめまして|宜しく:よろしく|御免なさい:ごめんなさい|頂きます:いただきます|御馳走様:ごちそうさま|ご馳走様:ごちそうさま|お会計:おかいけい|会計:かいけい|美味しい:おいしい|空きました:すきました|空いた:すいた|一つ:ひとつ|二つ:ふたつ|要りません:いりません|居ます:います|有ります:あります|在ります:あります|此処:ここ|其処:そこ|何処:どこ|彼処:あそこ|此れ:これ|其れ:それ|何:なに/なん|交換:こうかん|二十五歳:にじゅうごさい|二十五:にじゅうご|歳:さい|才:さい|時:じ|分:ふん|人:にん/ひと`;
+
+
+/* ===== ДОБОР СЛОВАРЯ ДО ПОЛНОГО N5 ===== */
+const N5_MORE={
+ c1:[
+  {t:"На каждый день",it:[
+   ["いってきます","Я пошёл (выходя из дома)"],["いってらっしゃい","Счастливо (провожая)"],["ただいま","Я дома!"],["おかえりなさい","С возвращением"],
+   ["もしもし","Алло"],["どうも","Спасибо, привет (коротко)"],["こちらこそ","Взаимно, это я должен"],["しつれいします","Извините за беспокойство (входя, уходя)"],
+   ["いらっしゃいませ","Добро пожаловать (в магазине)"],["ごめんください","Есть кто-нибудь? (в дверях)"],["ください","Дайте, пожалуйста"],["ええ","Да (мягко)"],
+   ["あのう","Эээ… (чтобы обратиться)"],["おはよう","Доброе утро (по-простому)"],["ありがとう","Спасибо (по-простому)"]]}],
+ c2:[
+  {t:"Страны и люди",it:[
+   ["{国|くに}","Страна"],["{外国|がいこく}","Заграница"],["{外国人|がいこくじん}","Иностранец"],["アメリカ","Америка"],["イギリス","Англия"],["{中国|ちゅうごく}","Китай"],
+   ["みなさん","Все (обращение)"],["どなた","Кто (вежливо)"],["{方|かた}","Человек (вежливо)"],["こちら","Сюда, эта сторона; это (вежливо)"],["そちら","Туда, та сторона"],["あちら","Вон туда"],["どちら","Где, какой (вежливо)"],
+   ["{会社|かいしゃ}","Компания"],["おまわりさん","Полицейский"]]},
+  {t:"Вопросы",it:[
+   ["{何|なに}","Что"],["どう","Как"],["どんな","Какой"],["どの","Который (+ слово)"],["あの","Вон тот (+ слово)"],["どのくらい","Сколько (примерно)"],
+   ["いくつ","Сколько штук, сколько лет"],["いくら","Сколько стоит"],["{本当|ほんとう}","Правда"],["ほんとうですか","Правда?"],["{誕生日|たんじょうび}","День рождения"],["{番号|ばんごう}","Номер"]]}],
+ c3:[
+  {t:"Сколько штук",it:[
+   ["みっつ","Три штуки",["三つ"]],["よっつ","Четыре штуки",["四つ"]],["いつつ","Пять штук",["五つ"]],["むっつ","Шесть штук",["六つ"]],["ななつ","Семь штук",["七つ"]],
+   ["やっつ","Восемь штук",["八つ"]],["ここのつ","Девять штук",["九つ"]],["とお","Десять штук",["十"]],["ゼロ","Ноль",["零","れい"]],["{半分|はんぶん}","Половина"],["{全部|ぜんぶ}","Всё, целиком"]]},
+  {t:"Счётные слова",it:[
+   ["{一枚|いちまい}","Один лист (плоское)"],["{一本|いっぽん}","Одна (длинное: бутылка, ручка)"],["{一冊|いっさつ}","Одна книга"],["{一台|いちだい}","Одна машина (техника)"],
+   ["{一匹|いっぴき}","Одно животное"],["{一回|いっかい}","Один раз"],["{一階|いっかい}","Первый этаж"],["{一番|いちばん}","Номер один, самый"],["{何枚|なんまい}","Сколько листов"],["{何本|なんぼん}","Сколько штук (длинных)"],
+   ["{一分|いっぷん}","Одна минута"],["{一時間|いちじかん}","Один час (длительность)"],["{一週間|いっしゅうかん}","Одна неделя"],["{一年|いちねん}","Один год"],["ごろ","Около (о времени)",["頃"]],["{時間|じかん}","Время"]]}],
+ c4:[
+  {t:"Места в городе",it:[
+   ["{銀行|ぎんこう}","Банк"],["{郵便局|ゆうびんきょく}","Почта"],["{図書館|としょかん}","Библиотека"],["{映画館|えいがかん}","Кинотеатр"],["デパート","Универмаг"],["レストラン","Ресторан"],
+   ["{喫茶店|きっさてん}","Кафе (кофейня)"],["{大使館|たいしかん}","Посольство"],["{空港|くうこう}","Аэропорт"],["{交番|こうばん}","Полицейская будка"],["{本屋|ほんや}","Книжный магазин"],["{八百屋|やおや}","Овощной магазин"],
+   ["{花屋|はなや}","Цветочный магазин"],["パン{屋|や}","Булочная"],["{建物|たてもの}","Здание"],["{入口|いりぐち}","Вход"],["{出口|でぐち}","Выход"],["{町|まち}","Город, район"]]},
+  {t:"Где именно",it:[
+   ["{上|うえ}","Наверху, над"],["{下|した}","Внизу, под"],["{中|なか}","Внутри"],["{外|そと}","Снаружи"],["{横|よこ}","Сбоку"],["そば","Рядом, возле"],["むこう","Напротив, там"],
+   ["{東|ひがし}","Восток"],["{西|にし}","Запад"],["{南|みなみ}","Юг"],["{北|きた}","Север"],["{道|みち}","Дорога"],["{角|かど}","Угол (улицы)"],["{橋|はし}","Мост"],["{方|ほう}","Сторона, направление"],["{所|ところ}","Место"]]}],
+ c5:[
+  {t:"Продукты",it:[
+   ["{卵|たまご}","Яйцо"],["{野菜|やさい}","Овощи"],["{果物|くだもの}","Фрукты"],["りんご","Яблоко"],["{牛肉|ぎゅうにく}","Говядина"],["{豚肉|ぶたにく}","Свинина"],["{鶏肉|とりにく}","Курица (мясо)"],
+   ["{牛乳|ぎゅうにゅう}","Молоко"],["お{酒|さけ}","Алкоголь, сакэ"],["ビール","Пиво"],["{紅茶|こうちゃ}","Чёрный чай"],["お{菓子|かし}","Сладости"],["カレー","Карри"],["しお","Соль",["塩"]],["さとう","Сахар",["砂糖"]],["しょうゆ","Соевый соус",["醤油"]]]},
+  {t:"За столом",it:[
+   ["{昼|ひる}ごはん","Обед",["昼ご飯"]],["{料理|りょうり}","Блюдо, готовка"],["{食堂|しょくどう}","Столовая"],["お{弁当|べんとう}","Обед в коробке"],["はし","Палочки для еды",["箸"]],["さら","Тарелка",["皿"]],
+   ["ちゃわん","Чашка для риса",["茶碗"]],["コップ","Стакан"],["カップ","Чашка"],["フォーク","Вилка"],["ナイフ","Нож"],["スプーン","Ложка"],
+   ["あまい","Сладкий",["甘い"]],["からい","Острый",["辛い"]],["まずい","Невкусный"],["つめたい","Холодный (на ощупь)",["冷たい"]],["{熱|あつ}い","Горячий"]]}],
+ c6:[
+  {t:"Одежда",it:[
+   ["{服|ふく}","Одежда"],["{上着|うわぎ}","Пиджак, куртка"],["コート","Пальто"],["セーター","Свитер"],["ズボン","Брюки"],["スカート","Юбка"],["ぼうし","Шапка",["帽子"]],
+   ["めがね","Очки",["眼鏡"]],["ネクタイ","Галстук"],["くつした","Носки",["靴下"]],["ポケット","Карман"],["ハンカチ","Платок"],
+   ["{着|き}ます","Надевать (верх)"],["はきます","Надевать (низ, обувь)"],["かぶります","Надевать (головной убор)"],["かけます","Надевать очки; вешать; звонить"],["ぬぎます","Снимать (одежду)",["脱ぎます"]]]},
+  {t:"Цвет, размер, вес",it:[
+   ["{色|いろ}","Цвет"],["{黄色|きいろ}い","Жёлтый"],["{茶色|ちゃいろ}","Коричневый"],["みどり","Зелёный",["緑"]],["{長|なが}い","Длинный"],["{短|みじか}い","Короткий"],
+   ["{広|ひろ}い","Широкий, просторный"],["せまい","Узкий, тесный",["狭い"]],["{重|おも}い","Тяжёлый"],["{軽|かる}い","Лёгкий"],["{厚|あつ}い","Толстый (книга)"],["うすい","Тонкий",["薄い"]],
+   ["{太|ふと}い","Толстый"],["{細|ほそ}い","Тонкий, узкий"],["まるい","Круглый",["丸い"]],["わるい","Плохой",["悪い"]],["きたない","Грязный",["汚い"]],["お{金|かね}","Деньги"],["さいふ","Кошелёк",["財布"]],["{売|う}ります","Продавать"]]}],
+ c7:[
+  {t:"Поездки",it:[
+   ["{乗|の}ります","Садиться (в транспорт)"],["{降|お}ります","Выходить (из транспорта)"],["{出|で}かけます","Выходить из дома"],["{走|はし}ります","Бегать"],["{飛行機|ひこうき}","Самолёт"],
+   ["きっぷ","Билет",["切符"]],["{旅行|りょこう}","Путешествие"],["{荷物|にもつ}","Багаж, вещи"],["まがります","Поворачивать",["曲がります"]],["わたります","Переходить",["渡ります"]],
+   ["{待|ま}ちます","Ждать"],["{遅|おそ}い","Поздний, медленный"],["{早|はや}い","Ранний, быстрый"],["{近|ちか}く","Поблизости"],["{遠|とお}く","Далеко"],["フィルム","Плёнка"]]}],
+ c8:[
+  {t:"Досуг",it:[
+   ["{歌|うた}","Песня"],["{歌|うた}います","Петь"],["ギター","Гитара"],["ピアノ","Пианино"],["{絵|え}","Картина, рисунок"],["テニス","Теннис"],["プール","Бассейн"],
+   ["{泳|およ}ぎます","Плавать"],["{遊|あそ}びます","Играть, гулять"],["パーティー","Вечеринка"],["プレゼント","Подарок"],["{花|はな}","Цветок"],["{弾|ひ}きます","Играть (на инструменте)"],["カメラ","Фотоаппарат"]]},
+  {t:"Какой человек",it:[
+   ["{上手|じょうず}","Умелый, хорошо получается"],["{下手|へた}","Неумелый, плохо получается"],["にぎやか","Оживлённый, шумный"],["{有名|ゆうめい}","Знаменитый"],["いや","Неприятный, «не хочу»",["嫌"]],
+   ["いろいろ","Разный"],["たいへん","Тяжёлый, ужас; очень",["大変"]],["つまらない","Скучный"],["いい{人|ひと}","Хороший человек"],["{好|す}きな","Любимый"],["{大|おお}きな","Большой (+ слово)"],["{小|ちい}さな","Маленький (+ слово)"]]}],
+ c9:[
+  {t:"Дела по дому",it:[
+   ["{洗|あら}います","Мыть"],["みがきます","Чистить (зубы)",["磨きます"]],["せんたく","Стирка",["洗濯"]],["そうじ","Уборка",["掃除"]],["{買|か}い{物|もの}","Покупки"],["さんぽ","Прогулка",["散歩"]],
+   ["{作|つく}ります","Делать, готовить"],["{始|はじ}まります","Начинаться"],["{終|お}わります","Заканчиваться"],["{出|で}ます","Выходить"],["{入|はい}ります","Входить; залезать (в ванну)"],
+   ["すわります","Садиться",["座ります"]],["{立|た}ちます","Вставать, стоять"],["シャワー","Душ"],["おふろ","Ванна",["お風呂"]],["{歯|は}","Зуб"]]},
+  {t:"Когда и как часто",it:[
+   ["{夕方|ゆうがた}","Вечер (закат)"],["{晩|ばん}","Вечер"],["{毎朝|まいあさ}","Каждое утро"],["{毎晩|まいばん}","Каждый вечер"],["けさ","Сегодня утром",["今朝"]],["{今晩|こんばん}","Сегодня вечером"],
+   ["いつも","Всегда"],["たいてい","Обычно"],["すぐ","Сразу"],["また","Снова"],["はじめて","Впервые",["初めて"]],["{読|よ}みます","Читать"],["{書|か}きます","Писать"],["{聞|き}きます","Слушать, спрашивать"],["{話|はな}します","Разговаривать"],["{言|い}います","Говорить, сказать"]]}],
+ c10:[
+  {t:"Родня",it:[
+   ["おじいさん","Дедушка"],["おばあさん","Бабушка"],["おじさん","Дядя"],["おばさん","Тётя"],["お{姉|ねえ}さん","Старшая сестра (чужая)"],["{奥|おく}さん","Жена (чужая)"],
+   ["{両親|りょうしん}","Родители"],["きょうだい","Братья и сёстры",["兄弟"]],["{大人|おとな}","Взрослый"],["{男|おとこ}の{子|こ}","Мальчик"],["{女|おんな}の{子|こ}","Девочка"],["{結婚|けっこん}","Брак, свадьба"]]},
+  {t:"Внешность и тело",it:[
+   ["{顔|かお}","Лицо"],["{目|め}","Глаз"],["{耳|みみ}","Ухо"],["{鼻|はな}","Нос"],["{口|くち}","Рот"],["{体|からだ}","Тело"],["かみ","Волосы",["髪"]],["せ","Рост, спина",["背"]],
+   ["{若|わか}い","Молодой"],["ふとっています","Полный (о человеке)",["太っています"]],["やせています","Худой",["痩せています"]],["{高|たか}い","Высокий, дорогой"],["{低|ひく}い","Низкий"],["{強|つよ}い","Сильный"],["{弱|よわ}い","Слабый"]]}],
+ c11:[
+  {t:"Небо и природа",it:[
+   ["くもり","Облачно",["曇り"]],["{風|かぜ}","Ветер"],["{降|ふ}ります","Идти (о дожде, снеге)"],["{吹|ふ}きます","Дуть"],["{空|そら}","Небо"],["{海|うみ}","Море"],["{山|やま}","Гора"],
+   ["{川|かわ}","Река"],["{池|いけ}","Пруд"],["{木|き}","Дерево"],["{動物|どうぶつ}","Животное"],["{犬|いぬ}","Собака"],["ねこ","Кошка",["猫"]],["{鳥|とり}","Птица"],["{暗|くら}い","Тёмный"],["{明|あか}るい","Светлый"]]},
+  {t:"Болезнь",it:[
+   ["{病気|びょうき}","Болезнь"],["かぜ","Простуда",["風邪"]],["かぜを ひきました","Я простудился",["風邪をひきました","風邪を引きました"]],["{医者|いしゃ}に {行|い}きます","Иду к врачу"],
+   ["{休|やす}み","Выходной, перерыв"],["げんきに なりました","Выздоровел",["元気になりました"]],["{死|し}にます","Умирать"]]}],
+ c12:[
+  {t:"Двери, свет, вещи",it:[
+   ["{開|あ}けます","Открывать"],["{閉|し}めます","Закрывать"],["つけます","Включать"],["{消|け}します","Выключать, стирать"],["{押|お}します","Нажимать"],["{引|ひ}きます","Тянуть"],
+   ["{貸|か}します","Давать в долг"],["{借|か}ります","Брать в долг"],["{返|かえ}します","Возвращать"],["{取|と}ります","Брать"],["{持|も}ちます","Держать, иметь"],["{入|い}れます","Класть внутрь"],["{出|だ}します","Вынимать, отправлять"],
+   ["{窓|まど}","Окно"],["ドア","Дверь"],["{電気|でんき}","Свет, электричество"],["かぎ","Ключ",["鍵"]],["ボタン","Кнопка"],["{教|おし}えます","Учить, рассказать"]]}],
+ c13:[
+  {t:"Сколько и насколько",it:[
+   ["もっと","Ещё больше"],["たくさん","Много"],["{少|すく}ない","Мало"],["{多|おお}い","Много (есть)"],["おおぜい","Много людей",["大勢"]],["みんな","Все"],["ちょうど","Ровно"],
+   ["だんだん","Постепенно"],["もう{一|ひと}つ","Ещё одну"],["{一人|ひとり}で","В одиночку"],["ほか","Другой"],["{同|おな}じ","Одинаковый"],["{違|ちが}う","Другой, неправильный"]]}]
+};
+/* новые главы — вставляются перед финальной */
+const N5_NEWCH=[
+ {id:"c14",t:"Учёба и язык",d:"Школа, домашка, словарь, выучить, забыть",bg:"home",
+  story:"Ты же учишь японский — надо уметь об этом говорить. Школа, уроки, домашка, «как это по-японски?».",
+  L:[
+   {t:"Школа",it:[
+    ["{学校|がっこう}","Школа"],["{大学|だいがく}","Университет"],["{生徒|せいと}","Ученик"],["{留学生|りゅうがくせい}","Иностранный студент"],["クラス","Класс, группа"],["{教室|きょうしつ}","Классная комната"],
+    ["{宿題|しゅくだい}","Домашнее задание"],["{試験|しけん}","Экзамен"],["テスト","Тест"],["{問題|もんだい}","Задача, вопрос, проблема"],["{答|こた}え","Ответ"],["{質問|しつもん}","Вопрос"],["{授業|じゅぎょう}","Занятие, урок"],["{夏休|なつやす}み","Летние каникулы"]]},
+   {t:"Язык и вещи для учёбы",it:[
+    ["ことば","Слово, язык",["言葉"]],["{漢字|かんじ}","Кандзи"],["ひらがな","Хирагана",["平仮名"]],["カタカナ","Катакана",["片仮名"]],["{辞書|じしょ}","Словарь"],["{本|ほん}","Книга"],["{雑誌|ざっし}","Журнал"],
+    ["{新聞|しんぶん}","Газета"],["{手紙|てがみ}","Письмо"],["ノート","Тетрадь"],["えんぴつ","Карандаш",["鉛筆"]],["ペン","Ручка"],["ボールペン","Шариковая ручка"],["ページ","Страница"],["{作文|さくぶん}","Сочинение"],["{練習|れんしゅう}","Тренировка, практика"]]},
+   {t:"Учить и помнить",it:[
+    ["{習|なら}います","Учиться у кого-то"],["{覚|おぼ}えます","Запоминать"],["{忘|わす}れます","Забывать"],["{答|こた}えます","Отвечать"],["わかります","Понимать"],["{分|わ}かりやすい","Понятный"],
+    ["これは {日本語|にほんご}で {何|なん}ですか","Как это по-японски?"],["{漢字|かんじ}を {書|か}きます","Пишу кандзи"],["{宿題|しゅくだい}を しました","Сделал домашку"],["{試験|しけん}は {明日|あした}です","Экзамен завтра"]]}],
+  talk:[
+   ["{学生|がくせい}ですか。","Скажи: нет, я учу японский сам → «いいえ、ひとりで べんきょうします»","いいえひとりでべんきょうします","ひとりでべんきょうします"],
+   ["{漢字|かんじ}が わかりますか。","Скажи: немного","すこしわかります","はいすこしわかります"],
+   ["{宿題|しゅくだい}を しましたか。","Скажи: да, сделал","はいしました","はいしゅくだいをしました"],
+   ["{試験|しけん}は いつですか。","Скажи: завтра","あしたです","しけんはあしたです"],
+   ["{辞書|じしょ}が ありますか。","Ответь: да, есть","はいあります","あります"],
+   ["ひらがなを {覚|おぼ}えましたか。","Скажи: да, запомнил","はいおぼえました","おぼえました"],
+   ["{漢字|かんじ}を {忘|わす}れましたか。","Скажи: да, забыл","はいわすれました","わすれました"],
+   ["","Покажи на вещь и спроси, как это по-японски","これはにほんごでなんですか"],
+   ["この {問題|もんだい}は むずかしいですか。","Скажи: нет, лёгкий → «いいえ、やさしいです»","いいえやさしいです","やさしいです"],
+   ["{本|ほん}を よく {読|よ}みますか。","Скажи: иногда","ときどきよみます","ときどき"]]},
+ {id:"c15",t:"Дом и вещи",d:"Комнаты, мебель, техника, где что лежит",bg:"home",
+  story:"Ты снял квартиру в Токио. Учимся называть всё, что в ней есть, и говорить, где что лежит.",
+  L:[
+   {t:"Квартира",it:[
+    ["{家|いえ}","Дом",["うち"]],["{部屋|へや}","Комната"],["アパート","Квартира, многоквартирный дом"],["{台所|だいどころ}","Кухня"],["おてあらい","Туалет (вежливо)",["お手洗い"]],["{玄関|げんかん}","Прихожая"],
+    ["{階段|かいだん}","Лестница"],["エレベーター","Лифт"],["{庭|にわ}","Сад, двор"],["{門|もん}","Ворота"],["{戸|と}","Дверь (раздвижная)"],["かべ","Стена",["壁"]],["{二階|にかい}","Второй этаж"],["{住所|じゅうしょ}","Адрес"]]},
+   {t:"Мебель и техника",it:[
+    ["つくえ","Стол (письменный)",["机"]],["いす","Стул",["椅子"]],["テーブル","Стол"],["ベッド","Кровать"],["{本棚|ほんだな}","Книжная полка"],["れいぞうこ","Холодильник",["冷蔵庫"]],
+    ["テレビ","Телевизор"],["ラジオ","Радио"],["パソコン","Компьютер"],["{時計|とけい}","Часы"],["ストーブ","Обогреватель"],["カレンダー","Календарь"],["はこ","Коробка",["箱"]],["{物|もの}","Вещь"]]},
+   {t:"Где что лежит",it:[
+    ["つくえの {上|うえ}に {本|ほん}が あります","На столе лежит книга"],["いすの {下|した}に ねこが います","Под стулом кошка"],["かばんの {中|なか}に {何|なに}が ありますか","Что в сумке?"],
+    ["{部屋|へや}に テレビが ありません","В комнате нет телевизора"],["{台所|だいどころ}は どこですか","Где кухня?"],["この {部屋|へや}は {広|ひろ}いです","Эта комната просторная"],
+    ["{新|あたら}しい アパートに すんで います","Живу в новой квартире",["新しいアパートに住んでいます"]],["{電気|でんき}を つけて ください","Включи свет"]]}],
+  talk:[
+   ["つくえの {上|うえ}に {何|なに}が ありますか。","Скажи: книга","ほんがあります","ほんです"],
+   ["ねこは どこに いますか。","Скажи: под стулом","いすのしたにいます","いすのしたです"],
+   ["かばんの {中|なか}に {何|なに}が ありますか。","Скажи: кошелёк","さいふがあります","さいふです"],
+   ["{部屋|へや}に テレビが ありますか。","Скажи: нет, нету","いいえありません","ありません"],
+   ["{台所|だいどころ}は どこですか。","Скажи: вон там","あそこです"],
+   ["{部屋|へや}は {広|ひろ}いですか。","Скажи: нет, тесная","いいえせまいです","せまいです"],
+   ["{何階|なんがい}に すんで いますか。","Скажи: на втором этаже","にかいにすんでいます","にかいです"],
+   ["エレベーターが ありますか。","Скажи: нет, есть лестница","いいえかいだんがあります","かいだんがあります"],
+   ["","Попроси её включить свет","でんきをつけてください"],
+   ["","Спроси, где туалет (вежливо: おてあらい)","おてあらいはどこですか"]]},
+ {id:"c16",t:"Время и календарь",d:"Месяцы, числа, неделя, год, «на прошлой неделе»",bg:"day",
+  story:"Записаться к врачу, назначить свидание, сказать день рождения — без дат никак. Числа в японском — отдельная боль, держись.",
+  L:[
+   {t:"Месяцы",it:[
+    ["{一月|いちがつ}","Январь"],["{二月|にがつ}","Февраль"],["{三月|さんがつ}","Март"],["{四月|しがつ}","Апрель"],["{五月|ごがつ}","Май"],["{六月|ろくがつ}","Июнь"],
+    ["{七月|しちがつ}","Июль"],["{八月|はちがつ}","Август"],["{九月|くがつ}","Сентябрь"],["{十月|じゅうがつ}","Октябрь"],["{十一月|じゅういちがつ}","Ноябрь"],["{十二月|じゅうにがつ}","Декабрь"],["{何月|なんがつ}","Какой месяц"]]},
+   {t:"Числа месяца",it:[
+    ["{一日|ついたち}","Первое число"],["{二日|ふつか}","Второе; два дня"],["{三日|みっか}","Третье; три дня"],["{四日|よっか}","Четвёртое"],["{五日|いつか}","Пятое"],["{六日|むいか}","Шестое"],
+    ["{七日|なのか}","Седьмое"],["{八日|ようか}","Восьмое"],["{九日|ここのか}","Девятое"],["{十日|とおか}","Десятое"],["{二十日|はつか}","Двадцатое"],["{何日|なんにち}","Какое число"]]},
+   {t:"Неделя, месяц, год",it:[
+    ["{先週|せんしゅう}","Прошлая неделя"],["{今週|こんしゅう}","Эта неделя"],["{来週|らいしゅう}","Следующая неделя"],["{先月|せんげつ}","Прошлый месяц"],["{今月|こんげつ}","Этот месяц"],["{来月|らいげつ}","Следующий месяц"],
+    ["{去年|きょねん}","Прошлый год"],["{今年|ことし}","Этот год"],["{毎週|まいしゅう}","Каждую неделю"],["{毎月|まいつき}","Каждый месяц"],["{毎年|まいとし}","Каждый год"],["おととい","Позавчера",["一昨日"]],
+    ["あさって","Послезавтра",["明後日"]],["ゆうべ","Вчера вечером",["昨夜"]],["{週|しゅう}","Неделя"],["{月|つき}","Месяц, луна"],["{年|とし}","Год, возраст"],["{前|まえ}","До, назад"],["{後|あと}","После"]]},
+   {t:"Даты в разговоре",it:[
+    ["{誕生日|たんじょうび}は いつですか","Когда у тебя день рождения?"],["{五月|ごがつ} {十日|とおか}です","Десятого мая"],["{今日|きょう}は {何月|なんがつ} {何日|なんにち}ですか","Какое сегодня число?"],
+    ["{来週|らいしゅう}の {金曜日|きんようび}","В пятницу на следующей неделе"],["{先週|せんしゅう} {京都|きょうと}へ {行|い}きました","На прошлой неделе ездил в Киото"],["{三日|みっか}かかります","Займёт три дня"]]}],
+  talk:[
+   ["{誕生日|たんじょうび}は いつですか。","Скажи: десятого мая","ごがつとおかです"],
+   ["{今日|きょう}は {何月|なんがつ} {何日|なんにち}ですか。","Скажи: первое апреля","しがつついたちです"],
+   ["{先週|せんしゅう} どこへ {行|い}きましたか。","Скажи: в Киото","きょうとへいきました","きょうとにいきました"],
+   ["{来週|らいしゅう} ひまですか。","Скажи: да, свободен","はいひまです"],
+   ["いつ {日本|にほん}へ {来|き}ますか。","Скажи: в следующем месяце","らいげつです","らいげつきます"],
+   ["{去年|きょねん} {日本|にほん}へ {行|い}きましたか。","Скажи: нет, не ездил","いいえいきませんでした"],
+   ["{毎週|まいしゅう} {日本語|にほんご}を {勉強|べんきょう}しますか。","Скажи: нет, каждый день","いいえまいにちです","まいにちべんきょうします"],
+   ["{二十日|はつか}は {何曜日|なんようび}ですか。","Скажи: воскресенье","にちようびです"],
+   ["","Спроси, какое сегодня число","きょうはなんがつなんにちですか"],
+   ["","Спроси, когда у неё день рождения","たんじょうびはいつですか"]]}
+];
+N5C.forEach(c=>{ (N5_MORE[c.id]||[]).forEach(l=>c.L.push(l)); });
+/* ===== ещё добор: всё, что осталось из списка N5 ===== */
+const N5_MORE2={
+ c4:[{t:"Почта и перекрёсток",it:[["{切手|きって}","Марка"],["はがき","Открытка",["葉書"]],["ふうとう","Конверт",["封筒"]],["ポスト","Почтовый ящик"],["こうさてん","Перекрёсток",["交差点"]],["{右側|みぎがわ}","Правая сторона"],["{左側|ひだりがわ}","Левая сторона"],["この へん","Здесь поблизости",["この辺"]]]}],
+ c5:[{t:"Ещё про еду",it:[["{食|た}べ{物|もの}","Еда"],["{飲|の}み{物|もの}","Напиток"],["{夕|ゆう}はん","Ужин (по-простому)",["夕飯"]],["バター","Сливочное масло"],["{一杯|いっぱい}","Один стакан, одна чашка"],["{何杯|なんばい}","Сколько стаканов"],["お{腹|なか}が いっぱいです","Я наелся"]]}],
+ c6:[{t:"Меры и вещи",it:[["{洋服|ようふく}","Одежда (европейская)"],["スリッパ","Тапочки"],["せっけん","Мыло",["石鹸"]],["キロ","Килограмм, километр"],["グラム","Грамм"],["メートル","Метр"],["{見|み}せます","Показывать"],["これを {見|み}せて ください","Покажите это, пожалуйста"]]}],
+ c8:[{t:"Ещё прилагательные",it:[["{忙|いそが}しい","Занятой"],["うるさい","Шумный, надоедливый"],["{危|あぶ}ない","Опасный"],["{便利|べんり}","Удобный"],["じょうぶ","Прочный, здоровый",["丈夫"]],["{大切|たいせつ}","Важный, дорогой"],["りっぱ","Великолепный",["立派"]],["けっこう","Достаточно, отлично; не надо",["結構"]],["こんな","Такой (как этот)"],["そんな","Такой (как тот)"],["あんな","Вон такой"],["いかが","Как насчёт (вежливо)"]]},
+     {t:"Связки",it:[["もちろん","Конечно"],["たぶん","Наверное",["多分"]],["なぜ","Почему (книжно)"],["しかし","Однако"],["そして","И, а потом"],["それから","После этого"],["でも","Но"],["では","Ну тогда"],["じゃ","Ну (по-простому)"],["さあ","Ну-ка, давай"]]}],
+ c9:[{t:"Ещё глаголы",it:[["{使|つか}います","Использовать"],["できます","Мочь, уметь"],["なります","Становиться"],["つかれました","Устал",["疲れました"]],["こまります","Быть в затруднении",["困ります"]],["{呼|よ}びます","Звать"],["たのみます","Просить",["頼みます"]],["{置|お}きます","Класть"],
+     ["{着|つ}きます","Прибывать"],["{止|と}まります","Останавливаться"],["{飛|と}びます","Летать"],["なきます","Кричать (о животных), плакать",["鳴きます","泣きます"]],["なくします","Терять",["無くします"]],["{登|のぼ}ります","Подниматься (на гору)"],["ならびます","Выстраиваться",["並びます"]],["ならべます","Расставлять",["並べます"]],["{勤|つと}めます","Работать (в компании)"],["やります","Делать (по-простому)"]]}],
+ c10:[{t:"Жизнь",it:[["{生|う}まれました","Родился"],["{自分|じぶん}","Сам, себя"],["わたくし","Я (очень вежливо)",["私"]],["{私|わたし}たち","Мы"],["はたち","Двадцать лет",["二十歳"]],["ペット","Домашний питомец"]]}],
+ c11:[{t:"Погода-глаголы",it:[["{晴|は}れます","Проясняться"],["{咲|さ}きます","Цвести"],["かさを さします","Раскрываю зонт",["傘をさします"]],["くもります","Хмуриться (о небе)",["曇ります"]],["いい {天気|てんき}に なりました","Погода стала хорошей"]]}],
+ c12:[{t:"Ещё действия",it:[["{消|き}えます","Гаснуть, исчезать"],["{閉|し}まります","Закрываться"],["{開|あ}きます","Открываться"],["{切|き}ります","Резать"],["{渡|わた}します","Передавать"],["はります","Клеить",["貼ります"]],["{一度|いちど}","Один раз, однажды"]]}],
+ c13:[{t:"Мелочи N5",it:[["{次|つぎ}","Следующий"],["{先|さき}","Впереди, раньше"],["{一日|いちにち}","Один день, весь день"],["{一|ひと}つき","Один месяц",["一月"]],["{一|いっ}かげつ","Один месяц (срок)",["一ヶ月","1ヶ月"]],["おととし","Позапрошлый год",["一昨年"]],["さらいねん","Через два года",["再来年"]],
+     ["{話|はなし}","Рассказ, разговор"],["{意味|いみ}","Значение, смысл"],["{声|こえ}","Голос"],["ニュース","Новости"],["〜すぎ","После (о времени): 3じすぎ",["過ぎ"]],["〜ずつ","По (сколько-то каждому)"],["〜など","И так далее"],["〜ながら","Одновременно с"],["みんなで","Все вместе",["皆で"]]]}],
+ c14:[{t:"Ещё про учёбу",it:[["コピー","Копия, ксерокс"],["{文章|ぶんしょう}","Текст, предложение"],["{読|よ}み{方|かた}","Как читается"],["テープ","Плёнка, скотч"]]}],
+ c15:[{t:"Ещё в доме",it:[["ろうか","Коридор",["廊下"]],["かびん","Ваза",["花瓶"]],["マッチ","Спички"],["{灰皿|はいざら}","Пепельница"],["{電話|でんわ}を かけます","Звоню по телефону"]]}]
+};
+[...N5C,...N5_NEWCH].forEach(c=>{ (N5_MORE2[c.id]||[]).forEach(l=>c.L.push(l)); });
+
+N5C.splice(N5C.findIndex(c=>c.id==="c13"),0,...N5_NEWCH);
+
+/* =================================================================
+   ОСНОВНОЙ КУРС N5 — движок
+   ================================================================= */
+const NS=()=>{ if(!S.n5||typeof S.n5!=="object") S.n5={}; const n=S.n5;
+  n.done=n.done||{}; n.ch=n.ch||{}; n.srs=n.srs||{}; n.kj=n.kj||{}; n.kjd=n.kjd||{}; n.log=n.log||{}; n.sk=n.sk||{};
+  if(n.hintVoice===undefined) n.hintVoice=true; if(n.showTxt===undefined) n.showTxt=true; if(!n.kjDay) n.kjDay=2;
+  return n; };
+const N5_TYPE_SK={jr:"read",rj:"vocab",au:"listen",bd:"gram",gp:"gram",ty:"write",kr:"read",rk:"read",ak:"listen",km:"read",kd:"read",tr:"listen",sit:"vocab"};
+function nSk(k,ok){ const n=NS(); const a=n.sk[k]||(n.sk[k]=[0,0]); a[1]++; if(ok) a[0]++; }
+function nLog(newItems,secs){ const n=NS(), d=dayKey(); const l=n.log[d]||(n.log[d]={n:0,s:0}); l.n+=newItems||0; l.s+=Math.round(secs||0); }
+function nMark(){ markDay(); }
+
+/* ---------- данные: собираем предметы ---------- */
+function nSplitKana(str){ const out=[]; let i=0; while(i<str.length){ const two=str.substr(i,2); if(two.length===2&&BYK[two]){out.push(two);i+=2;} else { if(BYK[str[i]]) out.push(str[i]); i++; } } return out; }
+const N5I={}; // id -> item
+N5C.forEach((c,ci)=>{
+  c.ci=ci;
+  if(c.kana) c.L=N5_KANA_LESSONS[c.kana].map(([t,str])=>({t,it:nSplitKana(str)}));
+  c.L.forEach((l,li)=>{
+    l.id=c.id+"_"+li; l.ci=ci; l.li=li;
+    l.items=l.it.map(a=>{
+      let it;
+      if(typeof a==="string"){ const b=BYK[a]; it={kind:"k",jp:a,ru:b.disp,cyr:kanaRu(a)||"",kana:b}; }
+      else { const jp=a[0]; it={kind:/[\s、。？！]/.test(plain(jp))?"s":"w",jp,ru:a[1],acc:a[2]||[]}; }
+      it.ci=ci; it.li=li; it.id=c.id+"|"+plain(it.jp);
+      N5I[it.id]=it; return it; });
+  });
+  c.T=(c.talk||[]).map((a,ti)=>({id:c.id+"|t"+ti,q:a[0],hint:a[1],ans:a.slice(2),ci}));
+});
+const N5_ALL=()=>Object.values(N5I);
+const N5_CONTENT=N5C.filter(c=>!c.kana);
+
+/* ---------- память ---------- */
+const N_INT=[0,10*60e3,864e5,3*864e5,7*864e5,16*864e5,35*864e5];
+const nLearned=id=>!!NS().srs[id];
+function nGrade(id,ok,fromLesson){ const n=NS(); let r=n.srs[id]; const isNew=!r&&fromLesson;
+  if(!r){ if(!fromLesson&&!ok) return false; r=n.srs[id]={b:0,d:0,t:Date.now()}; }
+  r.b=ok?Math.min(6,r.b+1):0; r.d=Date.now()+N_INT[Math.max(1,r.b)]; return isNew; }
+function nDue(n){ const now=Date.now(), S5=NS().srs; return Object.keys(S5).filter(id=>N5I[id]).sort((a,b)=>S5[a].d-S5[b].d).filter((id,i)=>S5[id].d<=now||i<0).slice(0,n).map(id=>N5I[id]); }
+function nOld(n,exclude){ const S5=NS().srs, ex=exclude||new Set(); const ids=Object.keys(S5).filter(id=>N5I[id]&&!ex.has(id)); ids.sort((a,b)=>S5[a].d-S5[b].d); const due=ids.filter(id=>S5[id].d<=Date.now()); const rest=shuffle(ids.filter(id=>S5[id].d>Date.now())); return [...due,...rest].slice(0,n).map(id=>N5I[id]); }
+
+/* ---------- прогресс и замки ---------- */
+const nLesDone=l=>{ const d=NS().done[l.id]||{}; return !!(d.tap&&d.voice); };
+const nChDone=c=>!!(NS().ch[c.id]||{}).call;
+function nChOpen(c){ if(NS().openAll) return true; if(c.ci===0) return true; return nChDone(N5C[c.ci-1]); }
+function nSteps(c){ // все шаги главы по порядку
+  const n=NS(), st=[];
+  c.L.forEach((l,li)=>{ const d=n.done[l.id]||{};
+    st.push({k:"tap",c,l,li,done:!!d.tap,label:`${li+1}. ${l.t}`,sub:"учим, тыкаем"});
+    st.push({k:"voice",c,l,li,done:!!d.voice,label:`${li+1}. ${l.t}`,sub:c.kana?"читаем вслух":"голосом, без рук"}); });
+  const ch=n.ch[c.id]||{};
+  st.push({k:"exam",c,done:!!ch.exam,label:"Экзамен главы",sub:"тыкаешь ответы"});
+  st.push({k:"call",c,done:!!ch.call,label:"📞 Созвон с Юки",sub:c.kana?"все буквы вслух":"вся глава голосом"});
+  // замок: шаг открыт, если все предыдущие пройдены
+  let ok=nChOpen(c); st.forEach(s=>{ s.open=ok||s.done||NS().openAll; if(!s.done) ok=false; });
+  return st;
+}
+function nNext(){ for(const c of N5C){ if(!nChOpen(c)) return null; const s=nSteps(c).find(x=>!x.done); if(s) return s; } return {k:"final"}; }
+function nCounts(){ const all=N5_ALL(); const l=all.filter(t=>nLearned(t.id)).length; return {n:all.length,l}; }
+const nAllChaptersDone=()=>N5C.every(nChDone);
+
+/* ---------- голос: распознавание с поблажками ---------- */
+const N5KJ=(()=>{ const m=new Map();
+  const add=(k,r)=>{ k=String(k||"").replace(/[\s、。？！]/g,""); r=String(r||"").replace(/[\s、。？！]/g,""); if(!k||!r||k===r) return; const a=m.get(k)||[]; if(!a.includes(r)) a.push(r); m.set(k,a); };
+  N5_HOMO.split("|").forEach(x=>{ const [k,r]=x.split(":"); if(r) r.split("/").forEach(rr=>add(k,rr)); });
+  const scan=t=>String(t).replace(/\{([^|}]+)\|([^}]+)\}/g,(m0,a,b)=>{add(a,b);return "";});
+  N5C.forEach(c=>{ c.L.forEach(l=>l.items.forEach(it=>{ if(it.kind==="k") return; scan(it.jp); const pl=plain(it.jp), kn=kanaOf(it.jp); if(pl!==kn) add(pl,kn); (it.acc||[]).forEach(x=>{ if(/[一-鿿]/.test(x)) add(x,kn); }); })); (c.talk||[]).forEach(a=>scan(a[0])); });
+  N5K.forEach(k=>add(k.ex,k.exr));
+  return [...m.entries()].sort((a,b)=>b[0].length-a[0].length);
+})();
+function nVariants(s){ let out=[String(s)];
+  for(const [k,rs] of N5KJ){ if(!out.some(x=>x.includes(k))) continue;
+    const nx=[]; out.forEach(x=>{ if(x.includes(k)) rs.forEach(r=>nx.push(x.split(k).join(r))); else nx.push(x); });
+    out=[...new Set(nx)].slice(0,32); }
+  return out; }
+const N_D1=["","いち","に","さん","よん","ご","ろく","なな","はち","きゅう"];
+function n2kBig(n){ n=+n; if(!n) return "ぜろ"; let s="";
+  const man=Math.floor(n/10000); if(man){ s+=n2kBig(man)+"まん"; n%=10000; }
+  const th=Math.floor(n/1000); if(th){ s+=th===1?"せん":th===3?"さんぜん":th===8?"はっせん":N_D1[th]+"せん"; n%=1000; }
+  const h=Math.floor(n/100); if(h){ s+=h===1?"ひゃく":h===3?"さんびゃく":h===6?"ろっぴゃく":h===8?"はっぴゃく":N_D1[h]+"ひゃく"; n%=100; }
+  const t=Math.floor(n/10); if(t){ s+=(t>1?N_D1[t]:"")+"じゅう"; n%=10; }
+  if(n) s+=N_D1[n]; return s; }
+const nHour=h=>{ h=+h; const t=Math.floor(h/10), o=h%10; return (t?(t>1?N_D1[t]:"")+"じゅう":"")+({4:"よ",7:"しち",9:"く"}[o]||N_D1[o])+"じ"; };
+const nTsu=["","ひとつ","ふたつ","みっつ","よっつ","いつつ","むっつ","ななつ","やっつ","ここのつ","とお"];
+function nNum(s){ return String(s).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
+  .replace(/(\d+)\s*[:：]\s*(\d+)/g,(m,h,mi)=>nHour(h)+(+mi===30?"はん":+mi?n2k(mi,"ふん"):""))
+  .replace(/(\d+)\s*時\s*半/g,(m,h)=>nHour(h)+"はん").replace(/(\d+)\s*時/g,(m,h)=>nHour(h))
+  .replace(/(\d+)\s*分/g,(m,x)=>+x<100?n2k(x,"ふん"):x+"分")
+  .replace(/(\d+)\s*人/g,(m,x)=>+x===1?"ひとり":+x===2?"ふたり":+x===4?"よにん":n2kBig(x)+"にん")
+  .replace(/(\d+)\s*[歳才]/g,(m,x)=>{ x=+x; if(x===20) return "はたち"; let r=n2kBig(x); r=r.replace(/いち$/,"いっ").replace(/はち$/,"はっ").replace(/じゅう$/,"じゅっ"); return r+"さい"; })
+  .replace(/(\d+)\s*つ/g,(m,x)=>nTsu[+x]||n2kBig(x)+"つ")
+  .replace(/(\d+)\s*円/g,(m,x)=>(+x===4?"よ":n2kBig(x))+"えん")
+  .replace(/(\d+)/g,(m,x)=>n2kBig(x)); }
+const nKey=s=>jaSnd(NUM_CANON(jaNorm(s))).replace(/わ/g,"は").replace(/え/g,"へ");
+const nNeg=s=>/ません|ない|じゃ|いけ|いや/.test(s);
+function nOk(alts,targets){
+  alts=(alts||[]).filter(Boolean).map(String); if(!alts.length) return false;
+  const A=[]; alts.forEach(a=>{ nVariants(nNum(a)).forEach(v=>A.push(v)); });
+  for(const T0 of targets){ const T=String(T0);
+    if(jaOk(A,T,false)) return true;
+    const tk=nKey(jaNormT(T)), tr=romaKey(kanaOf(T)), tneg=nNeg(jaNormT(T)); if(!tk) continue;
+    for(const a of A){ const an=jaNorm(a), ak=nKey(a); if(!ak) continue;
+      if(ak===tk) return true;
+      if(tr&&romaKey(an)===tr) return true;
+      if(nNeg(an)!==tneg) continue;
+      if(tk.length>=4&&ak.includes(tk)&&ak.length-tk.length<=6) return true;
+      const sim=jaMatch1(ak,tk), thr=tk.length<=3?1:tk.length<=6?.8:.8;
+      if(sim>=thr) return true; }
+  }
+  return false;
+}
+const nKanaOk=(alts,it)=>kvOkRu(alts,it.kana)||kvOk(alts,it.kana);
+
+/* ---------- романдзи → кана (для письма) ---------- */
+const N_R2K=(()=>{ const m={}; ["h","hm","hy"].forEach(k=>RAW[k].split("|").forEach(x=>{ const [kk,v]=x.split(":"); if(kk&&v) v.split(",").forEach(r=>{ if(!m[r]) m[r]=kk; }); }));
+  Object.assign(m,{wo:"を",n:"ん",nn:"ん","-":"ー",la:"ぁ",li:"ぃ",lu:"ぅ",le:"ぇ",lo:"ぉ",xa:"ぁ",xi:"ぃ",xu:"ぅ",xe:"ぇ",xo:"ぉ",ltu:"っ",xtu:"っ",ya:"や",yu:"ゆ",yo:"よ",wa:"わ",fa:"ふぁ",fi:"ふぃ",fe:"ふぇ",fo:"ふぉ",ti:"ち",tu:"つ",si:"し",zi:"じ",hu:"ふ",di:"ぢ",du:"づ",ji:"じ",je:"じぇ",she:"しぇ",che:"ちぇ",dhi:"でぃ",thi:"てぃ",va:"ゔぁ",vi:"ゔぃ",vu:"ゔ",ve:"ゔぇ",vo:"ゔぉ"}); return m; })();
+function r2k(s,kata){ s=String(s).toLowerCase(); let o="",i=0;
+  while(i<s.length){ const c=s[i];
+    if(/[^a-z\-]/.test(c)){ o+=c===" "?" ":c; i++; continue; }
+    if(c==="n"&&s[i+1]==="'"){ o+="ん"; i+=2; continue; }
+    if(c==="n"&&s[i+1]==="n"){ o+="ん"; i+=/[aiueoy]/.test(s[i+2]||"")?1:2; continue; }
+    if(c==="n"&&(i+1>=s.length||!/[aiueoy]/.test(s[i+1]))){ o+="ん"; i++; continue; }
+    if(c===s[i+1]&&/[bcdfghjkmpqrstvwxz]/.test(c)){ o+="っ"; i++; continue; }
+    let hit=false; for(const L of [3,2,1]){ const p=s.substr(i,L); if(N_R2K[p]){ o+=N_R2K[p]; i+=L; hit=true; break; } }
+    if(!hit){ o+=c; i++; } }
+  return kata?o.replace(/[ぁ-ゖ]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+0x60)):o; }
+const nTypeNorm=s=>toHira(kanaOf(String(s))).replace(/[\s、。？！?!.,ー〜~]/g,"").replace(/[はわ]/g,"わ").replace(/[へえ]/g,"え").replace(/[をお]/g,"お").replace(/う(?=$)/,"う");
+const nRomaNorm=r=>String(r).toLowerCase().replace(/[^a-z]/g,"").replace(/shi/g,"si").replace(/chi/g,"ti").replace(/tsu/g,"tu").replace(/fu/g,"hu").replace(/ji/g,"zi").replace(/sh/g,"sy").replace(/ch/g,"ty").replace(/j/g,"zy").replace(/([bcdfghjkmpqrstvwxz])\1/g,"$1").replace(/nn/g,"n").replace(/wo/g,"o").replace(/ha/g,"wa").replace(/he/g,"e").replace(/ou/g,"o").replace(/oo/g,"o").replace(/uu/g,"u").replace(/ei/g,"e").replace(/ii/g,"i").replace(/aa/g,"a");
+const nTypeOk=(typed,targets)=>{ const a=nTypeNorm(r2k(typed)); if(targets.some(t=>nTypeNorm(t)===a)) return true; if(/[a-z]/i.test(typed)){ const r=nRomaNorm(typed); return !!r&&targets.some(t=>nRomaNorm(jaRoma(kanaOf(t)))===r); } return false; };
+
+/* ---------- озвучка ---------- */
+const nJaSpeak=t=>String(t).replace(/[（(][^）)]*[）)]/g,"");
+const nFast=t=>/очень быстро/.test(t);
+async function nSayJa(t,rate){ return speakP(nJaSpeak(t),"ja",rate||(nFast(t)?1.35:.85)); }
+function nSpeakBtn(t){ try{speechSynthesis.cancel()}catch(e){} sayQ(nJaSpeak(t),"ja"); }
+
+/* =================================================================
+   УРОК РУКАМИ (как в Дуолинго, только без левых слов)
+   ================================================================= */
+let NT=null;
+const NT_SKTAG={jr:"📖 Чтение",rj:"🧠 Словарь",au:"🎧 Аудирование",bd:"🧩 Грамматика",gp:"🧩 Грамматика",ty:"✍️ Письмо",kr:"📖 Азбука",rk:"📖 Азбука",ak:"🎧 На слух",km:"漢 Кандзи",kd:"漢 Кандзи",tr:"🎧 Ответь ей",sit:"💬 Что сказать"};
+const N_PARTS=["から","まで","は","が","を","に","で","へ","と","も","の","か","よ","ね"];
+const N_AMB={"は":["が","も"],"が":["は","も"],"も":["は","が"],"に":["へ","で"],"へ":["に"],"で":["に"]};
+function nTok(jp){ return jp.split(" ").filter(Boolean); }
+function nGapTok(it){ const toks=nTok(it.jp); const cands=[]; toks.forEach((t,i)=>{ const core=plain(t).replace(/[、。？！]+$/,""); const p=N_PARTS.find(x=>core.endsWith(x)&&core.length>x.length&&!/です$|ます$/.test(core)); if(p&&!(p==="か"&&i===toks.length-1)&&!(["よ","ね"].includes(p))) cands.push({i,p}); }); return cands.length?pick(cands):null; }
+function nPool(it,n){ // похожие предметы для ложных вариантов: та же глава, тот же тип, потом весь курс
+  const same=x=>x.id!==it.id&&x.kind===it.kind&&plain(x.jp)!==plain(it.jp)&&x.ru!==it.ru;
+  const c=N5C[it.ci]; let p=shuffle(c.L.flatMap(l=>l.items).filter(same));
+  if(p.length<n) p=p.concat(shuffle(N5_ALL().filter(x=>same(x)&&x.ci!==it.ci&&(it.kind!=="k"||x.kana.s===it.kana.s))));
+  return p.slice(0,n); }
+function nQ(it,type){
+  const q={it,type};
+  if(it.kind==="k"){
+    const others=nPool(it,3);
+    if(type==="kr") q.opts=shuffle([it,...others]).map(o=>({h:esc(o.ru),ok:o===it}));
+    else q.opts=shuffle([it,...others]).map(o=>({h:`<span class="kfont">${o.jp}</span>`,ok:o===it}));
+    return q; }
+  if(type==="jr"||type==="au") q.opts=shuffle([it,...nPool(it,3)]).map(o=>({h:esc(o.ru),ok:o===it}));
+  else if(type==="rj") q.opts=shuffle([it,...nPool(it,3)]).map(o=>({h:`<span class="jfont">${rb(o.jp)}</span>`,ok:o===it}));
+  else if(type==="bd"){ const toks=nTok(it.jp); const extra=[]; for(const o of nPool(it,6)){ if(extra.length>=2) break; const t=pick(nTok(o.jp)); if(!toks.includes(t)&&!extra.includes(t)) extra.push(t); }
+    q.tiles=shuffle([...toks,...extra].map((t,i)=>({t,i}))); q.sel=[]; q.answer=toks.join(" "); }
+  else if(type==="gp"){ const g=nGapTok(it); if(!g) return nQ(it,"rj"); const toks=nTok(it.jp); q.gi=g.i; q.gp=g.p;
+    const pre=toks[g.i].slice(0,toks[g.i].length-g.p.length-(/[、。？！]$/.test(toks[g.i])?1:0)); q.pre=pre;
+    const amb=N_AMB[g.p]||[]; const pool=shuffle(["は","が","を","に","で","へ","と","も","の","から","まで"].filter(x=>x!==g.p&&!amb.includes(x))).slice(0,3);
+    q.opts=shuffle([g.p,...pool]).map(x=>({h:`<span class="jfont">${x}</span>`,ok:x===g.p})); }
+  return q;
+}
+function nTypesFor(it,stage){ // stage 1 — сразу после знакомства, 2 — повтор
+  if(it.kind==="k") return stage===1?["kr"]:["rk","ak","kr"];
+  const short=kanaOf(it.jp).replace(/[\s、。？！]/g,"").length<=9;
+  if(it.kind==="w") return stage===1?["jr"]:short?["rj","au","ty"]:["rj","au"];
+  const g=nGapTok(it);
+  return stage===1?["bd"]:[...(g?["gp"]:[]),"rj","au",...(short?["ty"]:[]),"bd"];
+}
+function nKjQ(k,type){ const others=shuffle(N5K.filter(x=>x.k!==k.k)).slice(0,3);
+  if(type==="km") return {kj:k,type,opts:shuffle([k,...others]).map(o=>({h:esc(o.ru),ok:o===k}))};
+  const rd=o=>o.exr; const os=shuffle(N5K.filter(x=>x.k!==k.k&&x.exr!==k.exr)).slice(0,3);
+  return {kj:k,type:"kd",opts:shuffle([k,...os]).map(o=>({h:`<span class="jfont">${esc(rd(o))}</span>`,ok:o===k}))}; }
+function nTalkQ(tk,c){ // выбери, что ей ответить
+  const pool=shuffle(N5C[tk.ci].T.filter(x=>x!==tk&&x.ans[0]!==tk.ans[0]&&(!!x.q===!!tk.q))).slice(0,2);
+  const more=pool.length<2?shuffle(N5_CONTENT.flatMap(c=>c.T).filter(x=>x!==tk&&!pool.includes(x)&&!!x.q===!!tk.q)).slice(0,2-pool.length):[];
+  const ops=[tk,...pool,...more];
+  return {tk,type:tk.q?"tr":"sit",opts:shuffle(ops).map(o=>({h:`<span class="jfont">${esc(o.ans[0])}</span>`,ok:o===tk}))}; }
+
+function tapStart(cfg){ // cfg: {mode:"lesson"|"exam"|"review"|"kanji", title, items, talk, kanji, onEnd}
+  const qs=[]; const n=NS();
+  if(cfg.mode==="lesson"){
+    const ex=new Set(cfg.items.map(t=>t.id));
+    const old=nOld(5,ex).filter(t=>t.kind===cfg.items[0].kind||cfg.items[0].kind!=="k");
+    const kjOld=Object.keys(n.kj).map(k=>N5K.find(x=>x.k===k)).filter(Boolean); const kj2=shuffle(kjOld).slice(0,2);
+    if(old.length||kj2.length){ qs.push({say:"Быстрый повтор старого — чтоб не протухло. Тыкай быстро."}); old.forEach(t=>qs.push(nQ(t,pick(nTypesFor(t,2))))); kj2.forEach(k=>qs.push(nKjQ(k,pick(["km","kd"])))); qs.push({say:"Разогрелся. Теперь новое."}); }
+    const items=cfg.items; const later=[];
+    items.forEach((it,i)=>{ qs.push({intro:it}); qs.push(nQ(it,pick(nTypesFor(it,1)))); if(i%3===2){ shuffle(items.slice(Math.max(0,i-2),i+1)).forEach(x=>qs.push(nQ(x,pick(nTypesFor(x,2))))); } else later.push(it); });
+    shuffle(items).forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2)))));
+  } else if(cfg.mode==="exam"){
+    shuffle(cfg.items).forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2)))));
+    (cfg.talk||[]).forEach(tk=>qs.push(nTalkQ(tk)));
+    for(let i=qs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [qs[i],qs[j]]=[qs[j],qs[i]]; }
+  } else if(cfg.mode==="review"){
+    cfg.items.forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2)))));
+    (cfg.kanji||[]).forEach(k=>qs.push(nKjQ(k,pick(["km","kd"]))));
+  } else if(cfg.mode==="kanji"){
+    cfg.kanji.forEach(k=>{ qs.push({kintro:k}); qs.push(nKjQ(k,"km")); qs.push(nKjQ(k,"kd")); });
+    shuffle(Object.keys(n.kj).map(k=>N5K.find(x=>x.k===k)).filter(k=>k&&!cfg.kanji.includes(k))).slice(0,4).forEach(k=>qs.push(nKjQ(k,pick(["km","kd"]))));
+  }
+  NT=Object.assign({},cfg,{qs,i:0,ok:0,bad:0,first:new Map(),wrong:[],t0:Date.now(),newL:0,combo:0,xp:0,total:qs.filter(q=>!q.say&&!q.intro&&!q.kintro).length,ans:0});
+  tapNext();
+}
+function tapNext(){
+  hideSheet();
+  if(NT.i>=NT.qs.length) return tapEnd();
+  const q=NT.qs[NT.i]; NT.cur=q; NT.locked=false;
+  if(q.say){ NT.i++; return tapNext(); }
+  tapRender();
+}
+function tapRender(){
+  const q=NT.cur, pct=Math.round(NT.ans/Math.max(1,NT.total)*100);
+  const top=`<div class="top"><button class="x" id="quit" aria-label="Выйти">✕</button><div class="prog"><i style="width:${pct}%"></i></div><div class="nqcount">${NT.mode==="exam"?`✓${NT.ok} ✗${NT.bad}`:NT.combo>=3?`🔥×${NT.combo}`:""}</div></div>`;
+  let body="", ans="";
+  if(q.intro){ const it=q.intro;
+    body=`<div class="prompt">${it.kind==="k"?"Новая буква":it.kind==="w"?"Новое слово":"Новая фраза"}</div>
+      <div class="card nqcard intro"><button class="say" id="say" aria-label="Озвучить">🔊</button>
+      ${it.kind==="k"?`<div class="glyph">${it.jp}</div><div class="nqru"><b>${esc(it.ru)}</b> · «${esc(it.cyr)}»</div>`:`<div class="jpbig">${rb(it.jp)}</div><div class="nqru">${esc(it.ru)}</div>`}</div>
+      <div class="note">${it.kind==="k"?"Запомни форму. Сейчас спрошу.":"Послушай, скажи вслух пару раз. Сейчас спрошу."}</div>`;
+    ans=`<button class="big" id="go">ЗАПОМНИЛ, ДАЛЬШЕ</button>`;
+  } else if(q.kintro){ const k=q.kintro;
+    body=`<div class="prompt">Кандзи дня</div><div class="card nqcard intro"><button class="say" id="say">🔊</button><div class="glyph kj">${k.k}</div><div class="nqru"><b>${esc(k.ru)}</b> · читается «${esc(k.rd)}»</div><div class="nqex"><span class="jfont">${esc(k.ex)}</span> <span class="muted">${esc(k.exr)} — ${esc(k.exru)}</span></div></div>`;
+    ans=`<button class="big" id="go">ЗАПОМНИЛ</button>`;
+  } else {
+    const tag=NT_SKTAG[q.type]||"";
+    let prompt="", card="";
+    if(q.kj){ prompt=q.type==="km"?"Что значит этот кандзи?":"Как читается слово?"; card=q.type==="km"?`<div class="glyph kj">${q.kj.k}</div>`:`<div class="jpbig">${esc(q.kj.ex)}</div>`; }
+    else if(q.tk){ if(q.type==="tr"){ prompt="Она говорит. Что ответишь?"; card=`<button class="say" id="say">🔊</button><div class="jpbig">${rb(q.tk.q)}</div>`; } else { prompt="Что скажешь?"; card=`<div class="rubig">${esc(q.tk.hint)}</div>`; } }
+    else { const it=q.it;
+      if(q.type==="jr"){ prompt="Что это значит?"; card=`<button class="say" id="say">🔊</button><div class="jpbig">${rb(it.jp)}</div>`; }
+      else if(q.type==="rj"){ prompt="Как сказать по-японски?"; card=`<div class="rubig">${esc(it.ru)}</div>`; }
+      else if(q.type==="au"){ prompt="Слушай и выбери перевод"; card=`<button class="say big-say" id="say">🔊 Ещё раз</button><div class="nqhide">текст спрятан — только на слух</div>`; }
+      else if(q.type==="bd"){ prompt="Собери фразу"; card=`<div class="rubig">${esc(it.ru)}</div>`; }
+      else if(q.type==="gp"){ prompt="Какая частица?"; const toks=nTok(it.jp); card=`<div class="jpbig">${toks.map((t,i)=>i===q.gi?`${rb(q.pre)}<b class="gap">＿</b>${/[、。？！]$/.test(t)?t.slice(-1):""}`:rb(t)).join(" ")}</div><div class="nqru">${esc(it.ru)}</div>`; }
+      else if(q.type==="ty"){ prompt="Напиши по-японски латиницей"; card=`<div class="rubig">${esc(it.ru)}</div>`; }
+      else if(q.type==="kr"){ prompt="Как читается?"; card=`<button class="say" id="say">🔊</button><div class="glyph">${it.jp}</div>`; }
+      else if(q.type==="rk"){ prompt="Найди букву"; card=`<div class="roma">${esc(it.ru)}</div><div class="nqru">«${esc(it.cyr)}»</div>`; }
+      else if(q.type==="ak"){ prompt="Какую букву она сказала?"; card=`<button class="say big-say" id="say">🔊 Ещё раз</button>`; }
+    }
+    body=`<div class="nqtag">${tag}</div><div class="prompt">${prompt}</div><div class="card nqcard">${card}</div>`;
+    if(q.type==="bd") ans=`<div class="nslot" id="slot">${q.sel.map(i=>`<button class="ntile" data-bi="${i}">${rb(q.tiles.find(t=>t.i===i).t)}</button>`).join("")}</div><div class="npool">${q.tiles.map(t=>`<button class="ntile ${q.sel.includes(t.i)?"used":""}" data-pi="${t.i}">${rb(t.t)}</button>`).join("")}</div><button class="big" id="bchk">ПРОВЕРИТЬ</button>`;
+    else if(q.type==="ty") ans=`<form class="typebox" id="tf" autocomplete="off"><input id="ti" inputmode="latin" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="например: arigatou" aria-label="Латиницей"><div class="nkana" id="tk">&nbsp;</div><button class="big" type="submit">ПРОВЕРИТЬ</button><button class="ghost" type="button" id="tdk">Не знаю</button></form>`;
+    else ans=`<div class="nopts">${q.opts.map((o,i)=>`<button class="nopt" data-i="${i}">${o.h}</button>`).join("")}</div>`;
+  }
+  app.innerHTML=`<section class="screen nq">${top}${body}${ans}</section>`;
+  document.getElementById("quit").onclick=()=>{ hfStop(); NT=null; home(); };
+  const sayTxt=q.intro?(q.intro.kind==="k"?q.intro.jp:q.intro.jp):q.kintro?q.kintro.ex:q.tk?q.tk.q:q.it?q.it.jp:null;
+  const sb=document.getElementById("say"); if(sb) sb.onclick=()=>{ if(q.it&&q.it.kind==="k"||q.intro&&q.intro.kind==="k") speakKana((q.it||q.intro).jp); else nSpeakBtn(sayTxt); };
+  if(q.intro||q.kintro){ document.getElementById("go").onclick=()=>{ NT.i++; tapNext(); }; if(q.intro&&q.intro.kind==="k") speakKana(q.intro.jp); else nSpeakBtn(sayTxt); return; }
+  if(q.type==="au"||q.type==="ak"||q.type==="tr"){ setTimeout(()=>{ if(q.type==="ak") speakKana(q.it.jp); else nSpeakBtn(sayTxt); },250); }
+  if(q.type==="bd"){
+    app.querySelectorAll("[data-pi]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.pi; if(!q.sel.includes(i)){ q.sel.push(i); tapRender(); } });
+    app.querySelectorAll("[data-bi]").forEach(b=>b.onclick=()=>{ q.sel=q.sel.filter(x=>x!==+b.dataset.bi); tapRender(); });
+    document.getElementById("bchk").onclick=()=>{ if(!q.sel.length||NT.locked) return; const s=q.sel.map(i=>q.tiles.find(t=>t.i===i).t).join(" "); tapAnswer(s===q.answer||plain(s).replace(/\s/g,"")===plain(q.answer).replace(/\s/g,"")); };
+  } else if(q.type==="ty"){
+    const inp=document.getElementById("ti"), tk=document.getElementById("tk"); setTimeout(()=>inp.focus(),60);
+    inp.oninput=()=>{ tk.textContent=r2k(inp.value)||" "; };
+    document.getElementById("tf").onsubmit=e=>{ e.preventDefault(); if(NT.locked) return; if(!inp.value.trim()) return; tapAnswer(nTypeOk(inp.value,[q.it.jp,...(q.it.acc||[]).filter(x=>!/[一-鿿]/.test(x))]),r2k(inp.value)); };
+    document.getElementById("tdk").onclick=()=>{ if(!NT.locked) tapAnswer(false,""); };
+  } else {
+    app.querySelectorAll(".nopt").forEach(b=>b.onclick=()=>{ if(NT.locked) return; const o=q.opts[+b.dataset.i];
+      app.querySelectorAll(".nopt").forEach((bb,i)=>{ bb.disabled=true; if(q.opts[i].ok) bb.classList.add("ok"); }); if(!o.ok) b.classList.add("no"); tapAnswer(o.ok); });
+  }
+}
+function tapAnswer(ok,typed){
+  NT.locked=true; const q=NT.cur; const key=q.it?q.it.id:q.kj?"kj:"+q.kj.k:q.tk?q.tk.id:"x";
+  const firstTry=!NT.first.has(key+q.type); NT.first.set(key+q.type,1);
+  if(firstTry) nSk(N5_TYPE_SK[q.type]||"vocab",ok);
+  NT.ans++;
+  let right="";
+  if(q.kj) right=`<span class="jfont">${q.kj.k}</span> — ${esc(q.kj.ru)} · ${esc(q.kj.ex)} (${esc(q.kj.exr)})`;
+  else if(q.tk) right=`<span class="jfont">${esc(q.tk.ans[0])}</span>`;
+  else if(q.it.kind==="k") right=`<span class="k">${q.it.jp}</span> = ${esc(q.it.ru)} («${esc(q.it.cyr)}»)`;
+  else right=`<span class="jfont">${rb(q.it.jp)}</span> — ${esc(q.it.ru)}`;
+  if(ok){ NT.ok++; NT.combo++; NT.xp+=10;
+    if(q.it&&NT.mode!=="exam"){ if(nGrade(q.it.id,true,NT.mode==="lesson"&&NT.items.includes(q.it))) NT.newL++; }
+    beep(true); stampIt(NT.combo>=5?"神":"良",true);
+    const t=COMBO[NT.combo]||pick(RIGHT);
+    showSheet(true,t,right,"ДАЛЬШЕ",()=>{ NT.i++; tapNext(); });
+  } else { NT.bad++; NT.combo=0;
+    if(q.it) { nGrade(q.it.id,false,false); if(!NT.wrong.includes(q.it)) NT.wrong.push(q.it); }
+    if(q.tk&&!NT.wrong.includes(q.tk)) NT.wrong.push(q.tk);
+    beep(false); buzz(); stampIt("駄",false);
+    if(NT.mode!=="exam"){ // вернётся в конце, другим типом
+      let nq=null; if(q.it){ const types=nTypesFor(q.it,2).filter(t=>t!==q.type); nq=nQ(q.it,pick(types.length?types:[q.type])); } else if(q.kj) nq=nKjQ(q.kj,q.type==="km"?"kd":"km"); else if(q.tk) nq=nTalkQ(q.tk);
+      if(nq){ NT.qs.splice(Math.min(NT.qs.length,NT.i+3+Math.floor(Math.random()*3)),0,nq); NT.total++; }
+    }
+    showSheet(false,pick(WRONG),`${pick(WRONG_SUB)} ${right}${typed?`<br><small>ты написал: ${esc(typed)}</small>`:""}`,"ПОНЯЛ",()=>{ NT.i++; tapNext(); });
+  }
+  if(!(q.kj||q.tk)&&q.it&&q.it.kind!=="k"){ try{speechSynthesis.cancel()}catch(e){} sayQ(q.it.jp,"ja"); }
+  save();
+}
+function tapEnd(){
+  hideSheet();
+  const n=NS(); const secs=(Date.now()-NT.t0)/1000; const tot=NT.ok+NT.bad; const acc=Math.round(NT.ok/Math.max(1,tot)*100);
+  nLog(NT.newL,secs); S.xp+=NT.xp; nMark();
+  let pass=true;
+  if(NT.mode==="lesson"){ const d=n.done[NT.l.id]||(n.done[NT.l.id]={}); d.tap=Date.now(); NT.items.forEach(it=>{ if(!n.srs[it.id]){ n.srs[it.id]={b:1,d:Date.now()+N_INT[1],t:Date.now()}; NT.newL++; } }); }
+  if(NT.mode==="exam"){ pass=acc>=85; const ch=n.ch[NT.c.id]||(n.ch[NT.c.id]={}); ch.examBest=Math.max(ch.examBest||0,acc); if(pass) ch.exam=Date.now(); }
+  if(NT.mode==="kanji"){ const d=dayKey(); NT.kanji.forEach(k=>{ if(!n.kj[k.k]){ n.kj[k.k]=Date.now(); n.kjd[d]=(n.kjd[d]||0)+1; } }); }
+  save();
+  const T=NT, wrong=T.wrong;
+  const title=T.mode==="exam"?(pass?(acc===100?"ЕБАТЬ ТЫ МАШИНА":"ЭКЗАМЕН СДАН"):"НЕ СДАЛ, ЛОШАРА"):acc===100?"ИМПЕРАТОР ЯПОНИИ":acc>=80?"КРАСАВА":acc>=55?"НУ ПОЙДЁТ":"ПИЗДЕЦ";
+  const sub=T.mode==="exam"?(pass?`Чтобы сдать, нужно 85%. У тебя ${acc}%. Теперь созвон — там всё то же самое, только голосом.`:`Нужно 85%, у тебя ${acc}%. Подучи ошибки и пересдай.`):T.mode==="lesson"?"Урок рук пройден. Теперь то же самое голосом — без рук и без глаз.":T.mode==="kanji"?"Кандзи записаны. Они будут всплывать в быстрых повторах.":"Повтор готов.";
+  app.innerHTML=`<section class="screen res">
+    <div class="stage small bg-${(N5C[T.ci!=null?T.ci:0]||{}).bg||"home"}">${sceneDeco((N5C[T.ci!=null?T.ci:0]||{}).bg||"home")}<div class="girlwrap">${girlSVG(acc>=85?"blush":acc>=55?"happy":"angry")}</div></div>
+    <h2>${title}</h2><p>${sub}</p>
+    <div class="stats"><div class="stat"><b>${acc}%</b><small>точность</small></div><div class="stat"><b>${fmtClock(secs*1000)}</b><small>время</small></div><div class="stat fire"><b>+${T.xp}</b><small>XP</small></div></div>
+    ${wrong.length?`<div class="label" style="text-align:left">Где ты обосрался</div><div class="nwrong">${wrong.map(w=>w.ans?`<div><span class="jfont">${esc(w.ans[0])}</span><small>${esc(w.hint)}</small></div>`:`<div><span class="jfont">${rb(w.jp)}</span><small>${esc(w.ru)}</small></div>`).join("")}</div>`:""}
+    ${T.mode==="lesson"?`<button class="big" id="nv">🎤 ТЕПЕРЬ ГОЛОСОМ</button>`:""}
+    ${T.mode==="exam"&&pass?`<button class="big" id="nc">📞 СОЗВОН С ЮКИ</button>`:""}
+    ${T.mode==="exam"&&!pass?`<button class="big" id="again">ПЕРЕСДАТЬ, СУКА</button>`:""}
+    <button class="ghost" id="hm">На главную</button>
+  </section>`;
+  const g=id=>document.getElementById(id);
+  if(g("nv")) g("nv").onclick=()=>nRunStep({k:"voice",c:N5C[T.l.ci],l:T.l});
+  if(g("nc")) g("nc").onclick=()=>nRunStep({k:"call",c:T.c});
+  if(g("again")) g("again").onclick=()=>nRunStep({k:"exam",c:T.c});
+  g("hm").onclick=home; NT=null; window.scrollTo(0,0);
+}
+
+/* =================================================================
+   ГОЛОСОМ: урок, созвон по главе, экзамен Юки — пока не ответишь всё
+   ================================================================= */
+const VL={
+  helloLesson:["Наушники надел? Руки убрал. Я говорю — ты отвечаешь вслух.","Окей, без рук. Слушай меня и повторяй, я проверяю каждое слово.","Голосом. Я сама включаю микрофон, ты только говоришь."],
+  helloCall:["Алло? Это Юки. Сейчас прогоню тебя по всей главе «{t}». Пока не ответишь на всё без косяков — трубку не положу.","Созвон. Глава «{t}» целиком, вразнобой. Ошибёшься — начну заново, так что соберись.","Привет, сладкий. Проверка главы «{t}». Я задаю вопросы по-японски — ты отвечаешь по-японски. Поехали."],
+  helloKana:["Буквы. Я показываю — ты читаешь вслух. Все до одной, пока не будут отлетать от зубов.","Проверка азбуки. Каждую букву — вслух. Ошибся — пойдём на новый круг."],
+  helloOral:["Ну что, японец. Экзамен N5 от меня лично. Сажусь напротив. Ничего не тыкаешь — только говоришь. Пока всё не ответишь — не отпущу.","Финальный экзамен. Всё, что ты учил, вразнобой. Отвечаешь голосом. Готов? Похуй, начинаем."],
+  ask:["Как сказать: ","Скажи по-японски: ","Ну-ка: ","А теперь: ","Давай: "],
+  askMean:["Что это значит?","Переведи.","Ну и что это?"],
+  kana:["Читай.","Это что?","Ну?","Вслух.","Давай."],
+  right:["Да.","Ага.","Верно.","Умничка.","Красава.","Охуенно.","Чётко.","Да, бля.","Пиздато.","Есть!","Ебать, да.","Норм."],
+  wrong:["Неа.","Мимо, сладкий.","Пиздец. Нет.","Не то.","Ты что-то своё сказал.","Хуйня, не то."],
+  corr:["Правильно так:","Слушай как надо:","Запоминай:"],
+  rep:["Повтори.","Повторяй, сука.","Вслух.","Скажи."],
+  later:["Я к этому ещё вернусь.","Вернусь к этому, не расслабляйся.","Запомни, спрошу ещё раз."],
+  forgot:["Забыл? Ну ты рыбка. Слушай:","Склеротик. Запоминай:"],
+  teach:["Новое: ","Слушай: ","Запоминай: "],
+  teachRep:["Повтори за мной.","Теперь ты.","Вслух, давай."],
+  teachOk:["Похоже.","Норм.","Да.","Красиво."],
+  teachBad:["Не похоже. Ещё раз:","Неа. Слушай:"],
+  recall:["А теперь без подсказок. Я говорю по-русски — ты по-японски.","Проверка. Вспоминай сам."],
+  round2:["Ага, значит всё-таки реально затупил. Ну ладно, хуй я тебя отпущу. Давай по новой, всё вразнобой.","Так и знала. Ещё круг, вся тема с начала. Я терпеливая. Почти.","Окей, признался — уже мужик. Но я тебя не отпущу. Погнали заново."],
+  notick:["А, это я тебя не расслышала? Ладно, верю. Засчитываю.","Окей, микрофон тупанул, не ты. Засчитано."],
+  endClean:["Ни одного косяка. Ты кто такой вообще? Я в шоке.","Чисто. Ебать ты машина. Я даже придраться не могу."],
+  endOk:["Нормально. Даже приятно было с тобой поболтать. Урок закончен.","Ну всё, закончили. Неплохо, не зазнавайся."],
+  endTired:["Фухх… как же я заебалась. Ну ты ебень, пиздец. Но урок закончен.","Боже, я охрипла. Но ты дожал. Урок закончен, иди попей воды.","Еле вытянула тебя. Пиздец ты тугой. Но всё — засчитано."]
+};
+let NV=null;
+const nVoiceOn=()=>S.voice&&SR&&!VOICE.denied;
+function vBuild(step){
+  const c=step.c, tasks=[];
+  if(step.k==="voice"){
+    const l=step.l;
+    if(c.kana){ l.items.forEach(it=>tasks.push({t:"kana",it,id:it.id})); return {kind:"kana",tasks,teach:[]}; }
+    l.items.forEach((it,i)=>{ tasks.push({t:"say",it,id:it.id}); if(it.kind==="w"&&i%3===1) tasks.push({t:"mean",it,id:it.id+"#m"}); });
+    return {kind:"lesson",tasks,teach:l.items};
+  }
+  if(step.k==="call"){
+    if(c.kana){ c.L.flatMap(l=>l.items).forEach(it=>tasks.push({t:"kana",it,id:it.id})); return {kind:"kana",tasks,teach:[]}; }
+    c.T.forEach(tk=>tasks.push({t:"reply",tk,id:tk.id}));
+    c.L.flatMap(l=>l.items).forEach((it,i)=>{ tasks.push(i%5===4&&it.kind==="w"?{t:"mean",it,id:it.id+"#m"}:{t:"say",it,id:it.id}); });
+    return {kind:"call",tasks,teach:[]};
+  }
+  if(step.k==="oral"){
+    N5_CONTENT.forEach(c=>{ shuffle(c.T).slice(0,3).forEach(tk=>tasks.push({t:"reply",tk,id:tk.id})); shuffle(c.L.flatMap(l=>l.items)).slice(0,2).forEach((it,i)=>tasks.push(i===1&&it.kind==="w"?{t:"mean",it,id:it.id+"#m"}:{t:"say",it,id:it.id})); });
+    N5C.filter(c=>c.kana).forEach(c=>shuffle(c.L.flatMap(l=>l.items)).slice(0,3).forEach(it=>tasks.push({t:"kana",it,id:it.id})));
+    return {kind:"oral",tasks,teach:[]};
+  }
+}
+function vStart(step){
+  voicePrime(); hfStop(); hideSheet();
+  const b=vBuild(step);
+  const bg=step.k==="oral"?"whims":step.c.bg;
+  NV={step,kind:b.kind,tasks:b.tasks,teach:b.teach,bg,round:1,totalErr:0,errs:new Map(),queue:[],asked:0,t0:Date.now(),mood:"happy",view:{},typing:!nVoiceOn(),cmd:null,typed:null,paused:false};
+  akBoot(); vRun();
+}
+function vTitle(){ const s=NV.step; return s.k==="oral"?"Экзамен Юки · N5":s.k==="call"?`📞 ${s.c.t}`:`🎤 ${s.l.t}`; }
+function vRender(){
+  const v=NV.view||{}, total=NV.queue.length+NV.asked, pct=total?Math.round(NV.asked/total*100):0;
+  const showTxt=NS().showTxt;
+  let bub="";
+  if(v.kanaBig) bub=`<div class="speech"><span class="vkana">${v.kanaBig}</span>${v.ru?`<span class="akru">${esc(v.ru)}</span>`:""}${v.heard?`<span class="said">ты сказал: «${esc(v.heard)}»</span>`:""}</div>`;
+  else bub=`<div class="speech">${v.ja?(showTxt?`<span class="jp akjp">${rb(v.ja)}</span>`:`<span class="akru">🔊 слушай</span>`):""}${v.ru?`<span class="akru">${esc(v.ru)}</span>`:""}${v.hint?`<span class="hint">💡 ${esc(v.hint)}</span>`:""}${v.ans?`<span class="jp akjp vans">${rb(v.ans)}</span>`:""}${v.heard?`<span class="said">ты сказал: «${esc(v.heard)}»</span>`:""}</div>`;
+  const listening=NV.listening&&NV.listening!=="__t"?NV.listening:null;
+  app.innerHTML=`<section class="screen live-screen nv">
+    <div class="top"><button class="x" id="quit" aria-label="Стоп">✕</button><div class="prog"><i style="width:${pct}%;background:var(--pink)"></i></div><div class="nqcount">${NV.round>1?`круг ${NV.round}`:""}${NV.errs.size?` ✗${NV.errs.size}`:""}</div></div>
+    <div class="stage bg-${NV.bg}">${sceneDeco(NV.bg)}<div class="callbadge">${esc(vTitle())} · ${fmtClock(Date.now()-NV.t0)}</div>${bub}<div class="girlwrap ${v.bad?"shake":""}">${girlSVG(NV.mood)}</div></div>
+    ${listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${listening==="ru"?"Скажи по-русски":listening==="kana"?"Читай букву вслух":listening==="rep"?"Повтори вслух":"Говори по-японски"} <small>· слушаю, сколько надо</small></b><span id="vHeard">${esc(NV.heardTxt||"…")}</span></span></div>`:""}
+    ${SR&&S.voice&&VOICE.denied?`<div class="micerr">🎤 ${esc(voiceNote())} Пока можешь отвечать текстом.</div>`:!SR&&NV.asked===0&&NV.round===1?`<div class="micerr">🎤 ${esc(voiceErrText())} Отвечай текстом — латиницей, она сама станет японским.</div>`:""}
+    ${(NV.typing||!nVoiceOn())&&NV.wantInput?`<form class="typebox vtype" id="vtf" autocomplete="off"><input id="vti" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${NV.wantInput==="ru"?"по-русски":"латиницей: arigatou"}"><div class="nkana" id="vtk">&nbsp;</div><button class="big" type="submit">ОТВЕТИТЬ</button></form>`:""}
+    <div class="vbtns"><button class="mini" id="vrep">🔁 Повтори</button><button class="mini" id="vdk">🤷 Не знаю</button>${SR?`<button class="mini" id="vty">${NV.typing?"🎤 Голосом":"⌨️ Текстом"}</button>`:""}<button class="mini" id="vtx">${showTxt?"🙈 Без текста":"👀 Текст"}</button></div>
+  </section>`;
+  const g=id=>document.getElementById(id);
+  g("quit").onclick=()=>{ NV.dead=true; hfStop(); VOICE.onInterim=null; NV=null; home(); };
+  g("vrep").onclick=()=>{ NV.cmd="repeat"; stopListen(); };
+  g("vdk").onclick=()=>{ NV.cmd="forgot"; stopListen(); };
+  if(g("vty")) g("vty").onclick=()=>{ NV.typing=!NV.typing; if(!NV.typing) voicePrime(); NV.cmd="switch"; stopListen(); };
+  g("vtx").onclick=()=>{ const n=NS(); n.showTxt=!n.showTxt; save(); vRender(); };
+  const f=g("vtf"); if(f){ const inp=g("vti"), tk=g("vtk"); setTimeout(()=>inp.focus(),60);
+    if(NV.wantInput!=="ru") inp.oninput=()=>{ tk.textContent=NV.wantInput==="kana"?inp.value:(r2k(inp.value)||" "); };
+    f.onsubmit=e=>{ e.preventDefault(); const val=inp.value.trim(); if(!val) return; NV.typed=val; stopListen(); }; }
+}
+async function vListen(lang,alive){
+  NV.wantInput=lang==="ru"?"ru":lang==="kana"?"kana":"ja";
+  let lastNudge=Date.now();
+  while(true){
+    if(!alive()) return {dead:true};
+    if(NV.typed!=null){ const t=NV.typed; NV.typed=null; NV.listening=null; return {alts:[t],typed:true}; }
+    if(NV.cmd){ const c=NV.cmd; NV.cmd=null; NV.listening=null; if(c==="switch"){ vRender(); continue; } return {cmd:c,alts:[]}; }
+    if(NV.typing||!nVoiceOn()){ if(NV.listening!=="__t"){ NV.listening=null; vRender(); NV.listening="__t"; } await sleep(150); continue; }
+    NV.listening=lang; NV.heardTxt=""; vRender();
+    VOICE.onInterim=tx=>{ NV.heardTxt=tx; const el=document.getElementById("vHeard"); if(el) el.textContent=tx||"…"; };
+    const h=await listen(lang==="kana"?"ru":lang,15000,()=>alive()&&NV&&NV.typed==null&&!NV.cmd);
+    VOICE.onInterim=null; NV.listening=null;
+    if(!alive()) return {dead:true};
+    const alts=(h.alts||[]).filter(Boolean);
+    if(alts.length) return {alts,vcmd:voiceCmd(alts)};
+    if(VOICE.denied){ vRender(); continue; }
+    if(Date.now()-lastNudge>45000){ lastNudge=Date.now(); const nl=pick(AK_NUDGE); NV.view=Object.assign({},NV.view,{heard:null}); await speakP(nl,"ru"); }
+  }
+}
+async function vRun(){
+  const my=++HF.token, alive=()=>HF.token===my&&NV&&!NV.dead;
+  const say=async(ru,mood)=>{ if(mood) NV.mood=mood; NV.view={ru}; vRender(); await speakP(ru,"ru"); return alive(); };
+  const hello=NV.kind==="call"?pick(VL.helloCall).replace("{t}",NV.step.c.t):NV.kind==="kana"?pick(VL.helloKana):NV.kind==="oral"?pick(VL.helloOral):pick(VL.helloLesson);
+  if(!await say(hello,"happy")) return;
+  /* знакомство (урок голосом) */
+  if(NV.teach.length){
+    for(const it of NV.teach){
+      NV.cur={teach:it};
+      NV.mood="happy"; NV.view={ru:pick(VL.teach)+it.ru,ja:it.jp}; vRender();
+      await speakP(pick(VL.teach)+it.ru,"ru"); if(!alive()) return;
+      await nSayJa(it.jp,.7); if(!alive()) return;
+      for(let tr=0;tr<2;tr++){
+        NV.view={ru:pick(VL.teachRep),ja:it.jp}; vRender(); await speakP(NV.view.ru,"ru"); if(!alive()) return;
+        const h=await vListen("ja",alive); if(!alive()) return;
+        let ok=!h.cmd&&(h.typed?nTypeOk(h.alts[0],[it.jp]):nOk(h.alts,[it.jp,...(it.acc||[])]));
+        if(!ok&&h.vcmd&&!h.cmd) h.cmd=h.vcmd;
+        if(h.cmd==="repeat"&&tr<6){ await nSayJa(it.jp,.7); tr--; continue; }
+        if(h.cmd==="forgot"){ await nSayJa(it.jp,.7); continue; }
+        if(!h.typed) nSk("pron",ok);
+        NV.view={ru:ok?pick(VL.teachOk):pick(VL.teachBad),ja:it.jp,heard:h.alts[0]}; vRender();
+        await speakP(NV.view.ru,"ru"); if(!alive()) return;
+        if(ok) break; await nSayJa(it.jp,.65); if(!alive()) return;
+      }
+    }
+    if(!await say(pick(VL.recall))) return;
+  }
+  /* круги, пока не будет чисто */
+  while(true){
+    NV.errs=new Map(); NV.asked=0;
+    let q=shuffle(NV.tasks); if(NV.kind==="lesson"){ q=q.filter(t=>t.t!=="mean").concat(q.filter(t=>t.t==="mean")); }
+    if(NV.round>1&&NV.lastTicked) { const tk=NV.tasks.filter(t=>NV.lastTicked.has(t.id)); q=q.concat(shuffle(tk)); }
+    NV.queue=q; const retry=new Map();
+    while(NV.queue.length){
+      const task=NV.queue.shift();
+      const r=await vAsk(task,alive); if(!alive()) return;
+      NV.asked++;
+      if(!r.ok){
+        const prev=NV.errs.get(task.id); if(!prev) NV.errs.set(task.id,{task,heard:r.heard||"",fixed:false}); NV.totalErr++;
+        const rc=(retry.get(task.id)||0)+1; retry.set(task.id,rc);
+        if(rc<=2){ NV.queue.splice(Math.min(NV.queue.length,2+Math.floor(Math.random()*4)),0,task); NV.asked--; }
+      } else if(NV.errs.has(task.id)) NV.errs.get(task.id).fixed=true;
+    }
+    if(!NV.errs.size) break;
+    wakeOff();
+    const ticked=await vReview(); if(!NV||NV.dead) return; akBoot();
+    if(!ticked.size){ if(!await say(pick(VL.notick),"blush")) return; break; }
+    NV.lastTicked=ticked; NV.round++;
+    if(!await say(pick(VL.round2),"pout")) return;
+  }
+  /* финал */
+  const n=NS(); const share=NV.totalErr/Math.max(1,NV.tasks.length);
+  const end=NV.totalErr===0?pick(VL.endClean):share>.2||NV.round>2?pick(VL.endTired):pick(VL.endOk);
+  if(!await say(end,NV.totalErr===0?"blush":share>.2?"pout":"laugh")) return;
+  const secs=(Date.now()-NV.t0)/1000; nLog(0,secs); S.xp+=NV.tasks.length*5; nMark();
+  const st=NV.step;
+  if(st.k==="voice"){ const d=n.done[st.l.id]||(n.done[st.l.id]={}); d.voice=Date.now(); st.l.items.forEach(it=>{ if(!n.srs[it.id]) n.srs[it.id]={b:1,d:Date.now()+N_INT[1],t:Date.now()}; }); }
+  if(st.k==="call"){ const ch=n.ch[st.c.id]||(n.ch[st.c.id]={}); ch.call=Date.now(); ch.callErr=NV.totalErr; if(!ch.exam) ch.exam=Date.now(); st.c.L.forEach(l=>{ const d=n.done[l.id]||(n.done[l.id]={}); if(!d.tap) d.tap=Date.now(); if(!d.voice) d.voice=Date.now(); l.items.forEach(it=>{ if(!n.srs[it.id]) n.srs[it.id]={b:1,d:Date.now()+N_INT[1],t:Date.now()}; }); }); }
+  if(st.k==="oral"){ n.oral=Date.now(); n.oralErr=NV.totalErr; if(!n.win) n.win=Date.now(); }
+  save(); wakeOff();
+  const info={kind:NV.kind,step:st,err:NV.totalErr,rounds:NV.round,secs,n:NV.tasks.length}; NV=null;
+  if(st.k==="oral") return n5Win(); vEnd(info);
+}
+async function vAsk(task,alive){
+  NV.cur=task; NV.typed=null; NV.cmd=null;
+  const it=task.it, tk=task.tk;
+  let targets, lang, sayPrompt;
+  if(task.t==="kana"){ targets=null; lang="kana"; }
+  else if(task.t==="say"){ targets=[it.jp,...(it.acc||[])]; lang="ja"; }
+  else if(task.t==="reply"){ targets=tk.ans; lang="ja"; }
+  else if(task.t==="mean"){ lang="ru"; }
+  const ask=async()=>{
+    NV.mood=pick(["happy","neutral","laugh"]);
+    if(task.t==="kana"){ NV.view={kanaBig:it.jp,ru:""}; vRender(); await speakP(pick(VL.kana),"ru"); return; }
+    if(task.t==="say"){ const p=pick(VL.ask)+it.ru; NV.view={ru:p}; vRender(); await speakP(p,"ru"); return; }
+    if(task.t==="mean"){ NV.view={ja:it.jp,ru:pick(VL.askMean)}; vRender(); await nSayJa(it.jp); if(!alive()) return; await speakP(NV.view.ru,"ru"); return; }
+    if(task.t==="reply"){ NV.view={ja:tk.q||"",hint:(tk.q&&!NS().hintVoice)?tk.hint:tk.hint}; vRender();
+      if(tk.q){ await nSayJa(tk.q); if(!alive()) return; if(NS().hintVoice) await speakP("Подсказка: "+tk.hint,"ru"); }
+      else await speakP(tk.hint,"ru"); }
+  };
+  await ask(); if(!alive()) return {ok:false};
+  for(let tries=0;tries<4;tries++){
+    const h=await vListen(lang,alive); if(!alive()) return {ok:false};
+    let ok=false, heard=(h.alts||[])[0]||"";
+    if(h.cmd) ok=false;
+    else if(task.t==="kana") ok=h.typed?(it.kana.r.includes(heard.toLowerCase().trim())||nKanaOk([heard],it)):nKanaOk(h.alts,it);
+    else if(task.t==="mean") ok=ruOk(h.alts,it.ru);
+    else ok=h.typed?nTypeOk(heard,[targets[0],...targets.slice(1).filter(x=>!/[一-鿿]/.test(x))]):nOk(h.alts,targets);
+    if(!ok&&!h.cmd&&h.vcmd) h.cmd=h.vcmd;
+    if(h.cmd==="repeat"&&tries<8){ await ask(); if(!alive()) return {ok:false}; tries--; continue; }
+    if(!h.typed&&h.cmd!=="forgot"&&task.t!=="mean") nSk("pron",ok);
+    if(task.t==="reply"||task.t==="say") nSk(task.t==="reply"?"listen":"vocab",ok);
+    if(it&&task.t!=="kana") nGrade(it.id,ok,false);
+    const answerJa=task.t==="kana"?it.jp:task.t==="reply"?tk.ans[0]:task.t==="say"?it.jp:null;
+    if(ok){ NV.mood=pick(["blush","laugh","happy"]); const pr=pick(VL.right);
+      NV.view=Object.assign({},NV.view,{heard,ru:pr,ans:task.t==="kana"?null:answerJa,bad:false}); vRender(); beep(true);
+      await speakP(pr,"ru"); return {ok:true}; }
+    /* ошибка: правильный ответ, повтори, вернусь позже */
+    NV.mood=h.cmd==="forgot"?"pout":"angry"; beep(false); buzz();
+    const w=h.cmd==="forgot"?pick(VL.forgot):pick(VL.wrong)+" "+pick(VL.corr);
+    if(task.t==="kana"){ NV.view={kanaBig:it.jp,ru:`${w} ${it.ru} — «${it.cyr}»`,heard,bad:true}; vRender(); await speakP(w,"ru"); if(!alive()) return {ok:false}; await speakP(it.jp+"。"+it.jp,"ja",.6); if(!alive()) return {ok:false}; if(it.cyr) await speakP(it.cyr,"ru",.8); }
+    else if(task.t==="mean"){ NV.view={ja:it.jp,ru:`${w} ${it.ru}`,heard,bad:true}; vRender(); await speakP(w+" "+it.ru,"ru"); }
+    else { NV.view={ja:task.t==="reply"?tk.q:"",ru:w,ans:answerJa,heard,bad:true}; vRender(); await speakP(w,"ru"); if(!alive()) return {ok:false}; await nSayJa(answerJa,.7); if(!alive()) return {ok:false};
+      NV.view=Object.assign({},NV.view,{ru:pick(VL.rep),bad:false}); vRender(); await speakP(NV.view.ru,"ru"); if(!alive()) return {ok:false};
+      const h2=await vListen("ja",alive); if(!alive()) return {ok:false};
+      const ok2=h2.typed?nTypeOk((h2.alts||[])[0]||"",[answerJa]):nOk(h2.alts,[answerJa]);
+      if(!h2.typed&&!h2.cmd) nSk("pron",ok2);
+      NV.view=Object.assign({},NV.view,{heard:(h2.alts||[])[0]||"",ru:ok2?pick(VL.teachOk):"Ладно, потом дожмём."}); vRender(); await speakP(NV.view.ru,"ru"); }
+    if(!alive()) return {ok:false};
+    await speakP(pick(VL.later),"ru");
+    return {ok:false,heard};
+  }
+  return {ok:false};
+}
+function vReview(){
+  return new Promise(res=>{
+    const list=[...NV.errs.values()];
+    const sel=new Set();
+    const draw=()=>{
+      app.innerHTML=`<section class="screen nrev">
+        <div class="stage small bg-${NV.bg}">${sceneDeco(NV.bg)}<div class="girlwrap">${girlSVG("pout")}</div></div>
+        <h2 class="nrevh">Закончено. Были ошибки: ${list.length}</h2>
+        <div class="note">Иногда микрофон слышит хуйню, хотя ты сказал правильно. Поэтому решай честно: <b>отметь галочкой то, где ты реально проебался.</b> Если отметишь хоть одно — Юки погонит всю тему по новой. Если ничего — засчитает.</div>
+        <div class="rvlist">${list.map((e,i)=>{ const t=e.task; const jp=t.t==="kana"?t.it.jp:t.t==="reply"?t.tk.ans[0]:t.it.jp; const ru=t.t==="kana"?t.it.ru+" · «"+t.it.cyr+"»":t.t==="reply"?(t.tk.q?plain(t.tk.q)+" → ":"")+t.tk.hint:t.it.ru;
+          return `<button class="rvi ${sel.has(i)?"on":""}" data-i="${i}" aria-pressed="${sel.has(i)}"><span class="chk">${sel.has(i)?"✓":""}</span><span class="tx"><span class="${t.t==="kana"?"kfont":"jfont"}">${rb(jp)}</span><small>${esc(ru)}</small>${e.heard?`<small class="hd">услышала: «${esc(e.heard)}»</small>`:`<small class="hd">ты сказал «не знаю»</small>`}${e.fixed?`<small class="fx">потом ответил верно</small>`:""}</span></button>`; }).join("")}</div>
+        <button class="big" id="rvgo" ${pinkBtn}>${sel.size?`ДА, ЗАТУПИЛ В ${sel.size} — ГОНИ ЗАНОВО`:"Я ВСЁ СКАЗАЛ ПРАВИЛЬНО — ЗАСЧИТАЙ"}</button>
+        <button class="ghost" id="rvall">Отметить всё</button>
+      </section>`;
+      app.querySelectorAll(".rvi").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; sel.has(i)?sel.delete(i):sel.add(i); draw(); });
+      document.getElementById("rvall").onclick=()=>{ list.forEach((_,i)=>sel.add(i)); draw(); };
+      document.getElementById("rvgo").onclick=()=>{ res(new Set([...sel].map(i=>list[i].task.id))); };
+      window.scrollTo(0,0);
+    };
+    draw();
+    speakP(`Закончено. Ошибок: ${list.length}. Отметь, где реально затупил.`,"ru");
+  });
+}
+function vEnd(info){
+  const st=info.step, c=st.c;
+  const next=nNext();
+  app.innerHTML=`<section class="screen res">
+    <div class="stage small bg-${c.bg}">${sceneDeco(c.bg)}<div class="girlwrap">${girlSVG(info.err===0?"blush":"laugh")}</div></div>
+    <h2>${info.err===0?"ЧИСТО, БЛЯТЬ":info.rounds>2?"ДОЖАЛ, ТУГОДУМ":"ЗАСЧИТАНО"}</h2>
+    <p>${st.k==="call"?`Глава «${esc(c.t)}» закрыта${N5C[c.ci+1]?` — открыта следующая: «${esc(N5C[c.ci+1].t)}»`:""}.`:"Урок голосом пройден."}</p>
+    <div class="stats"><div class="stat"><b>${info.n}</b><small>вопросов</small></div><div class="stat"><b>${info.err}</b><small>ошибок</small></div><div class="stat"><b>${fmtClock(info.secs*1000)}</b><small>время</small></div></div>
+    ${next&&next.k!=="final"?`<button class="big" id="nx" ${pinkBtn}>▶ ДАЛЬШЕ: ${esc(nStepLabel(next))}</button>`:next&&next.k==="final"?`<button class="big" id="nx" ${pinkBtn}>🔥 К ЭКЗАМЕНУ N5</button>`:""}
+    <button class="ghost" id="hm">На главную</button>
+  </section>`;
+  const nx=document.getElementById("nx"); if(nx) nx.onclick=()=>nRunStep(next);
+  document.getElementById("hm").onclick=home; window.scrollTo(0,0);
+}
+
+/* =================================================================
+   ЗАПУСК ШАГОВ
+   ================================================================= */
+function nStepLabel(s){ if(!s) return ""; if(s.k==="final") return "Экзамен N5"; const c=s.c; return `${c.t} — ${s.k==="tap"?s.l.t+" (руками)":s.k==="voice"?s.l.t+(c.kana?" (вслух)":" (голосом)"):s.k==="exam"?"экзамен главы":"созвон"}`; }
+function nRunStep(s){
+  if(!s) return home();
+  if(s.k==="final") return n5Final();
+  const c=s.c;
+  if(s.k==="tap") return tapStart({mode:"lesson",title:s.l.t,items:s.l.items,l:s.l,ci:c.ci});
+  if(s.k==="voice"||s.k==="call") return vGate(s);
+  if(s.k==="exam") return tapStart({mode:"exam",title:"Экзамен: "+c.t,items:c.L.flatMap(l=>l.items),talk:c.T,c,ci:c.ci});
+}
+function vGate(s){ // перед голосом: проверка микрофона и как это работает
+  hfStop(); hideSheet();
+  const c=s.c, b=vBuild(s);
+  const mins=Math.max(2,Math.round(b.tasks.length*(s.k==="voice"?.45:.3)+(b.teach.length*.35)));
+  app.innerHTML=`<section class="screen">
+    <div class="pu-head"><button class="x" id="back">←</button><h2>${s.k==="call"?"📞 Созвон: "+esc(c.t):s.k==="oral"?"Экзамен Юки":"🎤 "+esc(s.l.t)}</h2></div>
+    <div class="stage small bg-${s.k==="oral"?"whims":c.bg}">${sceneDeco(s.k==="oral"?"whims":c.bg)}<div class="girlwrap">${girlSVG("happy")}</div></div>
+    <div class="note">${c.kana?"Буква на экране — ты читаешь вслух. Говори как слышится: «ка», «си», «цу». Ошибся — она скажет как надо, и в конце пойдёт новый круг.":s.k==="voice"?"Сначала Юки знакомит с каждым словом — ты повторяешь. Потом спрашивает по-русски, ты отвечаешь по-японски. Нажимать ничего не надо — можно в наушниках, без рук и без глаз.":"Юки говорит по-японски и даёт подсказку, что ответить. Отвечаешь голосом. Она проверит <b>всю главу</b>, и пока не ответишь всё без ошибок — не отпустит."}<br><br>В конце покажу список ошибок — отметишь галочкой, где реально затупил, а где микрофон не расслышал.</div>
+    <div class="tline">Вопросов: <b>${b.tasks.length}</b>${b.teach.length?` + знакомство с ${b.teach.length}`:""} · примерно <b>${mins} мин</b> за круг</div>
+    ${SR?`<label class="switch"><input type="checkbox" id="vv" ${S.voice?"checked":""}><span><b>🎤 Отвечать голосом</b><small>Микрофон включается сам. Команды голосом: «повтори», «не помню».</small></span></label>
+    <div class="mictest"><button class="mini" id="micT">🎤 Проверить микрофон</button><span id="micRes">${VOICE.denied?"❌ "+esc(voiceNote()):""}</span></div>`:`<div class="micerr">${esc(voiceErrText())} Можно отвечать текстом — латиницей, она сама превратится в японский.</div>`}
+    ${!c.kana?`<label class="switch"><input type="checkbox" id="vh" ${NS().hintVoice?"checked":""}><span><b>Подсказку говорить голосом</b><small>Выключи, если хочешь понимать её вопрос сам — подсказка останется только на экране.</small></span></label>`:""}
+    <button class="big" id="go" ${pinkBtn}>${s.k==="call"?"📞 ПОЗВОНИТЬ":"ПОЕХАЛИ"}</button>
+  </section>`;
+  document.getElementById("back").onclick=home;
+  const vv=document.getElementById("vv"); if(vv) vv.onchange=e=>{ S.voice=e.target.checked; save(); voicePrime(); };
+  const vh=document.getElementById("vh"); if(vh) vh.onchange=e=>{ NS().hintVoice=e.target.checked; save(); };
+  const mt=document.getElementById("micT"); if(mt) mt.onclick=micTest;
+  document.getElementById("go").onclick=()=>vStart(s);
+  window.scrollTo(0,0);
+}
+
+/* =================================================================
+   КАНДЗИ ДНЯ
+   ================================================================= */
+function nKjToday(){ return NS().kjd[dayKey()]||0; }
+function nKjNext(n){ const k=NS().kj; return N5K.filter(x=>!k[x.k]).slice(0,n); }
+function kanjiDay(force){
+  hideSheet();
+  const n=NS(), left=Math.max(0,n.kjDay-nKjToday());
+  if(!left&&!force){
+    const known=Object.keys(n.kj).length;
+    app.innerHTML=`<section class="screen"><div class="pu-head"><button class="x" id="back">←</button><h2>Кандзи дня</h2></div>
+      <div class="note">На сегодня всё: ${nKjToday()} из ${n.kjDay}. Твоя девушка права — 1–2 в день, иначе в голове каша. Изученные (${known}) сами всплывают в быстрых повторах перед уроками.</div>
+      <div class="kjgrid">${N5K.map(k=>`<span class="${n.kj[k.k]?"on":""}" title="${esc(k.ru)}">${k.k}</span>`).join("")}</div>
+      ${known?`<button class="big" id="rev" ${pinkBtn}>🔁 Повторить изученные кандзи</button>`:""}
+      <button class="ghost" id="more">Всё равно ещё один</button></section>`;
+    document.getElementById("back").onclick=home;
+    const r=document.getElementById("rev"); if(r) r.onclick=()=>tapStart({mode:"review",title:"Кандзи",items:[],kanji:shuffle(Object.keys(n.kj).map(k=>N5K.find(x=>x.k===k)).filter(Boolean)).slice(0,12)});
+    document.getElementById("more").onclick=()=>kanjiDay(true);
+    return;
+  }
+  const ks=nKjNext(force?1:left); if(!ks.length){ home(); return; }
+  tapStart({mode:"kanji",title:"Кандзи дня",kanji:ks,items:[]});
+}
+
+/* =================================================================
+   ПРОБНИК JLPT N5 — максимально как настоящий
+   ================================================================= */
+const N_CONFK={"電":"雷","車":"東","東":"車","右":"石","左":"在","休":"体","見":"貝","会":"合","話":"語","語":"話","読":"続","白":"百","百":"白","千":"干","午":"牛","木":"本","本":"木","人":"入","入":"人","大":"太","天":"夫","土":"士","日":"目","目":"日","今":"令","名":"各","外":"夕","先":"失","学":"字","生":"主","円":"内","中":"申","上":"止","気":"汽","雨":"両","花":"化","男":"町","子":"字","友":"反","校":"交","国":"固","週":"遇","店":"点","駅":"験","道":"遠","長":"張","高":"髙","安":"案","新":"親","古":"吉","少":"小","小":"少","西":"酉","北":"比","口":"日","足":"走","前":"煎","後":"役","来":"末","食":"良","飲":"飯","言":"信","書":"昼","聞":"間","出":"山","立":"位","社":"杜","行":"往","月":"用","水":"氷","金":"全","何":"可","時":"持","分":"公","半":"羊","毎":"海","曜":"躍","歩":"少","勉":"免","強":"弘","仕":"任","事":"争","医":"区","映":"央","楽":"薬","薬":"楽","写":"字","真":"直","住":"注","知":"和","寝":"侵","歳":"才","晩":"免","病":"疲","院":"完","元":"完","暑":"署","寒":"塞","冬":"各","春":"看","夏":"夕","秋":"私","雪":"雲","京":"景","都":"部","鉄":"失","近":"迎","遠":"園","地":"他","買":"貝","帰":"掃","自":"白","家":"案","族":"旅","父":"交","母":"毎","兄":"見","姉":"妹","妹":"姉","弟":"第","茶":"答","肉":"内","魚":"漁","赤":"亦","青":"晴","黒":"里","明":"朋","昨":"作","起":"超","働":"動","朝":"潮","昼":"書","夜":"液","勉強":"免弓"};
+const N_VOI={"か":"が","き":"ぎ","く":"ぐ","け":"げ","こ":"ご","さ":"ざ","し":"じ","す":"ず","せ":"ぜ","そ":"ぞ","た":"だ","ち":"ぢ","て":"で","と":"ど","は":"ば","ひ":"び","ふ":"ぶ","へ":"べ","ほ":"ぼ"};
+const N_UNV=Object.fromEntries(Object.entries(N_VOI).map(([a,b])=>[b,a]));
+function nReadMut(r){ const outs=new Set(), F=[
+  s=>s.replace(/([おこそとのほもよろごぞどぼぽょ])う/,"$1"), s=>s.replace(/([こそとのほもよろ])(?!う)/,"$1う"), s=>s.replace(/っ/,""), s=>s.replace(/([かきくけこさしすせそたちつてとぱぴぷぺぽ])/,"っ$1"),
+  s=>s.replace(/^./,c=>N_VOI[c]||N_UNV[c]||c), s=>s.replace(/(.)$/,c=>N_VOI[c]||N_UNV[c]||c), s=>s.replace(/ゃ/,"ょ"), s=>s.replace(/ょ/,"ゅ"), s=>s.replace(/ゅ/,"ょ"), s=>s.replace(/ん/,""), s=>s.replace(/([いきしちにひみり])(?=[^ゃゅょ]|$)/,"$1ゅ"), s=>s.replace(/えい/,"え"), s=>s.replace(/(.)(.)/,(m,a,b)=>(N_VOI[b]||N_UNV[b])?a+(N_VOI[b]||N_UNV[b]):m) ];
+  shuffle(F).forEach(f=>{ const x=f(r); if(x&&x!==r) outs.add(x); }); return [...outs]; }
+function mockBuild(){
+  const words=N5_ALL().filter(t=>t.kind==="w"); const sents=N5_ALL().filter(t=>t.kind==="s");
+  const kw=shuffle(words.filter(t=>/\{/.test(t.jp)&&plain(t.jp)!==kanaOf(t.jp)&&/[一-鿿]/.test(plain(t.jp))));
+  const A=[], B=[], C=[];
+  // もんだい1: как читается слово в кандзи
+  kw.slice(0,12).forEach(t=>{ const r=kanaOf(t.jp); let ds=nReadMut(r); if(ds.length<3) ds=ds.concat(shuffle(kw.map(x=>kanaOf(x.jp)).filter(x=>x!==r&&Math.abs(x.length-r.length)<=1))); ds=[...new Set(ds)].slice(0,3);
+    A.push({part:"もんだい１ — как читается слово?",h:`<div class="exjp"><u>${esc(plain(t.jp))}</u></div>`,opts:shuffle([r,...ds]).map(x=>({h:esc(x),ok:x===r}))}); });
+  // もんだい2: как пишется кандзи
+  shuffle(kw.slice(12)).slice(0,8).forEach(t=>{ const w=plain(t.jp), r=kanaOf(t.jp); const ds=new Set();
+    for(let tries=0;tries<20&&ds.size<3;tries++){ const chars=[...w]; const idx=chars.map((c,i)=>N_CONFK[c]?i:-1).filter(i=>i>=0); if(!idx.length) break; const sub=shuffle(idx).slice(0,1+Math.floor(Math.random()*Math.min(2,idx.length))); sub.forEach(i=>chars[i]=N_CONFK[chars[i]]); const x=chars.join(""); if(x!==w) ds.add(x); }
+    shuffle(kw).forEach(o=>{ if(ds.size<3&&plain(o.jp)!==w&&[...plain(o.jp)].length===[...w].length) ds.add(plain(o.jp)); });
+    A.push({part:"もんだい２ — как пишется кандзи?",h:`<div class="exjp"><u>${esc(r)}</u></div>`,opts:shuffle([w,...[...ds].slice(0,3)]).map(x=>({h:esc(x),ok:x===w}))}); });
+  // もんだい3: какое слово подходит (по смыслу)
+  const cat=t=>{ const k=kanaOf(t.jp); return /ます$/.test(k)?"v":/い$/.test(k)&&/\{/.test(t.jp)&&!/[ァ-ヶ]/.test(k)?"a":/^[ァ-ヶー]+$/.test(k)?"kt":"n"; };
+  let made=0; for(const s of shuffle(sents)){ if(made>=10) break; const toks=nTok(s.jp);
+    for(let i=0;i<toks.length;i++){ const tk=toks[i]; const w=words.find(x=>tk.startsWith(x.jp)&&x.jp.length>=2&&!["の","は"].includes(x.jp)); if(!w) continue;
+      const rest=tk.slice(w.jp.length); const ds=shuffle(words.filter(x=>x!==w&&cat(x)===cat(w)&&x.ru!==w.ru)).slice(0,3); if(ds.length<3) continue;
+      A.push({part:"もんだい３ — какое слово подходит?",h:`<div class="exjp">${toks.map((t,j)=>j===i?`（　　）${rb(rest)}`:rb(t)).join(" ")}</div><div class="exru">${esc(s.ru)}</div>`,opts:shuffle([w,...ds]).map(x=>({h:rb(x.jp),ok:x===w}))}); made++; break; } }
+  // もんだい4: тот же смысл
+  N5_PARA.forEach(p=>A.push({part:"もんだい４ — что значит то же самое?",h:`<div class="exjp">${rb(p[0])}</div>`,opts:shuffle(p.slice(1).map((x,i)=>({h:rb(x),ok:i===0})))}));
+  // ГРАММАТИКА: частицы
+  made=0; for(const s of shuffle(sents)){ if(made>=8) break; const g=nGapTok(s); if(!g) continue; const q=nQ(s,"gp"); if(q.type!=="gp") continue;
+    const toks=nTok(s.jp); B.push({part:"もんだい１ — что поставить в （　）?",h:`<div class="exjp">${toks.map((t,i)=>i===q.gi?`${rb(q.pre)}（　）${/[、。？！]$/.test(t)?t.slice(-1):""}`:rb(t)).join(" ")}</div><div class="exru">${esc(s.ru)}</div>`,opts:q.opts}); made++; }
+  shuffle(N5_GRAM).slice(0,8).forEach(g=>B.push({part:"もんだい１ — что поставить в （　）?",h:`<div class="exjp">${rb(g[0]).replace("＿","（　）")}</div>`,opts:shuffle(g.slice(1).map((x,i)=>({h:rb(x),ok:i===0})))}));
+  // ★ порядок слов
+  made=0; for(const s of shuffle(sents.filter(x=>nTok(x.jp).length>=4))){ if(made>=5) break; const toks=nTok(s.jp); if(new Set(toks).size!==toks.length) continue;
+    const st=toks.length>4?Math.floor(Math.random()*(toks.length-3)):0; const blk=toks.slice(st,st+4); const star=blk[2];
+    const line=[...toks.slice(0,st).map(rb),"＿＿","＿＿","<b class='star'>★</b>","＿＿",...toks.slice(st+4).map(rb)].join(" ");
+    B.push({part:"もんだい２ — какое слово встанет на ★?",h:`<div class="exjp">${line}</div><div class="exru">${esc(s.ru)}</div>`,opts:shuffle(blk).map(x=>({h:rb(x),ok:x===star}))}); made++; }
+  // чтение
+  N5_READ.forEach(r=>r.q.forEach(q=>B.push({part:"どっかい — прочитай и ответь",h:`<div class="extext">${rb(r.t).replace(/\n/g,"<br>")}</div><div class="exjp exq">${rb(q[0])}</div>`,opts:shuffle(q.slice(1).map((x,i)=>({h:rb(x),ok:i===0})))})));
+  // АУДИРОВАНИЕ
+  N5_LISTEN.forEach(L=>C.push({part:"もんだい１ — послушай разговор",h:`<div class="exjp">${rb(L[0])}</div>`,audio:async()=>{ await nSayJa(L[0],.9); await sleep(500); for(const [who,t] of L[1]){ await speakP(nJaSpeak(t),"ja",.9,who==="m"?.75:1.2); await sleep(250);} await sleep(400); await nSayJa(L[0],.9); },opts:shuffle(L.slice(2).map((x,i)=>({h:rb(x),ok:i===0})))}));
+  const sit=shuffle(N5_CONTENT.flatMap(c=>c.T).filter(t=>!t.q));
+  sit.slice(0,5).forEach(t=>{ const wr=shuffle(sit.filter(x=>x!==t&&x.ans[0]!==t.ans[0])).slice(0,2).map(x=>x.ans[0]); const ops=shuffle([t.ans[0],...wr]);
+    C.push({part:"もんだい３ — что ты скажешь? (варианты только на слух)",h:`<div class="exru big">${esc(t.hint)}</div>`,audio:async()=>{ for(let i=0;i<ops.length;i++){ await speakP(["いち","に","さん"][i],"ja",.9); await speakP(ops[i],"ja",.9); await sleep(400);} },opts:ops.map((x,i)=>({h:`<b>${i+1}</b>`,ok:x===t.ans[0],reveal:x}))}); });
+  const qq=shuffle(N5_CONTENT.flatMap(c=>c.T).filter(t=>t.q));
+  qq.slice(0,6).forEach(t=>{ const wr=shuffle(qq.filter(x=>x!==t&&x.ans[0]!==t.ans[0]&&x.ci===t.ci)).concat(shuffle(qq.filter(x=>x.ci!==t.ci))).slice(0,2).map(x=>x.ans[0]); const ops=shuffle([t.ans[0],...wr]);
+    C.push({part:"もんだい４ — ответь сразу (всё на слух)",h:`<div class="exru">Слушай фразу и три ответа. Выбери подходящий.</div>`,audio:async()=>{ await nSayJa(t.q,.9); await sleep(500); for(let i=0;i<ops.length;i++){ await speakP(["いち","に","さん"][i],"ja",.9); await speakP(ops[i],"ja",.9); await sleep(350);} },opts:ops.map((x,i)=>({h:`<b>${i+1}</b>`,ok:x===t.ans[0],reveal:x})),reveal:t.q}); });
+  return [{id:"A",t:"言語知識（文字・語彙）",ru:"Слова и кандзи",min:20,q:A},{id:"B",t:"言語知識（文法）・読解",ru:"Грамматика и чтение",min:40,q:B},{id:"C",t:"聴解",ru:"Аудирование",min:30,q:C}];
+}
+let MK=null;
+function mockIntro(){
+  hfStop(); hideSheet(); const m=NS().mock||{};
+  app.innerHTML=`<section class="screen"><div class="pu-head"><button class="x" id="back">←</button><h2>Пробник JLPT N5</h2></div>
+    <div class="note">Как настоящий: три раздела по времени — <b>слова и кандзи</b> (20 мин), <b>грамматика и чтение</b> (40 мин), <b>аудирование</b> (30 мин). Назад в прошлый раздел нельзя. В аудировании всё звучит <b>один раз</b>, как на экзамене. Подсказок нет, Юки молчит.<br><br>Баллы как у JLPT: 0–180. Сдал — если набрал <b>80+</b> и не завалил разделы: язык и чтение ≥ 38 из 120, аудирование ≥ 19 из 60. Настоящие вопросы JLPT секретные — здесь задания тех же типов на лексике N5.</div>
+    ${m.best!=null?`<div class="tline">Лучший результат: <b>${m.best}/180</b> ${m.pass?"✅ сдан":""} · попыток: ${m.n||0}</div>`:""}
+    <button class="big" id="go" ${pinkBtn}>НАЧАТЬ ЭКЗАМЕН · 90 МИН</button></section>`;
+  document.getElementById("back").onclick=home; document.getElementById("go").onclick=mockStart;
+}
+function mockStart(){ MK={secs:mockBuild(),s:0,i:0,ans:{},t0:Date.now()}; mockSec(); }
+function mockSec(){ const sec=MK.secs[MK.s]; MK.i=0; MK.end=Date.now()+sec.min*60e3; MK.played={}; clearInterval(MK.tm); MK.tm=setInterval(()=>{ const el=document.getElementById("mkT"); const left=MK.end-Date.now(); if(left<=0){ clearInterval(MK.tm); mockNextSec(); return; } if(el) el.textContent=fmtClock(left); },500); mockQ(); }
+function mockQ(){
+  const sec=MK.secs[MK.s], q=sec.q[MK.i], key=sec.id+MK.i, a=MK.ans[key];
+  app.innerHTML=`<section class="screen mk ${NS().mkFuri?"":"nofuri"}">
+    <div class="mkhead"><button class="x mkx" id="mkq" aria-label="Выйти">✕</button><div style="flex:1"><b>${sec.t}</b><small>${sec.ru} · раздел ${MK.s+1} из 3</small></div><div class="mktime">⏱ <span id="mkT">${fmtClock(MK.end-Date.now())}</span></div></div>
+    <button class="mini mkfuri" id="mkf">${NS().mkFuri?"ふりがな над кандзи N5: показаны (легче)":"ふりがな над кандзи N5: скрыты, как на экзамене"}</button>
+    <div class="mkprog">${sec.q.map((_,i)=>`<i class="${MK.ans[sec.id+i]!=null?"a":""} ${i===MK.i?"c":""}" data-j="${i}"></i>`).join("")}</div>
+    <div class="exnum">${MK.i+1} / ${sec.q.length} · ${esc(q.part)}</div>
+    <div class="excard">${q.h}${q.audio?`<div class="exaud">${MK.played[key]?"🔇 прозвучало (повтора нет, как на экзамене)":"🔊 слушай…"}</div>`:""}</div>
+    <div class="exopts">${q.opts.map((o,i)=>`<button class="exo ${a===i?"on":""}" data-i="${i}"><span>${i+1}</span>${o.h}</button>`).join("")}</div>
+    <div class="exnav"><button class="ghost" id="pv" ${MK.i?"":"disabled"}>←</button><button class="ghost" id="nx">${MK.i<sec.q.length-1?"→":"Конец раздела"}</button></div>
+    <button class="mini mkend" id="fin">Сдать раздел досрочно</button></section>`;
+  const N5KS=new Set(N5K.map(k=>k.k)); app.querySelectorAll(".mk ruby").forEach(r=>{ const base=[...r.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(""); if([...base].filter(isKanji).every(ch=>N5KS.has(ch))) r.classList.add("n5k"); });
+  document.getElementById("mkf").onclick=()=>{ const n=NS(); n.mkFuri=!n.mkFuri; save(); mockQ(); };
+  document.getElementById("mkq").onclick=()=>{ if(!confirm("Выйти из экзамена? Результат не сохранится.")) return; clearInterval(MK.tm); hfStop(); MK=null; home(); };
+  app.querySelectorAll(".exo").forEach(b=>b.onclick=()=>{ MK.ans[key]=+b.dataset.i; mockQ(); });
+  app.querySelectorAll("[data-j]").forEach(b=>b.onclick=()=>{ MK.i=+b.dataset.j; mockQ(); });
+  document.getElementById("pv").onclick=()=>{ if(MK.i){ MK.i--; mockQ(); } };
+  document.getElementById("nx").onclick=()=>{ if(MK.i<sec.q.length-1){ MK.i++; mockQ(); } else mockConfirm(); };
+  document.getElementById("fin").onclick=mockConfirm;
+  if(q.audio&&!MK.played[key]){ MK.played[key]=true; const my=++HF.token; setTimeout(async()=>{ await q.audio(); if(HF.token===my){ const el=document.querySelector(".exaud"); if(el) el.textContent="🔇 прозвучало (повтора нет, как на экзамене)"; } },300); }
+}
+function mockConfirm(){ const sec=MK.secs[MK.s]; const left=sec.q.filter((_,i)=>MK.ans[sec.id+i]==null).length;
+  if(left&&!confirm(`Без ответа: ${left}. Закончить раздел? Вернуться будет нельзя.`)) return; mockNextSec(); }
+function mockNextSec(){ clearInterval(MK.tm); hfStop(); MK.s++; if(MK.s<MK.secs.length) return mockSec(); mockResult(); }
+function mockResult(){
+  const sc=MK.secs.map(sec=>{ let ok=0; sec.q.forEach((q,i)=>{ const a=MK.ans[sec.id+i]; if(a!=null&&q.opts[a].ok) ok++; }); return {ok,n:sec.q.length}; });
+  const lang=Math.round((sc[0].ok+sc[1].ok)/(sc[0].n+sc[1].n)*120), lis=Math.round(sc[2].ok/sc[2].n*60), tot=lang+lis;
+  const pass=tot>=80&&lang>=38&&lis>=19;
+  const n=NS(); const m=n.mock||(n.mock={}); m.n=(m.n||0)+1; m.best=Math.max(m.best||0,tot); m.last=tot; if(pass) m.pass=Date.now(); S.xp+=tot; nMark(); save();
+  const wrong=[]; MK.secs.forEach(sec=>sec.q.forEach((q,i)=>{ const a=MK.ans[sec.id+i]; if(a==null||!q.opts[a].ok) wrong.push({sec,q,a}); }));
+  app.innerHTML=`<section class="screen res">
+    <div class="stage small bg-${pass?"whims":"scold"}">${sceneDeco(pass?"whims":"scold")}<div class="girlwrap">${girlSVG(pass?"surprised":"angry")}</div></div>
+    <h2>${pass?"СДАЛ ПРОБНИК, СУКА":"НЕ СДАЛ"}</h2>
+    <div class="mkscore"><div><b>${tot}</b><small>из 180 · нужно 80</small></div><div><b class="${lang>=38?"":"bad"}">${lang}</b><small>язык + чтение /120 (мин. 38)</small></div><div><b class="${lis>=19?"":"bad"}">${lis}</b><small>аудирование /60 (мин. 19)</small></div></div>
+    <p>${pass?(nAllChaptersDone()?"Теперь самое страшное: экзамен Юки голосом. Без кнопок.":"Пробник сдан. Закрой все главы — и откроется экзамен Юки голосом."):"Посмотри ошибки ниже, подтяни главы и попробуй снова."}</p>
+    <details class="settings"><summary>Разбор ошибок (${wrong.length})</summary><div class="mkwrong">${wrong.map(w=>{ const ok=w.q.opts.find(o=>o.ok); return `<div class="mkw">${w.q.h}<div>✅ ${ok.reveal?esc(ok.reveal):ok.h}${w.a!=null?` · ❌ ты: ${w.q.opts[w.a].reveal?esc(w.q.opts[w.a].reveal):w.q.opts[w.a].h}`:" · без ответа"}</div></div>`; }).join("")}</div></details>
+    ${pass&&nAllChaptersDone()?`<button class="big" id="oral" ${pinkBtn}>🔥 ЭКЗАМЕН ЮКИ</button>`:""}
+    <button class="${pass&&nAllChaptersDone()?"ghost":"big"}" id="again">Ещё пробник (новые вопросы)</button>
+    <button class="ghost" id="hm">На главную</button></section>`;
+  const o=document.getElementById("oral"); if(o) o.onclick=()=>vGate({k:"oral",c:{t:"N5",bg:"whims",ci:-1}});
+  document.getElementById("again").onclick=mockIntro; document.getElementById("hm").onclick=home; MK=null; window.scrollTo(0,0);
+}
+
+/* =================================================================
+   ФИНАЛ N5
+   ================================================================= */
+function n5Final(){
+  hfStop(); hideSheet(); const n=NS(), m=n.mock||{};
+  const ready=nAllChaptersDone();
+  app.innerHTML=`<section class="screen"><div class="pu-head"><button class="x" id="back">←</button><h2>Экзамен N5</h2></div>
+    <div class="stage small bg-whims">${sceneDeco("whims")}<div class="girlwrap">${girlSVG(ready?"surprised":"pout")}</div></div>
+    <div class="note">Два испытания. <b>1. Пробник JLPT</b> — 90 минут, тыкаешь ответы, всё по-взрослому. <b>2. Экзамен Юки</b> — она садится напротив и гоняет тебя голосом по всему N5, пока не ответишь всё.</div>
+    <button class="big" id="mock" ${pinkBtn}>📝 ПРОБНИК JLPT N5 ${m.best!=null?`· лучший ${m.best}/180`:""}</button>
+    <button class="${m.pass&&ready?"big":"ghost"}" id="oral" ${m.pass&&ready?"":"disabled"}>🔥 ЭКЗАМЕН ЮКИ ${n.oral?"· сдан ✓":""}</button>
+    ${!ready?`<div class="tline">Экзамен Юки откроется, когда закроешь все главы и сдашь пробник. Пробник можно гонять уже сейчас — посмотреть, где ты.</div>`:!m.pass?`<div class="tline">Сначала сдай пробник на 80+.</div>`:""}
+    ${n.win?`<button class="ghost" id="win">🏆 Посмотреть финал ещё раз</button>`:""}</section>`;
+  document.getElementById("back").onclick=home; document.getElementById("mock").onclick=mockIntro;
+  const o=document.getElementById("oral"); o.onclick=()=>vGate({k:"oral",c:{t:"N5",bg:"whims",ci:-1}});
+  const w=document.getElementById("win"); if(w) w.onclick=n5Win;
+}
+const N5_WIN_TALK="Стоп. Подожди. Ты… реально это сделал? Я сидела и думала: ну всё, ещё неделя — и он сольётся в тикток или уйдёт в депрессуху на диван. А ты, сука, взял и разъебал весь N5. Каждую главу. Каждый созвон. Я на тебя орала, а ты всё равно приходил. Слушай, я в ахуе. Ты больше не турист, который тычет пальцем в меню. Ты закажешь жратву, найдёшь метро, познакомишься с девчонкой и объяснишь врачу, что у тебя болит башка. Короче. Горжусь. Чуть-чуть. Ладно — пиздец как горжусь. А теперь не расслабляйся: N4 уже греется.";
+function n5Win(){
+  hfStop(); hideSheet(); const n=NS(), m=n.mock||{}, cn=nCounts();
+  const days=Object.keys(n.log).length, mins=Math.round(Object.values(n.log).reduce((a,l)=>a+(l.s||0),0)/60);
+  app.innerHTML=`<section class="screen win">
+    <div class="confetti">${Array.from({length:40},(_,i)=>`<i style="left:${(i*37)%100}%;animation-delay:${(i%10)*.25}s;background:${["#FF3D2E","#E8338A","#F2A900","#0F9D4E","#3FA7FF"][i%5]}"></i>`).join("")}</div>
+    <div class="stage bg-whims">${sceneDeco("whims")}<div class="speech"><span class="jp akjp">おめでとう！すごいね！</span><span class="akru">Поздравляю! Ты охуенен!</span></div><div class="girlwrap">${girlSVG("surprised")}</div></div>
+    <h2 class="wint">N5 ПОКОРЁН</h2>
+    <div class="cert"><b>Свидетельство Юки</b><span>Денис закрыл уровень N5 курса «Кана, блять»</span>
+      <div class="certg"><div><b>${days}</b><small>дней занятий</small></div><div><b>${mins}</b><small>минут</small></div><div><b>${cn.l}</b><small>слов и фраз</small></div><div><b>${Object.keys(n.kj).length}</b><small>кандзи</small></div><div><b>${m.best||0}</b><small>пробник /180</small></div><div><b>${n.oralErr||0}</b><small>ошибок у Юки</small></div></div></div>
+    <div class="note wintxt">${esc(N5_WIN_TALK)}</div>
+    <div class="lvtrack">${["N5","N4","N3","N2"].map((l,i)=>`<div class="lvnode ${i===0?"done":i===1?"glow":"lock"}"><b>${l}</b><small>${i===0?"✓ сдан":i===1?"следующий":"🔒"}</small></div>`).join("")}</div>
+    <button class="big" id="hm" ${pinkBtn}>НА ГЛАВНУЮ</button></section>`;
+  document.getElementById("hm").onclick=home; window.scrollTo(0,0);
+  setTimeout(()=>speakP(N5_WIN_TALK,"ru",1.05),400);
+}
+
+/* =================================================================
+   ГЛАВНЫЙ ЭКРАН: линия уровней, прогноз, навыки, путь по главам
+   ================================================================= */
+let N5_MENU=false;
+function nForecast(){
+  const n=NS(), cn=nCounts(), left=cn.n-cn.l;
+  const d=dayKey(), y=yesterday();
+  const td=(n.log[d]||{}).n||0, yd=(n.log[y]||{}).n||0;
+  const keys=Object.keys(n.log); const now=new Date(); let wk=0, wd=0;
+  for(let i=0;i<7;i++){ const dd=new Date(now); dd.setDate(now.getDate()-i); const l=n.log[dayKey(dd)]; if(l){ wk+=l.n||0; } }
+  wd=wk/7;
+  const secs=Object.values(n.log).reduce((a,l)=>a+(l.s||0),0), learnedLog=Object.values(n.log).reduce((a,l)=>a+(l.n||0),0);
+  const perMin=learnedLog>5&&secs>300?learnedLog/(secs/60):.5; // сколько новых в минуту
+  const eta=rate=>{ if(!rate||rate<=0) return null; const days=Math.ceil(left/rate); const dt=new Date(); dt.setDate(dt.getDate()+days); return {days,dt}; };
+  const fmt=e=>e?`${e.dt.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:e.days>300?"numeric":undefined})} (${e.days} ${plural(e.days)})`:"—";
+  const base=yd||td;
+  return {left,cn,lines:[
+    {t:`Как ${yd?"вчера":"сегодня"} (${base} новых в день)`,e:eta(base)},
+    {t:`Как в среднем за неделю (${Math.round(wd*10)/10} в день)`,e:eta(wd)},
+    {t:`Если 30 минут в день (~${Math.round(perMin*30)} в день)`,e:eta(perMin*30)},
+    {t:`Если час в день (~${Math.round(perMin*60)} в день)`,e:eta(perMin*60)}
+  ].map(x=>({t:x.t,v:x.e?fmt(x.e):"нужно начать заниматься"}))};
+}
+function nSkills(){
+  const n=NS(), cn=nCounts(), cov=cn.l/Math.max(1,cn.n);
+  const acc=k=>{ const a=n.sk[k]; return a&&a[1]>=5?a[0]/a[1]:a&&a[1]?(a[0]+2)/(a[1]+3):0; };
+  const words=N5_ALL().filter(t=>t.kind==="w"), sents=N5_ALL().filter(t=>t.kind==="s");
+  const lw=words.filter(t=>nLearned(t.id)).length/Math.max(1,words.length), ls=sents.filter(t=>nLearned(t.id)).length/Math.max(1,sents.length);
+  const kjc=Object.keys(n.kj).length/N5K.length;
+  const sk=[
+    ["🎧","Аудирование",cov*acc("listen"),acc("listen")],
+    ["🧩","Грамматика",ls*acc("gram"),acc("gram")],
+    ["📖","Чтение",(cov*.6+kjc*.4)*Math.max(.3,acc("read")),acc("read")],
+    ["✍️","Письмо",cov*acc("write"),acc("write")],
+    ["🗣","Произношение",cov*acc("pron"),acc("pron")],
+    ["🧠","Словарный запас",lw,acc("vocab")]];
+  return sk;
+}
+function home(){
+  if(N5_MENU) return oldHome();
+  hfStop(); hideSheet(); clearInterval(MK&&MK.tm);
+  const n=NS(), streak=liveStreak(), cn=nCounts(), pct=Math.round(cn.l/Math.max(1,cn.n)*100);
+  const nx=nNext(), fc=nForecast(), due=nOld(30).filter(t=>n.srs[t.id].d<=Date.now()).length;
+  const kjT=nKjToday(), kjLeft=Math.max(0,n.kjDay-kjT), kjN=Object.keys(n.kj).length;
+  const doneCh=N5C.filter(nChDone).length;
+  const chHTML=N5C.map(c=>{ const open=nChOpen(c); const st=nSteps(c); const dn=st.filter(s=>s.done).length; const cur=nx&&nx.c===c;
+    return `<div class="chc ${open?"":"lock"} ${nChDone(c)?"done":""} ${cur?"cur":""}">
+      <button class="chh" data-ch="${c.ci}"><span class="chn">${c.kana?(c.kana==="h"?"あ":"ア"):N5_CONTENT.indexOf(c)+1}</span><span class="cht"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></span><span class="chp">${nChDone(c)?"✓":open?`${dn}/${st.length}`:"🔒"}</span></button>
+      ${(cur||n.openCh===c.ci)&&open?`<div class="chsteps">${c.story?`<div class="chstory">${esc(c.story)}</div>`:""}${(()=>{ const isNx=s=>nx&&nx.c===c&&nx.k===s.k&&nx.l===s.l; const btn=(s,i,ic,lbl)=>`<button class="sb ${s.done?"ok":""} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span>${s.done?"✓":ic}</span>${lbl}</button>`; let out=""; c.L.forEach((l,li)=>{ const a=st[li*2], b=st[li*2+1]; out+=`<div class="lrow ${a.done&&b.done?"ok":""}"><span class="lt"><b>${li+1}. ${esc(l.t)}</b><small>${l.items.length} ${c.kana?"букв":"слов и фраз"}</small></span>${btn(a,li*2,"✋","руками")}${btn(b,li*2+1,"🎤",c.kana?"вслух":"голосом")}</div>`; }); const E=st.length-2; [E,E+1].forEach(i=>{ const s=st[i]; out+=`<button class="stp ${s.done?"ok":""} ${s.open?"":"lk"} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span class="si">${s.done?"✓":s.k==="exam"?"📝":"📞"}</span><span class="st"><b>${esc(s.label)}</b><small>${esc(s.sub)}</small></span></button>`; }); if(c.kana&&!nChDone(c)) out+=`<button class="mini skipk" data-skip="${c.ci}">Я знаю ${c.kana==="h"?"хирагану":"катакану"} — сразу на созвон-проверку всех букв</button>`; return out; })()}</div>`:""}
+    </div>`; }).join("");
+  app.innerHTML=`<section class="screen n5home">
+    <div class="brand"><h1>Кана,<br><span>блять</span></h1><div class="hstats"><span class="fire">🔥 ${streak}</span><span>${S.xp} XP</span></div></div>
+    <div class="lvcard">
+      <div class="lvtrack">${[["N5",pct+"%","on"],["N4","в разработке","lock"],["N3","в разработке","lock"],["N2","в разработке","lock"]].map(([l,s,c],i)=>`<div class="lvnode ${n.win&&i===0?"done":c}"><b>${l}</b><small>${n.win&&i===0?"✓ сдан":s}</small></div>${i<3?`<span class="lvline ${i===0?"":"dim"}"><i style="width:${i===0?(n.win?100:0):0}%"></i></span>`:""}`).join("")}</div>
+      <div class="lvbar"><i style="width:${pct}%"></i></div>
+      <div class="lvsub"><b>N5: ${cn.l} из ${cn.n}</b> слов, фраз и букв · глав закрыто ${doneCh}/${N5C.length} · кандзи ${kjN}/${N5K.length}</div>
+      <details class="fc" ${n.fcOpen?"open":""}><summary>📈 Когда ты будешь на N5? <small>прогноз по твоему темпу</small></summary>
+        ${fc.lines.map(l=>`<div class="fcl"><span>${esc(l.t)}</span><b>${esc(l.v)}</b></div>`).join("")}
+        <div class="fcn">Считаю по тому, сколько новых слов и фраз ты реально закрываешь в день. Занимайся каждый день — и дата будет ползти к тебе. N4 примерно вдвое больше N5.</div></details>
+    </div>
+    <div class="today">
+      <div class="th"><b>Сегодня</b><small>${S.last===dayKey()?"✅ уже занимался — огонёк живой":streak?`огонёк ${streak} ${plural(streak)} — не проеби`:"начни огонёк сегодня"}</small></div>
+      ${nx?`<button class="big" id="tNext" ${pinkBtn}>▶ ${nx.k==="final"?"ЭКЗАМЕН N5":esc(nStepLabel(nx))}</button>`:""}
+      <div class="tbtns"><button class="ghost" id="tKj">漢 Кандзи дня ${kjLeft?`· ${kjLeft} новых`:"✓"}</button><button class="ghost" id="tRev" ${due||cn.l?"":"disabled"}>🔁 Повтор ${due?`· ${due}`:""}</button></div>
+    </div>
+    <details class="skl" ${n.sklOpen?"open":""}><summary>💪 Навыки <small>чем ближе к 100%, тем ближе N5</small></summary>
+      ${nSkills().map(([ic,t,v,a])=>`<div class="skr"><span>${ic} ${t}</span><i><em style="width:${Math.round(Math.min(1,v)*100)}%"></em></i><b>${Math.round(Math.min(1,v)*100)}%</b><small>${a?`точность ${Math.round(a*100)}%`:"пока нет данных"}</small></div>`).join("")}</details>
+    <div class="label">Курс N5</div>
+    <div class="chpath">${chHTML}
+      <div class="chc final ${nAllChaptersDone()?"":"lock"} ${nx&&nx.k==="final"?"cur":""}"><button class="chh" id="fin"><span class="chn">🔥</span><span class="cht"><b>Экзамен N5</b><small>Пробник JLPT + экзамен Юки голосом</small></span><span class="chp">${n.win?"🏆":(n.mock||{}).best!=null?(n.mock.best+"/180"):"📝"}</span></button></div>
+      ${["N4","N3","N2"].map(l=>`<div class="chc lock lvsoon"><div class="chh"><span class="chn">${l}</span><span class="cht"><b>Уровень ${l}</b><small>в разработке — откроется после N5</small></span><span class="chp">🔒</span></div></div>`).join("")}
+    </div>
+    <details class="settings"><summary>⚙️ Настройки курса <small>${S.voice&&SR?"🎤 голос":"⌨️ текстом"} · кандзи ${n.kjDay}/день</small></summary>
+      <label class="switch ${SR?"":"off"}"><input type="checkbox" id="sVoice" ${S.voice&&SR?"checked":""} ${SR?"":"disabled"}><span><b>🎤 Отвечать голосом</b><small>${SR?"Микрофон включается сам":esc(voiceErrText())}</small></span></label>
+      <label class="switch"><input type="checkbox" id="sHint" ${n.hintVoice?"checked":""}><span><b>Подсказку в созвонах — голосом</b><small>Чтобы можно было без глаз</small></span></label>
+      <div class="tsrow"><span class="tsl">Новых кандзи в день</span><div class="tschips">${[1,2,3].map(k=>`<button class="tsc" data-kj="${k}" aria-pressed="${n.kjDay===k}">${k}</button>`).join("")}</div></div>
+      <label class="switch"><input type="checkbox" id="sOpen" ${n.openAll?"checked":""}><span><b>Открыть все главы</b><small>Если что-то уже знаешь и хочешь прыгать</small></span></label>
+      <button class="ghost" id="sVoiceSet">🔊 Голос Юки</button>
+      <button class="ghost" id="sProg">💾 Сохранить / перенести прогресс</button>
+    </details>
+    <button class="ghost menu-old" id="oldMenu">📚 Все режимы: азбука, частицы, глаголы, без рук, разговор…</button>
+  </section>`;
+  const g=id=>document.getElementById(id);
+  if(g("tNext")) g("tNext").onclick=()=>nRunStep(nx);
+  g("tKj").onclick=()=>kanjiDay();
+  g("tRev").onclick=()=>{ const items=nOld(15); if(!items.length&&!kjN) return; tapStart({mode:"review",title:"Повтор",items,kanji:shuffle(Object.keys(n.kj).map(k=>N5K.find(x=>x.k===k)).filter(Boolean)).slice(0,4)}); };
+  app.querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{ const ci=+b.dataset.ch; if(!nChOpen(N5C[ci])){ b.parentElement.classList.remove("shake"); void b.offsetWidth; b.parentElement.classList.add("shake"); return; } n.openCh=n.openCh===ci?null:ci; save(); const y=window.scrollY; home(); window.scrollTo(0,y); });
+  app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{ const [ci,i]=b.dataset.s.split(":").map(Number); nRunStep(nSteps(N5C[ci])[i]); });
+  g("fin").onclick=n5Final;
+  app.querySelectorAll("[data-skip]").forEach(b=>b.onclick=()=>{ const c=N5C[+b.dataset.skip]; vGate({k:"call",c,skip:true}); });
+  app.querySelectorAll("details.fc,details.skl").forEach(d=>d.ontoggle=()=>{ if(d.classList.contains("fc")) n.fcOpen=d.open; else n.sklOpen=d.open; save(); });
+  const sv=g("sVoice"); if(sv) sv.onchange=e=>{ S.voice=e.target.checked; save(); voicePrime(); };
+  g("sHint").onchange=e=>{ n.hintVoice=e.target.checked; save(); };
+  app.querySelectorAll("[data-kj]").forEach(b=>b.onclick=()=>{ n.kjDay=+b.dataset.kj; save(); const y=window.scrollY; home(); window.scrollTo(0,y); });
+  g("sOpen").onchange=e=>{ n.openAll=e.target.checked; save(); const y=window.scrollY; home(); window.scrollTo(0,y); };
+  g("sVoiceSet").onclick=voiceScreen; g("sProg").onclick=progressScreen;
+  g("oldMenu").onclick=()=>{ N5_MENU=true; oldHome(); };
+  window.scrollTo(0,0);
+}
+
+if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 
 home();
 </script>
