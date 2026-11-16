@@ -592,6 +592,18 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .nqstage .speech .akru{font-size:15px;font-weight:800}
 .nq .nqcard{min-height:110px}
 .matbtn{padding:10px;font-size:13.5px}
+.studyst{background:var(--bg);border-radius:14px;padding:9px 12px}
+.studyst summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+.studyst summary::-webkit-details-marker{display:none}
+.studynow{font-size:15px;font-weight:700}
+.studynow b{font-variant-numeric:tabular-nums}
+.studynow::after{content:" ● идёт";font-size:11px;color:var(--good);font-weight:800}
+.studynow.paused::after{content:" ⏸ пауза";color:var(--muted)}
+.studyst summary small{font-size:12px;color:var(--muted)}
+.stbars{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;align-items:end;height:90px;margin-top:10px}
+.stb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px}
+.stb i{display:block;width:100%;background:var(--pink);border-radius:4px 4px 0 0;min-height:2px}
+.stb small{font-size:9.5px;color:var(--muted)}
 .chc.skip{border-style:dashed;opacity:.75}
 .chc.skip .chp{color:var(--gold)}
 .chh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px}
@@ -4488,10 +4500,10 @@ const nTypeNorm=s=>toHira(kanaOf(String(s))).replace(/[\s、。？！?!.,ー〜~
 const nRomaNorm=r=>String(r).toLowerCase().replace(/[^a-z]/g,"").replace(/shi/g,"si").replace(/chi/g,"ti").replace(/tsu/g,"tu").replace(/fu/g,"hu").replace(/ji/g,"zi").replace(/sh/g,"sy").replace(/ch/g,"ty").replace(/j/g,"zy").replace(/([bcdfghjkmpqrstvwxz])\1/g,"$1").replace(/nn/g,"n").replace(/wo/g,"o").replace(/ha/g,"wa").replace(/he/g,"e").replace(/ou/g,"o").replace(/oo/g,"o").replace(/uu/g,"u").replace(/ei/g,"e").replace(/ii/g,"i").replace(/aa/g,"a");
 const nTypeExact=(typed,targets)=>{ const a=nTypeNorm(r2k(typed)); if(targets.some(t=>nTypeNorm(t)===a)) return true; if(/[a-z]/i.test(typed)){ const r=nRomaNorm(typed); return !!r&&targets.some(t=>nRomaNorm(jaRoma(kanaOf(t)))===r); } return false; };
 function nLev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=Array.from({length:n+1},(_,k)=>k); for(let i=1;i<=m;i++){ const c=[i]; for(let k=1;k<=n;k++) c[k]=Math.min(p[k]+1,c[k-1]+1,p[k-1]+(a[i-1]===b[k-1]?0:1)); p=c; } return p[n]; }
-const nRomaLoose=r=>nRomaNorm(String(r).toLowerCase().replace(/(ma|de)su(?![a-z])/g,"$1s")).replace(/z/g,"s").replace(/d/g,"t").replace(/l/g,"r");
+const nRomaLoose=r=>nRomaNorm(String(r).toLowerCase().replace(/(ma|de)su(?![a-z])/g,"$1s").replace(/([aeiou])y(?![aiueo])/g,"$1i").replace(/([aeiou])j(?![aiueo])/g,"$1i")).replace(/z/g,"s").replace(/d/g,"t").replace(/l/g,"r").replace(/w(?=[ieo])/g,"");
 const nRomaNeg=r=>/masen|nai|naite|ikemasen|zya|ja(?=a?r)/.test(String(r).toLowerCase().replace(/\s/g,""));
 function nTypeClose(typed,targets){ if(!/[a-z]/i.test(typed)) return false; const a=nRomaLoose(typed); if(a.length<3) return false;
-  return targets.some(t=>{ const tr=jaRoma(kanaOf(t)); const b=nRomaLoose(tr); if(!b) return false; if(nRomaNeg(typed)!==nRomaNeg(tr)) return false; const tw=String(typed).trim().split(/\s+/), rw=String(tr).trim().split(/\s+/); if(tw.length===rw.length&&tw.some((w,k)=>nRomaLoose(w)[0]!==nRomaLoose(rw[k])[0])) return false; if(a[0]!==b[0]) return false; const d=nLev(a,b), L=Math.max(a.length,b.length); return L<=4?d===0:L<=7?d<=1:d/L<=.22; }); }
+  return targets.some(t=>{ const tr=jaRoma(kanaOf(t)); const b=nRomaLoose(tr); if(!b) return false; if(nRomaNeg(typed)!==nRomaNeg(tr)) return false; const tw=String(typed).trim().split(/\s+/), rw=String(tr).trim().split(/\s+/); if(tw.length===rw.length&&tw.some((w,k)=>nRomaLoose(w)[0]!==nRomaLoose(rw[k])[0])) return false; if(a[0]!==b[0]) return false; const d=nLev(a,b), L=Math.max(a.length,b.length); return L<=4?d===0:L<=7?d<=1:L<=10?d<=2:d/L<=.27; }); }
 const nTypeOk=(typed,targets)=>nTypeExact(typed,targets)||nTypeClose(typed,targets);
 
 /* ---------- озвучка ---------- */
@@ -5465,6 +5477,40 @@ window.addEventListener("pagehide",()=>{ if(CLOUD.dirty) cloudPush(); });
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&CLOUD.dirty) cloudPush(); });
 { const _h=home; home=function(){ _h(); if(N5_MENU||!CLOUD.db) return; const hs=document.querySelector(".n5home .hstats"); if(hs&&!document.getElementById("cloudSt")){ const s=document.createElement("span"); s.id="cloudSt"; s.className="cloudst"; s.innerHTML=cloudBadge(); hs.appendChild(s); } }; }
 cloudInit();
+
+
+/* =================================================================
+   ВРЕМЯ УЧЁБЫ: считаем только активное время. 15 сек без действий — пауза.
+   ================================================================= */
+const STUDY={last:0,acc:0,IDLE:15000};
+const studyMark=()=>{ STUDY.last=Date.now(); };
+["pointerdown","keydown","touchstart","input","wheel"].forEach(ev=>document.addEventListener(ev,studyMark,{capture:true,passive:true}));
+function studyDays(){ if(!S.study||typeof S.study!=="object") S.study={days:{}}; if(!S.study.days) S.study.days={}; return S.study.days; }
+setInterval(()=>{
+  const active=document.visibilityState==="visible"&&Date.now()-STUDY.last<STUDY.IDLE;
+  const el=document.getElementById("studyNow");
+  if(el) el.classList.toggle("paused",!active);
+  if(!active) return;
+  const d=dayKey(), days=studyDays(); days[d]=(days[d]||0)+1; STUDY.acc++;
+  if(el) el.innerHTML=studyBadge();
+  if(STUDY.acc>=60){ STUDY.acc=0; save(); }
+},1000);
+window.addEventListener("pagehide",()=>{ if(STUDY.acc){ STUDY.acc=0; save(); } });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&STUDY.acc){ STUDY.acc=0; save(); } });
+const fmtStudy=s=>{ s=Math.round(s||0); const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return h?`${h} ч ${m} мин`:m?`${m} мин`:`${s} сек`; };
+function studySum(n){ const days=studyDays(); let t=0; const now=new Date(); for(let i=0;i<n;i++){ const dd=new Date(now); dd.setDate(now.getDate()-i); t+=days[dayKey(dd)]||0; } return t; }
+function studyBadge(){ const days=studyDays(); return `⏱ <b>${fmtStudy(days[dayKey()]||0)}</b> сегодня`; }
+{ const _vl=vListen; vListen=async function(lang,alive){ const r=await _vl(lang,alive); if(r&&((r.alts&&r.alts.length)||r.cmd)) studyMark(); return r; }; }
+{ const _h=home; home=function(){ _h(); if(N5_MENU) return; const today=document.querySelector(".n5home .today"); if(!today) return;
+  const days=studyDays(), total=Object.values(days).reduce((a,b)=>a+b,0);
+  const now=new Date(); const last14=[]; for(let i=13;i>=0;i--){ const dd=new Date(now); dd.setDate(now.getDate()-i); last14.push({d:dd,s:days[dayKey(dd)]||0}); }
+  const mx=Math.max(600,...last14.map(x=>x.s));
+  const box=document.createElement("details"); box.className="studyst"; if(NS().studyOpen) box.open=true;
+  box.innerHTML=`<summary><span id="studyNow" class="studynow">${studyBadge()}</span><small>неделя ${fmtStudy(studySum(7))} · всего ${fmtStudy(total)}</small></summary>
+    <div class="stbars">${last14.map(x=>`<div class="stb" title="${x.d.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})}: ${fmtStudy(x.s)}"><i style="height:${Math.round(x.s/mx*100)}%"></i><small>${x.d.getDate()}</small></div>`).join("")}</div>
+    <div class="fcn">Считаю только живое время: если 15 секунд ничего не нажимаешь и не отвечаешь — таймер на паузе. В созвонах твои ответы голосом тоже считаются. Всё хранится в облаке.</div>`;
+  box.ontoggle=()=>{ NS().studyOpen=box.open; save(); };
+  today.querySelector(".th").after(box); }; }
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
