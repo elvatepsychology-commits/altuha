@@ -902,7 +902,7 @@ function renderQ(face=FACE.idle,bub=pick(TAUNTS)){
   if(q.type==="type"){
     const f=document.getElementById("tf"),inp=document.getElementById("ti");
     setTimeout(()=>inp.focus(),50);
-    f.onsubmit=e=>{e.preventDefault(); if(L.locked)return; const v=inp.value.trim().toLowerCase(); if(!v){inp.classList.remove("shake");void inp.offsetWidth;inp.classList.add("shake");return;} answer(i.r.includes(v),v);};
+    f.onsubmit=e=>{e.preventDefault(); if(L.locked)return; const v=inp.value.trim().toLowerCase(); if(!v){inp.classList.remove("shake");void inp.offsetWidth;inp.classList.add("shake");return;} answer(typeof kanaTypeOk==="function"?kanaTypeOk(v,i):i.r.includes(v),v);};
   } else {
     app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
       if(L.locked)return; const o=q.opts[+b.dataset.ix];
@@ -2474,7 +2474,7 @@ function jaShortOk(said,T,strict){
   if(strict&&/[いちにさんよしこごろなはきくゅじ]/.test(rest)) return false;
   return true;
 }
-const jaOk=(alts,target,loose,strict)=>{
+let jaOk=(alts,target,loose,strict)=>{
   if(JA_SOUNDS[jaNormT(target)]) return jaOk0(alts,target,loose,strict);
   { const T0=NUM_CANON(jaNormT(target)); const H=JA_HOMO[T0]||JA_HOMO[jaNormT(target)];
     if(H&&alts.some(s=>{const x=String(s).trim().replace(/[。、.!！?？\s]/g,""); return H.some(h=>x===h||x.toLowerCase()===h.toLowerCase());})) return true;
@@ -4444,12 +4444,13 @@ function nNum(s){ return String(s).replace(/[０-９]/g,c=>String.fromCharCode(c
   .replace(/(\d+)/g,(m,x)=>n2kBig(x)); }
 const nKey=s=>jaSnd(NUM_CANON(jaNorm(s))).replace(/わ/g,"は").replace(/え/g,"へ");
 const nNeg=s=>/ません|ない|じゃ|いけ|いや/.test(s);
+const jaOkBase=jaOk;
 function nOk(alts,targets){
   alts=(alts||[]).filter(Boolean).map(String); if(!alts.length) return false;
   alts=alts.flatMap(a=>/[а-яё]/i.test(a)?[a,r2k(nCyr2Roma(a))]:[a]);
   const A=[]; alts.forEach(a=>{ nVariants(nNum(a)).forEach(v=>A.push(v)); });
   for(const T0 of targets){ const T=String(T0);
-    if(jaOk(A,T,false)) return true;
+    if(jaOkBase(A,T,false)) return true;
     const tk=nKey(jaNormT(T)), tr=romaKey(kanaOf(T)), tneg=nNeg(jaNormT(T)); if(!tk) continue;
     for(const a of A){ const an=jaNorm(a), ak=nKey(a); if(!ak) continue;
       if(ak===tk) return true;
@@ -4461,9 +4462,13 @@ function nOk(alts,targets){
   }
   return false;
 }
+function kanaTypeOk(v,item){ v=String(v||"").trim().toLowerCase().replace(/\s+/g,""); if(!v) return false; if(item.r.includes(v)) return true;
+  const n=x=>nRomaNorm(x).replace(/^zu$/,"su").replace(/^du$/,"su").replace(/^di$/,"si"); if(/[a-z]/.test(v)&&item.r.some(r=>n(r)===n(v)||nRomaNorm(r)===nRomaNorm(v))) return true;
+  if(/[а-яё]/.test(v)) return kvOkRu([v],item)||kvOk([v],item); return kvOk([v],item); }
 function nCyr2Roma(s){ const M={"а":"a","б":"b","в":"w","г":"g","д":"d","е":"e","ё":"yo","ж":"j","з":"z","и":"i","й":"y","к":"k","л":"r","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"sh","ъ":"","ы":"i","ь":"","э":"e","ю":"yu","я":"ya"};
   let x=String(s).toLowerCase().replace(/ё/g,"ё").replace(/дзи/g,"ji").replace(/дз/g,"z").replace(/си/g,"shi").replace(/ти/g,"chi").replace(/цу/g,"tsu").replace(/(^|[^а-я])ва(?=[^а-я]|$)/g,"$1wa").replace(/сё/g,"sho").replace(/сю/g,"shu").replace(/ся/g,"sha").replace(/тё/g,"cho").replace(/тю/g,"chu").replace(/тя/g,"cha").replace(/дзё/g,"jo").replace(/дзю/g,"ju").replace(/дзя/g,"ja");
   x=x.replace(/([^аеёиоуыэюя\s])(?=[еёюя])/g,"$1"); let o=""; for(const c of x) o+=M[c]!=null?M[c]:c; return o.replace(/([kgsztdnhbpmr])ye/g,"$1e").replace(/mas(?![aiueo])/g,"masu").replace(/des(?![aiueo])/g,"desu"); }
+jaOk=(alts,target,loose,strict)=>{ if(jaOkBase(alts,target,loose,strict)) return true; if(strict) return false; try{ return nOk(alts,[target]); }catch(e){ return false; } };
 const nKanaOk=(alts,it)=>kvOkRu(alts,it.kana)||kvOk(alts,it.kana);
 
 /* ---------- романдзи → кана (для письма) ---------- */
@@ -4889,7 +4894,7 @@ async function vAsk(task,alive){
     if(h.cmd==="back"||(!h.cmd&&h.vcmd==="back"&&(NV.hist||[]).length&&!(task.t==="kana"?nKanaOk(h.alts,it):task.t==="mean"?ruOk(h.alts,it.ru):nOk(h.alts,targets)))) return {back:true};
     let ok=false, heard=(h.alts||[])[0]||"";
     if(h.cmd) ok=false;
-    else if(task.t==="kana") ok=h.typed?(it.kana.r.includes(heard.toLowerCase().trim())||nKanaOk([heard],it)):nKanaOk(h.alts,it);
+    else if(task.t==="kana") ok=h.typed?(kanaTypeOk(heard,it.kana)||nKanaOk([heard],it)):nKanaOk(h.alts,it);
     else if(task.t==="mean") ok=ruOk(h.alts,it.ru);
     else ok=h.typed?nTypeOk(heard,[targets[0],...targets.slice(1).filter(x=>!/[一-鿿]/.test(x))]):nOk(h.alts,targets);
     if(!ok&&!h.cmd&&h.vcmd) h.cmd=h.vcmd;
