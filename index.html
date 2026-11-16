@@ -644,7 +644,7 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .nopt:active{transform:translateY(2px)}
 .nopt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--surface))}
 .nopt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--surface))}
-.nopt .kfont{font-size:30px}
+.nopt .kfont{font-size:40px;line-height:1.1}
 .nslot{min-height:58px;border-bottom:2px dashed var(--line);display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding-bottom:10px}
 .npool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .ntile{background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;padding:8px 12px;font-family:var(--f-jp);font-weight:700;font-size:18px}
@@ -735,6 +735,9 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .cvoice b{font-weight:900;font-size:14px}.cvoice small{font-size:12px;color:var(--muted)}
 .cinfo{background:color-mix(in srgb,var(--good) 12%,var(--surface));border-color:var(--good)}
 
+
+/* кана — тонким читаемым шрифтом, а не жирным Dela Gothic */
+.card .glyph,.glyph,.kfont,.nv .vkana,.opt.kana,.sheet p .k,.chip,.cell .g,.pu-entry .k,.live .k,.hf-entry .k,.hfq.kana,.hfo .kana,.ak-entry .k,.tile .tk,.mode .k,.rvi .kfont,.kjgrid span{font-family:var(--f-kana)!important;font-weight:500!important}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
