@@ -713,6 +713,10 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .confetti i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall 3.2s linear infinite}
 @keyframes fall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(110vh) rotate(540deg)}}
 .chc.shake{animation:shake .35s}
+.cdic{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:22px}
+.cdic small{font-size:11px;font-weight:700;opacity:.85;letter-spacing:.02em}
+.cdic.on{animation:micp 1.2s infinite}
+.cinfo{background:color-mix(in srgb,var(--good) 12%,var(--surface));border-color:var(--good)}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -4676,7 +4680,7 @@ const VL={
   endTired:["Фухх… как же я заебалась. Ну ты ебень, пиздец. Но урок закончен.","Боже, я охрипла. Но ты дожал. Урок закончен, иди попей воды.","Еле вытянула тебя. Пиздец ты тугой. Но всё — засчитано."]
 };
 let NV=null;
-const nVoiceOn=()=>S.voice&&SR&&!VOICE.denied;
+let nVoiceOn=()=>S.voice&&SR&&!VOICE.denied;
 function vBuild(step){
   const c=step.c, tasks=[];
   if(step.k==="voice"){
@@ -5034,7 +5038,7 @@ function mockQ(){
     <button class="mini mkend" id="fin">Сдать раздел досрочно</button></section>`;
   const N5KS=new Set(N5K.map(k=>k.k)); app.querySelectorAll(".mk ruby").forEach(r=>{ const base=[...r.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(""); if([...base].filter(isKanji).every(ch=>N5KS.has(ch))) r.classList.add("n5k"); });
   document.getElementById("mkf").onclick=()=>{ const n=NS(); n.mkFuri=!n.mkFuri; save(); mockQ(); };
-  document.getElementById("mkq").onclick=()=>{ if(!confirm("Выйти из экзамена? Результат не сохранится.")) return; clearInterval(MK.tm); hfStop(); MK=null; home(); };
+  document.getElementById("mkq").onclick=e=>{ const b=e.currentTarget; if(!b.dataset.arm){ b.dataset.arm=1; b.textContent="?"; b.title="Нажми ещё раз — выйти без результата"; const n=document.querySelector(".exnum"); if(n) n.textContent="Нажми ✕ ещё раз, чтобы выйти. Результат не сохранится."; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.arm; b.textContent="✕"; } },4000); return; } clearInterval(MK.tm); hfStop(); MK=null; home(); };
   app.querySelectorAll(".exo").forEach(b=>b.onclick=()=>{ MK.ans[key]=+b.dataset.i; mockQ(); });
   app.querySelectorAll("[data-j]").forEach(b=>b.onclick=()=>{ MK.i=+b.dataset.j; mockQ(); });
   document.getElementById("pv").onclick=()=>{ if(MK.i){ MK.i--; mockQ(); } };
@@ -5043,7 +5047,7 @@ function mockQ(){
   if(q.audio&&!MK.played[key]){ MK.played[key]=true; const my=++HF.token; setTimeout(async()=>{ await q.audio(); if(HF.token===my){ const el=document.querySelector(".exaud"); if(el) el.textContent="🔇 прозвучало (повтора нет, как на экзамене)"; } },300); }
 }
 function mockConfirm(){ const sec=MK.secs[MK.s]; const left=sec.q.filter((_,i)=>MK.ans[sec.id+i]==null).length;
-  if(left&&!confirm(`Без ответа: ${left}. Закончить раздел? Вернуться будет нельзя.`)) return; mockNextSec(); }
+  if(left&&!MK.armEnd){ MK.armEnd=true; const f=document.getElementById("fin"); if(f) f.textContent=`Без ответа: ${left}. Нажми ещё раз — закончить раздел (вернуться нельзя)`; const nx=document.getElementById("nx"); if(nx&&MK.i===sec.q.length-1) nx.textContent="Точно закончить?"; setTimeout(()=>{ MK&&(MK.armEnd=false); },5000); return; } MK.armEnd=false; mockNextSec(); }
 function mockNextSec(){ clearInterval(MK.tm); hfStop(); MK.s++; if(MK.s<MK.secs.length) return mockSec(); mockResult(); }
 function mockResult(){
   const sc=MK.secs.map(sec=>{ let ok=0; sec.q.forEach((q,i)=>{ const a=MK.ans[sec.id+i]; if(a!=null&&q.opts[a].ok) ok++; }); return {ok,n:sec.q.length}; });
@@ -5197,6 +5201,100 @@ function home(){
   g("oldMenu").onclick=()=>{ N5_MENU=true; oldHome(); };
   window.scrollTo(0,0);
 }
+
+
+/* =================================================================
+   ГОЛОС ВНУТРИ CLAUDE: озвучка Claude (tts) + диктовка Claude (dictation)
+   На github.io всё работает как раньше — через браузер.
+   ================================================================= */
+let C_TTS=null, C_DIC=null, C_MODE=false;
+const C_SLEEP=ms=>new Promise(r=>setTimeout(r,ms));
+async function cSpeak(text,lang,rate){
+  let txt=ttsClean(text); if(lang!=="ja"&&/[а-я]/i.test(txt)) txt=txt.replace(/\b[a-z][a-z:']*\b/gi,"").replace(/\s*·\s*/g," ").replace(/\s{2,}/g," ").trim();
+  if(!txt) return;
+  if(C_DIC&&C_DIC.active()) { try{ await C_DIC.stop(); }catch(e){} }
+  setTalk(true);
+  try{ await Promise.race([C_TTS.speak(txt.slice(0,1990),{language:lang==="ja"?"ja":"ru",rate:Math.min(1.5,Math.max(.7,rate||(lang==="ja"?.85:1.1)))}),C_SLEEP(4000+txt.length*260)]); }
+  catch(e){ if(e&&e.code==="rate_limited") await C_SLEEP(400); if(e&&e.code==="not_granted") C_TTS=null; }
+  finally{ setTalk(false); }
+}
+const _speakP0=speakP, _sayQ0=sayQ, _say0=say, _hfStop0=hfStop;
+speakP=function(text,lang,rate,pitch){ return C_TTS?cSpeak(text,lang,rate):_speakP0(text,lang,rate,pitch); };
+sayQ=function(text,lang){ if(C_TTS){ cSpeak(text,lang); return; } _sayQ0(text,lang); };
+say=function(text,lang="ja"){ if(C_TTS){ cSpeak(text,lang); return; } _say0(text,lang); };
+hfStop=function(){ _hfStop0(); if(C_TTS) C_TTS.stop().catch(()=>{}); if(C_DIC&&C_DIC.active()) C_DIC.stop().catch(()=>{}); };
+const _nVoiceOn0=nVoiceOn; const _voicePrime0=voicePrime; voicePrime=function(){ if(!C_MODE) _voicePrime0(); };
+nVoiceOn=function(){ return C_MODE?!!C_DIC&&!NS().noDic:_nVoiceOn0(); };
+/* диктовка: нажал кнопку или пробел — говоришь — она сама остановится после фразы */
+const CD={buf:"",text:null,err:null,t:null};
+function cDicToggle(){
+  if(!C_DIC||!NV) return;
+  if(C_DIC.active()){ C_DIC.stop().catch(()=>{}); return; }
+  CD.buf=""; CD.text=null; CD.err=null;
+  if(C_TTS) C_TTS.stop().catch(()=>{});
+  const lang=NV.wantInput==="ja"?"ja":"ru";
+  C_DIC.start({language:lang}).catch(e=>{ CD.err=e&&e.code||"upstream_error"; if(CD.err==="not_granted"||CD.err==="unavailable"){ NS().noDic=true; save(); } if(NV){ NV.cmd="switch"; } });
+}
+function cDicInit(){
+  C_DIC.onPartial(({text})=>{ const el=document.getElementById("vHeard"); if(el) el.textContent=(CD.buf+" "+text).trim()||"…"; });
+  C_DIC.onFinal(({text})=>{ CD.buf+=text; const el=document.getElementById("vHeard"); if(el) el.textContent=CD.buf.trim(); clearTimeout(CD.t); CD.t=setTimeout(()=>{ if(C_DIC.active()) C_DIC.stop().catch(()=>{}); },1100); });
+  C_DIC.onState(({state,reason})=>{ const b=document.getElementById("cdic"); if(b){ b.classList.toggle("on",state!=="idle"); b.innerHTML=state==="idle"?"🎤 ГОВОРИ <small>или пробел</small>":"⏹ ГОТОВО <small>слушаю…</small>"; }
+    if(state==="idle"){ clearTimeout(CD.t); if(CD.buf.trim()) CD.text=CD.buf.trim(); else if(reason&&!["stopped","viewer_stopped","hidden"].includes(reason)) CD.err=reason; } });
+  document.addEventListener("keydown",e=>{ if(e.code!=="Space"||!NV||NV.typing) return; const t=e.target; if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="BUTTON")) return; if(!NV.listening||NV.listening==="__t") return; e.preventDefault(); cDicToggle(); });
+}
+/* слушаем через диктовку Claude */
+const _vListen0=vListen;
+vListen=async function(lang,alive){
+  if(!C_MODE||!C_DIC||NS().noDic) return _vListen0(lang,alive);
+  NV.wantInput=lang==="ru"?"ru":lang==="kana"?"ru":"ja";
+  CD.text=null; CD.err=null;
+  let rendered=false;
+  while(true){
+    if(!alive()) { if(C_DIC.active()) C_DIC.stop().catch(()=>{}); return {dead:true}; }
+    if(NV.typed!=null){ const t=NV.typed; NV.typed=null; NV.listening=null; if(C_DIC.active()) C_DIC.stop().catch(()=>{}); return {alts:[t],typed:true}; }
+    if(NV.cmd){ const c=NV.cmd; NV.cmd=null; if(c==="switch"){ rendered=false; continue; } NV.listening=null; if(C_DIC.active()) C_DIC.stop().catch(()=>{}); return {cmd:c,alts:[]}; }
+    if(NV.typing||NS().noDic){ if(NV.listening!=="__t"){ NV.listening=null; vRender(); NV.listening="__t"; } await C_SLEEP(150); continue; }
+    if(CD.text!=null){ const t=CD.text; CD.text=null; NV.listening=null; return {alts:[t],vcmd:voiceCmd([t])}; }
+    if(!rendered){ NV.listening=lang; NV.heardTxt=""; vRender(); rendered=true; }
+    await C_SLEEP(120);
+  }
+};
+/* кнопка «говори» в экране созвона */
+const _vRender0=vRender;
+vRender=function(){
+  _vRender0();
+  if(!C_MODE||!NV) return;
+  const mb=document.querySelector(".nv .micbar");
+  if(mb&&C_DIC&&!NS().noDic&&NV.listening&&NV.listening!=="__t"){
+    const btn=document.createElement("button"); btn.id="cdic"; btn.className="big cdic"+(C_DIC.active()?" on":""); btn.setAttribute("style",pinkBtn.replace(/^style="|"$/g,""));
+    btn.innerHTML=C_DIC.active()?"⏹ ГОТОВО <small>слушаю…</small>":"🎤 ГОВОРИ <small>или пробел</small>";
+    btn.onclick=cDicToggle; mb.after(btn);
+    const b=mb.querySelector("b"); if(b) b.innerHTML=(NV.listening==="ru"?"Ответ по-русски":NV.listening==="kana"?"Прочитай букву":"Ответ по-японски")+" <small>· нажми кнопку или пробел и говори</small>";
+  }
+  document.querySelectorAll(".nv .micerr").forEach(e=>e.remove());
+  if(CD.err&&!NS().noDic){ const n=document.createElement("div"); n.className="micerr"; n.textContent=({rate_limited:"Слишком много диктовок подряд — подожди пару секунд.",upstream_error:"Микрофон или распознавание сбоит — попробуй ещё раз.",dismissed:"Ты закрыл вопрос про микрофон — нажми «говори» ещё раз."})[CD.err]||("Диктовка: "+CD.err); const st=document.querySelector(".nv .stage"); if(st) st.after(n); }
+};
+/* экран перед созвоном: объясняем, как работает голос в Claude */
+const _vGate0=vGate;
+vGate=function(s){
+  _vGate0(s);
+  if(!C_MODE) return;
+  app.querySelectorAll(".switch,.mictest,.micerr").forEach(e=>{ if(!e.querySelector("#vh")) e.remove(); });
+  const note=document.createElement("div"); note.className="micerr cinfo";
+  note.innerHTML=C_DIC&&!NS().noDic?"🎧 Ты в Claude: Юки говорит голосом Claude, а отвечаешь через диктовку Claude. Нажми <b>«Говори»</b> или <b>пробел</b>, скажи ответ — она сама поймёт, что ты закончил. Первый раз Claude спросит разрешение на микрофон.":C_TTS?"🎧 Ты в Claude: Юки говорит голосом, а отвечать придётся текстом (латиницей) — диктовка работает только в Chrome на компе и в приложении Claude для компа. Для полного «без рук» открой github.io.":"В этом окне Claude нет ни голоса, ни микрофона — отвечаешь текстом. Голос работает в Chrome на компе или в приложении Claude для компа.";
+  const go=document.getElementById("go"); if(go) go.before(note);
+};
+(async()=>{
+  try{
+    if(!(window.claude&&typeof window.claude.use==="function")) return;
+    const [t,d]=await Promise.all([window.claude.use("tts").catch(()=>null),window.claude.use("dictation").catch(()=>null)]);
+    C_TTS=t||null; C_DIC=d||null;
+    if(!C_TTS&&!C_DIC) return;
+    C_MODE=true; VOICE.denied=true; VOICE.lastErr="claude";
+    if(C_DIC) cDicInit();
+    if(!NV&&!NT&&!MK&&!N5_MENU) home();
+  }catch(e){}
+})();
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 
