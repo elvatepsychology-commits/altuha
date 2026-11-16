@@ -657,6 +657,7 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .nv .vkana{font-family:var(--f-display);font-size:86px;line-height:1;text-align:center;color:#1B1530}
 .nv .speech{max-height:62%;overflow:auto}
 .nv .vans{color:#0F9D4E}
+.vskip{padding:12px;font-size:18px}
 .vbtns{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
 .nback:disabled{opacity:.25}
 .vbtns .mini{padding:9px 4px;font-size:12px;font-weight:800}
@@ -4758,11 +4759,13 @@ function vRender(){
     ${listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${listening==="ru"?"Скажи по-русски":listening==="kana"?"Читай букву вслух":listening==="rep"?"Повтори вслух":"Говори по-японски"} <small>· слушаю, сколько надо</small></b><span id="vHeard">${esc(NV.heardTxt||"…")}</span></span></div>`:""}
     ${SR&&S.voice&&VOICE.denied?`<div class="micerr">🎤 ${esc(voiceNote())} Пока можешь отвечать текстом.</div>`:!SR&&NV.asked===0&&NV.round===1?`<div class="micerr">🎤 ${esc(voiceErrText())} Отвечай текстом — латиницей, она сама станет японским.</div>`:""}
     ${(NV.typing||!nVoiceOn())&&NV.wantInput?`<form class="typebox vtype" id="vtf" autocomplete="off"><input id="vti" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${NV.wantInput==="ru"?"по-русски":"латиницей: arigatou"}"><div class="nkana" id="vtk">&nbsp;</div><button class="big" type="submit">ОТВЕТИТЬ</button></form>`:""}
+    <button class="big vskip" id="vskip" ${pinkBtn}>⏭ ДАЛЬШЕ</button>
     <div class="vbtns"><button class="mini" id="vback" ${(NV.hist||[]).length?"":"disabled"}>← Назад</button><button class="mini" id="vrep">🔁 Повтори</button><button class="mini" id="vdk">🤷 Не знаю</button>${SR?`<button class="mini" id="vty">${NV.typing?"🎤 Голосом":"⌨️ Текстом"}</button>`:""}<button class="mini" id="vtx">${showTxt?"🙈 Без текста":"👀 Текст"}</button></div>
   </section>`;
   const g=id=>document.getElementById(id);
   g("quit").onclick=()=>{ NV.dead=true; hfStop(); VOICE.onInterim=null; NV=null; home(); };
   g("vrep").onclick=()=>{ NV.cmd="repeat"; stopListen(); };
+  g("vskip").onclick=()=>{ NV.skip=true; NV.cmd="skip"; try{speechSynthesis.cancel()}catch(e){} hfStop&&0; stopListen(); };
   g("vback").onclick=()=>{ if(!(NV.hist||[]).length) return; NV.cmd="back"; stopListen(); try{speechSynthesis.cancel()}catch(e){} };
   g("vdk").onclick=()=>{ NV.cmd="forgot"; stopListen(); };
   if(g("vty")) g("vty").onclick=()=>{ NV.typing=!NV.typing; if(!NV.typing) voicePrime(); NV.cmd="switch"; stopListen(); };
@@ -4807,6 +4810,7 @@ async function vRun(){
         const h=await vListen("ja",alive); if(!alive()) return;
         let ok=!h.cmd&&(h.typed?nTypeOk(h.alts[0],[it.jp]):nOk(h.alts,[it.jp,...(it.acc||[])]));
         if(!ok&&h.vcmd&&!h.cmd) h.cmd=h.vcmd;
+        if(h.cmd==="skip"){ NV.skip=false; break; }
         if(h.cmd==="repeat"&&tr<6){ await nSayJa(it.jp,.7); tr--; continue; }
         if(h.cmd==="forgot"){ await nSayJa(it.jp,.7); continue; }
         if(!h.typed) nSk("pron",ok);
@@ -4857,7 +4861,7 @@ async function vRun(){
   if(st.k==="oral") return n5Win(); vEnd(info);
 }
 async function vAsk(task,alive){
-  NV.cur=task; NV.typed=null; NV.cmd=null;
+  NV.cur=task; NV.typed=null; NV.cmd=null; NV.skip=false;
   const it=task.it, tk=task.tk;
   let targets, lang, sayPrompt;
   if(task.t==="kana"){ targets=null; lang="kana"; }
@@ -4891,19 +4895,19 @@ async function vAsk(task,alive){
     if(ok){ NV.mood=pick(["blush","laugh","happy"]); const pr=pick(VL.right);
       NV.view=Object.assign({},NV.view,{heard,ru:pr,ans:task.t==="kana"?null:answerJa,bad:false}); vRender(); beep(true);
       await speakP(pr,"ru"); return {ok:true}; }
-    /* ошибка: правильный ответ, повтори, вернусь позже */
+    /* ошибка: коротко, и всё можно пропустить кнопкой «Дальше» */
     NV.mood=h.cmd==="forgot"?"pout":"angry"; beep(false); buzz();
-    const w=h.cmd==="forgot"?pick(VL.forgot):pick(VL.wrong)+" "+pick(VL.corr);
-    if(task.t==="kana"){ NV.view={kanaBig:it.jp,ru:`${w} ${it.ru} — «${it.cyr}»`,heard,bad:true}; vRender(); await speakP(w,"ru"); if(!alive()) return {ok:false}; await speakP(it.jp+"。"+it.jp,"ja",.6); if(!alive()) return {ok:false}; if(it.cyr) await speakP(it.cyr,"ru",.8); }
-    else if(task.t==="mean"){ NV.view={ja:it.jp,ru:`${w} ${it.ru}`,heard,bad:true}; vRender(); await speakP(w+" "+it.ru,"ru"); }
-    else { NV.view={ja:task.t==="reply"?tk.q:"",ru:w,ans:answerJa,heard,bad:true}; vRender(); await speakP(w,"ru"); if(!alive()) return {ok:false}; await nSayJa(answerJa,.7); if(!alive()) return {ok:false};
-      NV.view=Object.assign({},NV.view,{ru:pick(VL.rep),bad:false}); vRender(); await speakP(NV.view.ru,"ru"); if(!alive()) return {ok:false};
-      const h2=await vListen("ja",alive); if(!alive()) return {ok:false};
-      const ok2=h2.typed?nTypeOk((h2.alts||[])[0]||"",[answerJa]):nOk(h2.alts,[answerJa]);
-      if(!h2.typed&&!h2.cmd) nSk("pron",ok2);
-      NV.view=Object.assign({},NV.view,{heard:(h2.alts||[])[0]||"",ru:ok2?pick(VL.teachOk):"Ладно, потом дожмём."}); vRender(); await speakP(NV.view.ru,"ru"); }
+    if(h.cmd==="skip"){ NV.skip=false; return {ok:false,heard:""}; }
+    NV.skip=false; const go=()=>alive()&&!NV.skip;
+    const w=h.cmd==="forgot"?pick(["Забыл? Слушай:","Запоминай:"]):pick(["Нет.","Мимо.","Не то.","Неа."]);
+    if(task.t==="kana"){ NV.view={kanaBig:it.jp,ru:`${w} ${it.ru} — «${it.cyr}»`,heard,bad:true,canSkip:true}; vRender(); await speakP(w+" "+(it.cyr||it.ru),"ru"); }
+    else if(task.t==="mean"){ NV.view={ja:it.jp,ru:`${w} ${it.ru}`,heard,bad:true,canSkip:true}; vRender(); await speakP(w+" "+it.ru,"ru"); }
+    else { NV.view={ja:task.t==="reply"?tk.q:"",ru:w,ans:answerJa,heard,bad:true,canSkip:true}; vRender(); await speakP(w,"ru"); if(go()) await nSayJa(answerJa,.8);
+      if(go()){ NV.view=Object.assign({},NV.view,{ru:"Повтори.",bad:false}); vRender(); await speakP("Повтори.","ru"); }
+      if(go()){ const h2=await vListen("ja",alive); if(alive()&&!NV.skip&&!h2.cmd){ const ok2=h2.typed?nTypeOk((h2.alts||[])[0]||"",[answerJa]):nOk(h2.alts,[answerJa]); if(!h2.typed) nSk("pron",ok2);
+        NV.view=Object.assign({},NV.view,{heard:(h2.alts||[])[0]||"",ru:ok2?pick(VL.teachOk):"Потом дожмём."}); vRender(); await speakP(NV.view.ru,"ru"); } } }
+    NV.skip=false; if(NV.view) NV.view.canSkip=false;
     if(!alive()) return {ok:false};
-    await speakP(pick(VL.later),"ru");
     return {ok:false,heard};
   }
   return {ok:false};
