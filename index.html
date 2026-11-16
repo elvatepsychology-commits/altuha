@@ -4481,7 +4481,13 @@ function r2k(s,kata){ s=String(s).toLowerCase(); let o="",i=0;
   return kata?o.replace(/[ぁ-ゖ]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+0x60)):o; }
 const nTypeNorm=s=>toHira(kanaOf(String(s))).replace(/[\s、。？！?!.,ー〜~]/g,"").replace(/[はわ]/g,"わ").replace(/[へえ]/g,"え").replace(/[をお]/g,"お").replace(/う(?=$)/,"う");
 const nRomaNorm=r=>String(r).toLowerCase().replace(/[^a-z]/g,"").replace(/shi/g,"si").replace(/chi/g,"ti").replace(/tsu/g,"tu").replace(/fu/g,"hu").replace(/ji/g,"zi").replace(/sh/g,"sy").replace(/ch/g,"ty").replace(/j/g,"zy").replace(/([bcdfghjkmpqrstvwxz])\1/g,"$1").replace(/nn/g,"n").replace(/wo/g,"o").replace(/ha/g,"wa").replace(/he/g,"e").replace(/ou/g,"o").replace(/oo/g,"o").replace(/uu/g,"u").replace(/ei/g,"e").replace(/ii/g,"i").replace(/aa/g,"a");
-const nTypeOk=(typed,targets)=>{ const a=nTypeNorm(r2k(typed)); if(targets.some(t=>nTypeNorm(t)===a)) return true; if(/[a-z]/i.test(typed)){ const r=nRomaNorm(typed); return !!r&&targets.some(t=>nRomaNorm(jaRoma(kanaOf(t)))===r); } return false; };
+const nTypeExact=(typed,targets)=>{ const a=nTypeNorm(r2k(typed)); if(targets.some(t=>nTypeNorm(t)===a)) return true; if(/[a-z]/i.test(typed)){ const r=nRomaNorm(typed); return !!r&&targets.some(t=>nRomaNorm(jaRoma(kanaOf(t)))===r); } return false; };
+function nLev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=Array.from({length:n+1},(_,k)=>k); for(let i=1;i<=m;i++){ const c=[i]; for(let k=1;k<=n;k++) c[k]=Math.min(p[k]+1,c[k-1]+1,p[k-1]+(a[i-1]===b[k-1]?0:1)); p=c; } return p[n]; }
+const nRomaLoose=r=>nRomaNorm(String(r).toLowerCase().replace(/(ma|de)su(?![a-z])/g,"$1s")).replace(/z/g,"s").replace(/d/g,"t").replace(/l/g,"r");
+const nRomaNeg=r=>/masen|nai|naite|ikemasen|zya|ja(?=a?r)/.test(String(r).toLowerCase().replace(/\s/g,""));
+function nTypeClose(typed,targets){ if(!/[a-z]/i.test(typed)) return false; const a=nRomaLoose(typed); if(a.length<3) return false;
+  return targets.some(t=>{ const tr=jaRoma(kanaOf(t)); const b=nRomaLoose(tr); if(!b) return false; if(nRomaNeg(typed)!==nRomaNeg(tr)) return false; const tw=String(typed).trim().split(/\s+/), rw=String(tr).trim().split(/\s+/); if(tw.length===rw.length&&tw.some((w,k)=>nRomaLoose(w)[0]!==nRomaLoose(rw[k])[0])) return false; if(a[0]!==b[0]) return false; const d=nLev(a,b), L=Math.max(a.length,b.length); return L<=4?d===0:L<=7?d<=1:d/L<=.22; }); }
+const nTypeOk=(typed,targets)=>nTypeExact(typed,targets)||nTypeClose(typed,targets);
 
 /* ---------- озвучка ---------- */
 const nJaSpeak=t=>String(t).replace(/[（(][^）)]*[）)]/g,"");
@@ -4622,7 +4628,7 @@ function tapRender(){
   } else if(q.type==="ty"){
     const inp=document.getElementById("ti"), tk=document.getElementById("tk"); setTimeout(()=>inp.focus(),60);
     inp.oninput=()=>{ tk.textContent=r2k(inp.value)||" "; };
-    document.getElementById("tf").onsubmit=e=>{ e.preventDefault(); if(NT.locked) return; if(!inp.value.trim()) return; tapAnswer(nTypeOk(inp.value,[q.it.jp,...(q.it.acc||[]).filter(x=>!/[一-鿿]/.test(x))]),r2k(inp.value)); };
+    document.getElementById("tf").onsubmit=e=>{ e.preventDefault(); if(NT.locked) return; if(!inp.value.trim()) return; const T_=[q.it.jp,...(q.it.acc||[]).filter(x=>!/[一-鿿]/.test(x))]; const ex=nTypeExact(inp.value,T_), cl=!ex&&nTypeClose(inp.value,T_); NT.typeNote=cl?`Засчитала — смысл верный. Пишется так: <b>${esc(jaRoma(kanaOf(q.it.jp)))}</b>`:null; tapAnswer(ex||cl,r2k(inp.value)); };
     document.getElementById("tdk").onclick=()=>{ if(!NT.locked) tapAnswer(false,""); };
   } else {
     app.querySelectorAll(".nopt").forEach(b=>b.onclick=()=>{ if(NT.locked) return; const o=q.opts[+b.dataset.i];
@@ -4645,7 +4651,7 @@ function tapAnswer(ok,typed){
     if(q.it&&NT.mode!=="exam"){ if(nGrade(q.it.id,true,NT.mode==="lesson"&&NT.items.includes(q.it))) NT.newL++; }
     beep(true); stampIt(NT.combo>=5?"神":"良",true);
     const t=COMBO[NT.combo]||pick(RIGHT);
-    showSheet(true,t,right,"ДАЛЬШЕ",()=>{ NT.i++; tapNext(); });
+    showSheet(true,NT.typeNote?"ПОЧТИ, ЗАСЧИТАНО":t,right+(NT.typeNote?`<br><small>${NT.typeNote}</small>`:""),"ДАЛЬШЕ",()=>{ NT.i++; tapNext(); }); NT.typeNote=null;
   } else { NT.bad++; NT.combo=0;
     if(q.it) { nGrade(q.it.id,false,false); if(!NT.wrong.includes(q.it)) NT.wrong.push(q.it); }
     if(q.tk&&!NT.wrong.includes(q.tk)) NT.wrong.push(q.tk);
@@ -4654,7 +4660,7 @@ function tapAnswer(ok,typed){
       let nq=null; if(q.it){ const types=nTypesFor(q.it,2).filter(t=>t!==q.type); nq=nQ(q.it,pick(types.length?types:[q.type])); } else if(q.kj) nq=nKjQ(q.kj,q.type==="km"?"kd":"km"); else if(q.tk) nq=nTalkQ(q.tk);
       if(nq){ NT.qs.splice(Math.min(NT.qs.length,NT.i+3+Math.floor(Math.random()*3)),0,nq); NT.total++; }
     }
-    showSheet(false,pick(WRONG),`${pick(WRONG_SUB)} ${right}${typed?`<br><small>ты написал: ${esc(typed)}</small>`:""}`,"ПОНЯЛ",()=>{ NT.i++; tapNext(); });
+    showSheet(false,pick(WRONG),`${pick(WRONG_SUB)} ${right}${q.type==="ty"?`<br><small>латиницей: <b>${esc(jaRoma(kanaOf(q.it.jp)))}</b></small>`:""}${typed?`<br><small>ты написал: ${esc(typed)}</small>`:""}`,"ПОНЯЛ",()=>{ NT.i++; tapNext(); });
   }
   if(!(q.kj||q.tk)&&q.it&&q.it.kind!=="k"){ try{speechSynthesis.cancel()}catch(e){} sayQ(q.it.jp,"ja"); }
   save();
