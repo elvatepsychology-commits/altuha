@@ -657,7 +657,8 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .nv .vkana{font-family:var(--f-display);font-size:86px;line-height:1;text-align:center;color:#1B1530}
 .nv .speech{max-height:62%;overflow:auto}
 .nv .vans{color:#0F9D4E}
-.vbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.vbtns{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.nback:disabled{opacity:.25}
 .vbtns .mini{padding:9px 4px;font-size:12px;font-weight:800}
 .vtype input{font-size:20px;text-transform:none}
 .nrev{gap:12px}
@@ -4565,7 +4566,8 @@ function tapNext(){
 }
 function tapRender(){
   const q=NT.cur, pct=Math.round(NT.ans/Math.max(1,NT.total)*100);
-  const top=`<div class="top"><button class="x" id="quit" aria-label="Выйти">✕</button><div class="prog"><i style="width:${pct}%"></i></div><div class="nqcount">${NT.mode==="exam"?`✓${NT.ok} ✗${NT.bad}`:NT.combo>=3?`🔥×${NT.combo}`:""}</div></div>`;
+  const canBack=NT.qs.slice(0,NT.i).some(x=>!x.say);
+  const top=`<div class="top"><button class="x" id="quit" aria-label="Выйти">✕</button><button class="x nback" id="nback" aria-label="Назад" ${canBack?"":"disabled"}>←</button><div class="prog"><i style="width:${pct}%"></i></div><div class="nqcount">${NT.mode==="exam"?`✓${NT.ok} ✗${NT.bad}`:NT.combo>=3?`🔥×${NT.combo}`:""}</div></div>`;
   let body="", ans="";
   if(q.intro){ const it=q.intro;
     body=`<div class="prompt">${it.kind==="k"?"Новая буква":it.kind==="w"?"Новое слово":"Новая фраза"}</div>
@@ -4604,6 +4606,7 @@ function tapRender(){
   NT.bub=null; NT.mood=null;
   app.innerHTML=`<section class="screen nq">${top}${girl}${body}${ans}</section>`;
   document.getElementById("quit").onclick=()=>{ hfStop(); NT=null; home(); };
+  document.getElementById("nback").onclick=()=>{ let j=NT.i-1; while(j>=0&&NT.qs[j].say) j--; if(j<0) return; hideSheet(); try{speechSynthesis.cancel()}catch(e){} NT.i=j; const pq=NT.qs[j]; if(pq.type==="bd") pq.sel=[]; NT.cur=pq; NT.locked=false; tapRender(); };
   const sayTxt=q.intro?(q.intro.kind==="k"?q.intro.jp:q.intro.jp):q.kintro?q.kintro.ex:q.tk?q.tk.q:q.it?q.it.jp:null;
   const sb=document.getElementById("say"); if(sb) sb.onclick=()=>{ if(q.it&&q.it.kind==="k"||q.intro&&q.intro.kind==="k") speakKana((q.it||q.intro).jp); else nSpeakBtn(sayTxt); };
   if(q.intro||q.kintro){ document.getElementById("go").onclick=()=>{ NT.i++; tapNext(); }; if(q.intro&&q.intro.kind==="k") speakKana(q.intro.jp); else nSpeakBtn(sayTxt); return; }
@@ -4624,6 +4627,7 @@ function tapRender(){
 }
 function tapAnswer(ok,typed){
   NT.locked=true; const q=NT.cur; const key=q.it?q.it.id:q.kj?"kj:"+q.kj.k:q.tk?q.tk.id:"x";
+  NT.res=NT.res||new Map(); if(NT.res.has(q)){ if(NT.res.get(q)) NT.ok--; else NT.bad--; NT.ans--; } NT.res.set(q,ok);
   const firstTry=!NT.first.has(key+q.type); NT.first.set(key+q.type,1);
   if(firstTry) nSk(N5_TYPE_SK[q.type]||"vocab",ok);
   NT.ans++;
@@ -4642,7 +4646,7 @@ function tapAnswer(ok,typed){
     if(q.it) { nGrade(q.it.id,false,false); if(!NT.wrong.includes(q.it)) NT.wrong.push(q.it); }
     if(q.tk&&!NT.wrong.includes(q.tk)) NT.wrong.push(q.tk);
     beep(false); buzz(); stampIt("駄",false);
-    if(NT.mode!=="exam"){ // вернётся в конце, другим типом
+    if(NT.mode!=="exam"&&!q._rq){ q._rq=1; // вернётся в конце, другим типом
       let nq=null; if(q.it){ const types=nTypesFor(q.it,2).filter(t=>t!==q.type); nq=nQ(q.it,pick(types.length?types:[q.type])); } else if(q.kj) nq=nKjQ(q.kj,q.type==="km"?"kd":"km"); else if(q.tk) nq=nTalkQ(q.tk);
       if(nq){ NT.qs.splice(Math.min(NT.qs.length,NT.i+3+Math.floor(Math.random()*3)),0,nq); NT.total++; }
     }
@@ -4751,11 +4755,12 @@ function vRender(){
     ${listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${listening==="ru"?"Скажи по-русски":listening==="kana"?"Читай букву вслух":listening==="rep"?"Повтори вслух":"Говори по-японски"} <small>· слушаю, сколько надо</small></b><span id="vHeard">${esc(NV.heardTxt||"…")}</span></span></div>`:""}
     ${SR&&S.voice&&VOICE.denied?`<div class="micerr">🎤 ${esc(voiceNote())} Пока можешь отвечать текстом.</div>`:!SR&&NV.asked===0&&NV.round===1?`<div class="micerr">🎤 ${esc(voiceErrText())} Отвечай текстом — латиницей, она сама станет японским.</div>`:""}
     ${(NV.typing||!nVoiceOn())&&NV.wantInput?`<form class="typebox vtype" id="vtf" autocomplete="off"><input id="vti" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${NV.wantInput==="ru"?"по-русски":"латиницей: arigatou"}"><div class="nkana" id="vtk">&nbsp;</div><button class="big" type="submit">ОТВЕТИТЬ</button></form>`:""}
-    <div class="vbtns"><button class="mini" id="vrep">🔁 Повтори</button><button class="mini" id="vdk">🤷 Не знаю</button>${SR?`<button class="mini" id="vty">${NV.typing?"🎤 Голосом":"⌨️ Текстом"}</button>`:""}<button class="mini" id="vtx">${showTxt?"🙈 Без текста":"👀 Текст"}</button></div>
+    <div class="vbtns"><button class="mini" id="vback" ${(NV.hist||[]).length?"":"disabled"}>← Назад</button><button class="mini" id="vrep">🔁 Повтори</button><button class="mini" id="vdk">🤷 Не знаю</button>${SR?`<button class="mini" id="vty">${NV.typing?"🎤 Голосом":"⌨️ Текстом"}</button>`:""}<button class="mini" id="vtx">${showTxt?"🙈 Без текста":"👀 Текст"}</button></div>
   </section>`;
   const g=id=>document.getElementById(id);
   g("quit").onclick=()=>{ NV.dead=true; hfStop(); VOICE.onInterim=null; NV=null; home(); };
   g("vrep").onclick=()=>{ NV.cmd="repeat"; stopListen(); };
+  g("vback").onclick=()=>{ if(!(NV.hist||[]).length) return; NV.cmd="back"; stopListen(); try{speechSynthesis.cancel()}catch(e){} };
   g("vdk").onclick=()=>{ NV.cmd="forgot"; stopListen(); };
   if(g("vty")) g("vty").onclick=()=>{ NV.typing=!NV.typing; if(!NV.typing) voicePrime(); NV.cmd="switch"; stopListen(); };
   g("vtx").onclick=()=>{ const n=NS(); n.showTxt=!n.showTxt; save(); vRender(); };
@@ -4811,13 +4816,16 @@ async function vRun(){
   }
   /* круги, пока не будет чисто */
   while(true){
-    NV.errs=new Map(); NV.asked=0;
+    NV.errs=new Map(); NV.asked=0; NV.hist=[];
     let q=shuffle(NV.tasks); if(NV.kind==="lesson"){ q=q.filter(t=>t.t!=="mean").concat(q.filter(t=>t.t==="mean")); }
     if(NV.round>1&&NV.lastTicked) { const tk=NV.tasks.filter(t=>NV.lastTicked.has(t.id)); q=q.concat(shuffle(tk)); }
     NV.queue=q; const retry=new Map();
     while(NV.queue.length){
       const task=NV.queue.shift();
       const r=await vAsk(task,alive); if(!alive()) return;
+      NV.hist=NV.hist||[];
+      if(r.back){ NV.queue.unshift(task); if(NV.hist.length){ NV.queue.unshift(NV.hist.pop()); NV.asked=Math.max(0,NV.asked-1); } await speakP(pick(["Ладно, назад.","Окей, отматываю.","Назад так назад."]),"ru"); continue; }
+      NV.hist.push(task); if(NV.hist.length>30) NV.hist.shift();
       NV.asked++;
       if(!r.ok){
         const prev=NV.errs.get(task.id); if(!prev) NV.errs.set(task.id,{task,heard:r.heard||"",fixed:false}); NV.totalErr++;
@@ -4865,6 +4873,7 @@ async function vAsk(task,alive){
   await ask(); if(!alive()) return {ok:false};
   for(let tries=0;tries<4;tries++){
     const h=await vListen(lang,alive); if(!alive()) return {ok:false};
+    if(h.cmd==="back"||(!h.cmd&&h.vcmd==="back"&&(NV.hist||[]).length&&!(task.t==="kana"?nKanaOk(h.alts,it):task.t==="mean"?ruOk(h.alts,it.ru):nOk(h.alts,targets)))) return {back:true};
     let ok=false, heard=(h.alts||[])[0]||"";
     if(h.cmd) ok=false;
     else if(task.t==="kana") ok=h.typed?(it.kana.r.includes(heard.toLowerCase().trim())||nKanaOk([heard],it)):nKanaOk(h.alts,it);
