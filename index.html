@@ -6208,21 +6208,21 @@ async function apReview(){
     <div class="rvlist">${list.map(e=>`<div class="rvi"><span class="tx"><span class="jfont">${rb(jp(e.task))}</span><small>${esc(ru(e.task))}</small>${e.heard?`<small class="hd">услышала: «${esc(e.heard)}»</small>`:""}</span></div>`).join("")}</div>
     <button class="big" id="apNx" ${pinkBtn}>▶ Я СКАЗАЛ ПРАВИЛЬНО — ИДЁМ ДАЛЬШЕ</button>
     <button class="big" id="apAg">🔁 ДА, ОШИБСЯ — ЗАНОВО</button>
-    <div class="note">Можно голосом: скажи <b>«дальше»</b> или <b>«заново»</b>.</div></section>`;
+    <div class="note">Голосом: скажи <b>«дальше»</b>. Молчишь 20 секунд — урок засчитан. Заново — только если сам нажмёшь кнопку.</div></section>`;
   document.getElementById("apNx").onclick=()=>done("next"); document.getElementById("apAg").onclick=()=>done("again");
   const lines=list.slice(0,6).map(e=>`${ru(e.task)}`).join(". ");
-  await speakP(`Я засчитала ошибок: ${list.length}. ${lines}. Это ты ошибся, или я не расслышала? Скажи «дальше» — засчитаю. Скажи «заново» — погоню ещё раз.`,"ru");
-  let nudge=Date.now();
+  await speakP(`Я засчитала ошибок: ${list.length}. ${lines}. Если это я не расслышала — скажи «дальше» или просто молчи, через двадцать секунд засчитаю. Если реально ошибся — жми кнопку внизу.`,"ru");
+  const t00=Date.now();
   while(!res&&AP.on&&NV&&!NV.dead){
     let alts=[];
     if(!C_MODE){ const h=await listen("ru",12000,()=>!res&&AP.on); alts=(h&&h.alts)||[]; if(!alts.length) await sleep(300); }
     else { NV.listening="ru"; CD.text=null; const t0=Date.now(); while(!res&&CD.text==null&&Date.now()-t0<12000) await sleep(150); NV.listening=null; if(CD.text){ alts=[CD.text]; CD.text=null; } }
     if(res) break;
     const s=alts.join(" ");
-    if(AP_AGAIN.test(s)) done("again"); else if(AP_NEXT.test(s)) done("next");
-    else if(alts.length||Date.now()-nudge>25000){ nudge=Date.now(); await speakP("Скажи: «дальше» или «заново».","ru"); }
+    if(AP_NEXT.test(s)) done("next");
+    if(Date.now()-t00>20000) done("next");
   }
-  if(!res) res="again";
+  if(!res) res="next";
   const n=NS();
   if(res==="next"){ ids.forEach(id=>{ const k=id.replace(/#m$/,""); if(n.errc&&n.errc[k]){ n.errc[k]--; if(n.errc[k]<3&&n.ew) delete n.ew[k]; if(n.errc[k]<=0) delete n.errc[k]; } AP.fail.delete(k); }); save();
     await speakP(pick(["Ладно, верю. Засчитала.","Окей, значит я глухая. Дальше.","Хорошо, засчитано."]),"ru"); return new Set(); }
