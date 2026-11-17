@@ -52,6 +52,11 @@
 .pcbox{background:var(--card,#fff);color:var(--ink);border-radius:20px;padding:22px 18px;max-width:380px;width:100%;text-align:center;font-size:18px;line-height:1.35}
 .pcbtns{display:flex;flex-direction:column;gap:10px;margin-top:18px}
 .tpass{font-size:18px}
+
+.lrow .lt[data-lm]{cursor:pointer}
+.lmdot{font-style:normal;opacity:.5;font-weight:800;margin-left:2px}
+.lmbox small{display:block;margin-top:6px;font-size:13px;color:var(--muted);font-weight:500}
+.lmbox .pcbtns .ghost{width:100%}
 </style>
 <title>Кана, блять</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5623,7 +5628,7 @@ function home(){
   const chHTML=N5C.map(c=>{ const open=nChOpen(c); const st=nSteps(c); const dn=st.filter(s=>s.done).length; const cur=nx&&nx.c===c;
     return `<div class="chc ${open?"":"lock"} ${nChDone(c)?"done":""} ${nChSkip(c)?"skip":""} ${cur?"cur":""}">
       <button class="chh" data-ch="${c.ci}"><span class="chn">${c.kana?(c.kana==="h"?"あ":"ア"):N5_CONTENT.indexOf(c)+1}</span><span class="cht"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></span><span class="chp">${nChDone(c)?"✓":nChSkip(c)?"⏭ пропущена":open?`${dn}/${st.length}`:"🔒"}</span></button>
-      ${(cur||n.openCh===c.ci)&&open?`<div class="chsteps">${c.story?`<div class="chstory">${esc(c.story)}</div>`:""}${(()=>{ const isNx=s=>nx&&nx.c===c&&nx.k===s.k&&nx.l===s.l; const btn=(s,i,ic,lbl)=>`<button class="sb ${s.done?"ok":""} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span>${s.done?"✓":ic}</span>${lbl}</button>`; let out=""; c.L.forEach((l,li)=>{ const a=st[li*2], b=st[li*2+1]; out+=`<div class="lrow ${a.done&&b.done?"ok":""}"><span class="lt"><b>${li+1}. ${l.gram?"📐 ":""}${esc(l.t)}</b><small>${l.items.length} ${c.kana?"букв":"слов и фраз"}</small></span><button class="sb sbl" data-wl="${c.ci}:${li}"><span>📋</span>список</button>${btn(a,li*2,"✋","руками")}${btn(b,li*2+1,"🎤",c.kana?"вслух":"голосом")}</div>`; }); const E=st.length-2; [E,E+1].forEach(i=>{ const s=st[i]; out+=`<button class="stp ${s.done?"ok":""} ${s.open?"":"lk"} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span class="si">${s.done?"✓":s.k==="exam"?"📝":"📞"}</span><span class="st"><b>${esc(s.label)}</b><small>${esc(s.sub)}</small></span></button>`; }); if(!c.kana&&!nChDone(c)&&!nChSkip(c)&&!st[st.length-2].done) out+=`<div class="tline">Уже всё это знаешь? Жми «Экзамен главы» сразу: сдашь его и созвон — глава закроется целиком, уроки засчитаются.</div>`;
+      ${(cur||n.openCh===c.ci)&&open?`<div class="chsteps">${c.story?`<div class="chstory">${esc(c.story)}</div>`:""}${(()=>{ const isNx=s=>nx&&nx.c===c&&nx.k===s.k&&nx.l===s.l; const btn=(s,i,ic,lbl)=>`<button class="sb ${s.done?"ok":""} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span>${s.done?"✓":ic}</span>${lbl}</button>`; let out=""; c.L.forEach((l,li)=>{ const a=st[li*2], b=st[li*2+1]; out+=`<div class="lrow ${a.done&&b.done?"ok":""}"><span class="lt" data-lm="${c.ci}:${li}" role="button" tabindex="0"><b>${li+1}. ${l.gram?"📐 ":""}${esc(l.t)} <i class="lmdot">⋯</i></b><small>${l.items.length} ${c.kana?"букв":"слов и фраз"}</small></span><button class="sb sbl" data-wl="${c.ci}:${li}"><span>📋</span>список</button>${btn(a,li*2,"✋","руками")}${btn(b,li*2+1,"🎤",c.kana?"вслух":"голосом")}</div>`; }); const E=st.length-2; [E,E+1].forEach(i=>{ const s=st[i]; out+=`<button class="stp ${s.done?"ok":""} ${s.open?"":"lk"} ${isNx(s)?"nx":""}" data-s="${c.ci}:${i}" ${s.open?"":"disabled"}><span class="si">${s.done?"✓":s.k==="exam"?"📝":"📞"}</span><span class="st"><b>${esc(s.label)}</b><small>${esc(s.sub)}</small></span></button>`; }); if(!c.kana&&!nChDone(c)&&!nChSkip(c)&&!st[st.length-2].done) out+=`<div class="tline">Уже всё это знаешь? Жми «Экзамен главы» сразу: сдашь его и созвон — глава закроется целиком, уроки засчитаются.</div>`;
     if(nChSkip(c)) out+=`<button class="mini skipk" data-unskip="${c.ci}">↩ Вернуть главу в курс (сейчас пропущена)</button>`; else if(c.kana&&!nChDone(c)) out+=`<button class="mini skipk" data-skip="${c.ci}">Я знаю ${c.kana==="h"?"хирагану":"катакану"} — сразу на созвон-проверку всех букв</button><button class="mini skipk" data-skipnow="${c.ci}">${n.skipArm===c.ci?"Точно? Нажми ещё раз — глава будет закрыта":"⏭ Пропустить "+(c.kana==="h"?"хирагану":"катакану")+" без проверки"}</button>`; return out; })()}</div>`:""}
     </div>`; }).join("");
   app.innerHTML=`<section class="screen n5home">
@@ -5856,7 +5861,11 @@ const CLOUD_LOCAL_TS0=S._ts||0; // время локального прогре�
 function cloudSplit(){ const main=Object.assign({},S); delete main.n5; return {main:{v:1,ts:S._ts||0,s:main},n5:{v:1,ts:S._ts||0,n5:S.n5||{}}}; }
 function cloudPush(){ if(!CLOUD.db||!CLOUD.dirty) return CLOUD.chain; CLOUD.dirty=false;
   const {main,n5}=cloudSplit();
-  CLOUD.chain=CLOUD.chain.then(async()=>{ try{ cloudMark("saving"); await CLOUD.db.doc("kana/main").set(main); await CLOUD.db.doc("kana/n5").set(n5); cloudMark("ok"); }
+  CLOUD.chain=CLOUD.chain.then(async()=>{ try{ cloudMark("saving");
+      /* кто-то (другое устройство / перенос) записал облако новее, чем мы видели — берём его, не затираем */
+      try{ const m=await CLOUD.db.doc("kana/main").get(); const rm=m.exists?m.data():null; if(rm&&CLOUD.known!=null&&(rm.ts||0)>CLOUD.known&&(rm.ts||0)!==main.ts){ const n=await CLOUD.db.doc("kana/n5").get(); const rn=n.exists?n.data():null;
+        Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,JSON.parse(JSON.stringify(rm.s||{}))); if(rn&&rn.n5) S.n5=JSON.parse(JSON.stringify(rn.n5)); CLOUD.known=rm.ts; try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){} cloudMark("ok"); if(!NV&&!NT&&!MK){ N5_MENU=false; home(); } return; } }catch(e){}
+      await CLOUD.db.doc("kana/main").set(main); await CLOUD.db.doc("kana/n5").set(n5); CLOUD.known=main.ts; cloudMark("ok"); }
     catch(e){ const c=e&&e.code; if(c==="unavailable"){ CLOUD.dirty=true; clearTimeout(CLOUD.timer); CLOUD.timer=setTimeout(cloudPush,4000+Math.random()*2000); } cloudMark(c==="revoked"||c==="not_granted"?"off":"err"); } });
   return CLOUD.chain; }
 function cloudMark(st){ CLOUD.state=st; let el=document.getElementById("cloudSt"); if(!el){ const hs=document.querySelector(".n5home .hstats"); if(hs){ el=document.createElement("span"); el.id="cloudSt"; el.className="cloudst"; hs.appendChild(el); } } if(el) el.innerHTML=cloudBadge(); }
@@ -5871,6 +5880,7 @@ async function cloudInit(){
     if(got==="timeout"){ cloudMark("err"); CLOUD.state="ok"; return; }
     const [m,n]=got; const rm=m.exists?m.data():null, rn=n.exists?n.data():null;
     const localTs=CLOUD_LOCAL_TS0, remoteTs=rm&&rm.ts||0;
+    CLOUD.known=Math.max(remoteTs,localTs);
     if(rm&&remoteTs>localTs){
       const keep={}; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,JSON.parse(JSON.stringify(rm.s||{})));
       if(rn&&rn.n5) S.n5=JSON.parse(JSON.stringify(rn.n5));
@@ -6276,6 +6286,25 @@ function passLabel(st){ return st.k==="call"?`Засчитать созвон �
   const st=NT.mode==="lesson"?{k:"tap",l:NT.l,c:N5C[NT.l.ci]}:{k:"exam",c:NT.c};
   const b=document.createElement("button"); b.className="x tpass"; b.id="tpass"; b.textContent="✅"; b.title="Уже проходил"; top.appendChild(b);
   b.onclick=()=>passConfirm(st.k==="tap"?`Вы уверены, что можно засчитать урок «${st.l.t}»? (засчитаю и руками, и голосом)`:passLabel(st),()=>{ hideSheet(); try{speechSynthesis.cancel()}catch(e){} NT=null; passStep(st); home(); }); }; }
+
+/* меню урока: начать / засчитать / в недоученные / пройти снова */
+function lessonMenu(c,l){ const n=NS(), d=n.done[l.id]||{}, done=d.tap&&d.voice;
+  const o=document.createElement("div"); o.className="pconf"; o.innerHTML=`<div class="pcbox lmbox"><b>${esc(l.t)}</b><small>${done?"✅ пройден":d.tap?"✋ руками пройден, голосом — нет":d.voice?"🎤 голосом пройден, руками — нет":"не пройден"} · ${l.items.length} ${c.kana?"букв":"слов и фраз"}</small>
+    <div class="pcbtns">
+      <button class="big" data-a="start" ${pinkBtn}>▶ ${done?"Начать (голосом)":"Начать"}</button>
+      <button class="ghost" data-a="pass">✅ Засчитать</button>
+      <button class="ghost" data-a="redo">🔁 Пройти снова (с нуля)</button>
+      <button class="ghost" data-a="unl">↩ Кинуть в недоученные</button>
+      <button class="ghost" data-a="x">Закрыть</button></div></div>`;
+  document.body.appendChild(o);
+  o.onclick=e=>{ if(e.target===o) o.remove(); };
+  o.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a; o.remove();
+    if(a==="start"){ nRunStep({k:d.tap&&!d.voice?"voice":(!d.tap?"tap":"voice"),c,l}); }
+    else if(a==="redo"){ nRunStep({k:"tap",c,l}); }
+    else if(a==="pass"){ passConfirm(`Вы уверены, что можно засчитать урок «${l.t}»?`,()=>{ passStep({k:"tap",c,l}); home(); }); }
+    else if(a==="unl"){ passConfirm(`Кинуть «${l.t}» в недоученные? Отметки «пройден» снимутся, а все слова урока встанут в повтор прямо сейчас.`,()=>{ const now=Date.now(); delete n.done[l.id]; l.items.forEach(it=>{ n.srs[it.id]={b:0,d:now,t:(n.srs[it.id]||{}).t||now}; }); save(); home(); }); }
+  }); }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-lm]"); if(!t) return; const [ci,li]=t.dataset.lm.split(":").map(Number); const c=N5C[ci]; if(c&&c.L[li]) lessonMenu(c,c.L[li]); });
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
