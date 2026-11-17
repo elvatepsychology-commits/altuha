@@ -700,6 +700,7 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .nv .speech{max-height:62%;overflow:auto}
 .nv .vans{color:#0F9D4E}
 .vskip{padding:12px;font-size:18px}
+.vskip small{font-size:11px;opacity:.8}
 .vbtns{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
 .nback:disabled{opacity:.25}
 .vbtns .mini{padding:9px 4px;font-size:12px;font-weight:800}
@@ -4530,10 +4531,10 @@ const nTypeNorm=s=>toHira(kanaOf(String(s))).replace(/[\s、。？！?!.,ー〜~
 const nRomaNorm=r=>String(r).toLowerCase().replace(/[^a-z]/g,"").replace(/shi/g,"si").replace(/chi/g,"ti").replace(/tsu/g,"tu").replace(/fu/g,"hu").replace(/ji/g,"zi").replace(/sh/g,"sy").replace(/ch/g,"ty").replace(/j/g,"zy").replace(/([bcdfghjkmpqrstvwxz])\1/g,"$1").replace(/nn/g,"n").replace(/wo/g,"o").replace(/ha/g,"wa").replace(/he/g,"e").replace(/ou/g,"o").replace(/oo/g,"o").replace(/uu/g,"u").replace(/ei/g,"e").replace(/ii/g,"i").replace(/aa/g,"a");
 const nTypeExact=(typed,targets)=>{ const a=nTypeNorm(r2k(typed)); if(targets.some(t=>nTypeNorm(t)===a)) return true; if(/[a-z]/i.test(typed)){ const r=nRomaNorm(typed); return !!r&&targets.some(t=>nRomaNorm(jaRoma(kanaOf(t)))===r); } return false; };
 function nLev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=Array.from({length:n+1},(_,k)=>k); for(let i=1;i<=m;i++){ const c=[i]; for(let k=1;k<=n;k++) c[k]=Math.min(p[k]+1,c[k-1]+1,p[k-1]+(a[i-1]===b[k-1]?0:1)); p=c; } return p[n]; }
-const nRomaLoose=r=>nRomaNorm(String(r).toLowerCase().replace(/(ma|de)su(?![a-z])/g,"$1s").replace(/([aeiou])y(?![aiueo])/g,"$1i").replace(/([aeiou])j(?![aiueo])/g,"$1i")).replace(/z/g,"s").replace(/d/g,"t").replace(/l/g,"r").replace(/w(?=[ieo])/g,"");
+const nRomaLoose=r=>nRomaNorm(String(r).toLowerCase().replace(/(ma|de)su(?=ka|ne|yo|[^a-z]|$)/g,"$1s").replace(/([aeiou])y(?![aiueo])/g,"$1i").replace(/([aeiou])j(?![aiueo])/g,"$1i")).replace(/z/g,"s").replace(/d/g,"t").replace(/l/g,"r").replace(/w(?=[ieo])/g,"");
 const nRomaNeg=r=>/masen|nai|naite|ikemasen|zya|ja(?=a?r)/.test(String(r).toLowerCase().replace(/\s/g,""));
 function nTypeClose(typed,targets){ if(!/[a-z]/i.test(typed)) return false; const a=nRomaLoose(typed); if(a.length<3) return false;
-  return targets.some(t=>{ const tr=jaRoma(kanaOf(t)); const b=nRomaLoose(tr); if(!b) return false; if(nRomaNeg(typed)!==nRomaNeg(tr)) return false; const tw=String(typed).trim().split(/\s+/), rw=String(tr).trim().split(/\s+/); if(tw.length===rw.length&&tw.some((w,k)=>nRomaLoose(w)[0]!==nRomaLoose(rw[k])[0])) return false; if(a[0]!==b[0]) return false; const d=nLev(a,b), L=Math.max(a.length,b.length); return L<=4?d===0:L<=7?d<=1:L<=10?d<=2:d/L<=.27; }); }
+  return targets.some(t=>{ const tr=jaRoma(kanaOf(t)); const b=nRomaLoose(tr); if(!b) return false; if(nRomaNeg(typed)!==nRomaNeg(tr)) return false; const tw=String(typed).trim().split(/\s+/), rw=String(tr).trim().split(/\s+/); if(tw.length===rw.length&&tw.some((w,k)=>{ const x=nRomaLoose(w)[0], y=nRomaLoose(rw[k])[0]; return x!==y&&!(/[aiueo]/.test(x)&&/[aiueo]/.test(y)); })) return false; if(a[0]!==b[0]&&!(/[aiueo]/.test(a[0])&&/[aiueo]/.test(b[0]))) return false; const d=nLev(a,b), L=Math.max(a.length,b.length); return L<=4?d===0:L<=7?d<=1:L<=10?d<=2:d/L<=.27; }); }
 const nTypeOk=(typed,targets)=>nTypeExact(typed,targets)||nTypeClose(typed,targets);
 
 /* ---------- озвучка ---------- */
@@ -4829,20 +4830,20 @@ function vRender(){
     ${listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${listening==="ru"?"Скажи по-русски":listening==="kana"?"Читай букву вслух":listening==="rep"?"Повтори вслух":"Говори по-японски"} <small>· слушаю, сколько надо</small></b><span id="vHeard">${esc(NV.heardTxt||"…")}</span></span></div>`:""}
     ${SR&&S.voice&&VOICE.denied?`<div class="micerr">🎤 ${esc(voiceNote())} Пока можешь отвечать текстом.</div>`:!SR&&NV.asked===0&&NV.round===1?`<div class="micerr">🎤 ${esc(voiceErrText())} Отвечай текстом — латиницей, она сама станет японским.</div>`:""}
     ${NV.wantInput&&(NV.typing||!nVoiceOn()||NV.listening)?`<form class="typebox vtype" id="vtf" autocomplete="off"><input id="vti" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${NV.wantInput==="ru"?"по-русски":"латиницей: arigatou"}"><div class="nkana" id="vtk">&nbsp;</div><button class="big" type="submit">ОТВЕТИТЬ</button></form>`:""}
-    <button class="big vskip" id="vskip" ${pinkBtn}>⏭ ДАЛЬШЕ</button>
+    ${v.canSkip?`<button class="big vskip" id="vskip" ${pinkBtn}>⏭ ДАЛЬШЕ <small>(Enter)</small></button>`:""}
     <div class="vbtns"><button class="mini" id="vback" ${(NV.hist||[]).length?"":"disabled"}>← Назад</button><button class="mini" id="vrep">🔁 Повтори</button><button class="mini" id="vdk">🤷 Не знаю</button>${SR?`<button class="mini" id="vty">${NV.typing?"🎤 Голосом":"⌨️ Текстом"}</button>`:""}<button class="mini" id="vtx">${showTxt?"🙈 Без текста":"👀 Текст"}</button></div>
   </section>`;
   const g=id=>document.getElementById(id);
   g("quit").onclick=()=>{ NV.dead=true; hfStop(); VOICE.onInterim=null; NV=null; home(); };
   g("vrep").onclick=()=>{ NV.cmd="repeat"; stopListen(); };
-  g("vskip").onclick=()=>{ NV.skip=true; NV.cmd="skip"; try{speechSynthesis.cancel()}catch(e){} hfStop&&0; stopListen(); };
+  if(g("vskip")) g("vskip").onclick=()=>{ NV.skip=true; NV.cmd="skip"; try{speechSynthesis.cancel()}catch(e){} hfStop&&0; stopListen(); };
   g("vback").onclick=()=>{ if(!(NV.hist||[]).length) return; NV.cmd="back"; stopListen(); try{speechSynthesis.cancel()}catch(e){} };
   g("vdk").onclick=()=>{ NV.cmd="forgot"; stopListen(); };
   if(g("vty")) g("vty").onclick=()=>{ NV.typing=!NV.typing; if(!NV.typing) voicePrime(); NV.cmd="switch"; stopListen(); };
   g("vtx").onclick=()=>{ const n=NS(); n.showTxt=!n.showTxt; save(); vRender(); };
   const f=g("vtf"); if(f){ const inp=g("vti"), tk=g("vtk"); if(_pval&&NV.typed==null){ inp.value=_pval; } if(_pfoc||NV.typing||!nVoiceOn()) setTimeout(()=>inp.focus(),30);
     if(NV.wantInput!=="ru") inp.oninput=()=>{ tk.textContent=NV.wantInput==="kana"?inp.value:(r2k(inp.value)||" "); };
-    f.onsubmit=e=>{ e.preventDefault(); const val=inp.value.trim(); if(!val) return; NV.typed=val; stopListen(); }; }
+    f.onsubmit=e=>{ e.preventDefault(); const val=inp.value.trim(); if(!val){ if(NV.view&&NV.view.canSkip){ const sk=g("vskip"); if(sk) sk.click(); } return; } if(NV._subT&&Date.now()-NV._subT<500) return; NV._subT=Date.now(); NV.typed=val; inp.value=""; stopListen(); }; }
 }
 async function vListen(lang,alive){
   NV.wantInput=lang==="ru"?"ru":lang==="kana"?"kana":"ja";
@@ -4854,7 +4855,7 @@ async function vListen(lang,alive){
     if(NV.typing||!nVoiceOn()){ if(NV.listening!=="__t"){ NV.listening=null; vRender(); NV.listening="__t"; } await sleep(150); continue; }
     NV.listening=lang; NV.heardTxt=""; vRender();
     VOICE.onInterim=tx=>{ NV.heardTxt=tx; const el=document.getElementById("vHeard"); if(el) el.textContent=tx||"…"; };
-    const h=await listen(lang==="kana"?"ru":lang,15000,()=>alive()&&NV&&NV.typed==null&&!NV.cmd);
+    const h=await Promise.race([listen(lang==="kana"?"ru":lang,15000,()=>alive()&&NV&&NV.typed==null&&!NV.cmd), new Promise(res=>{ const iv=setInterval(()=>{ if(!alive()||!NV||NV.typed!=null||NV.cmd){ clearInterval(iv); res({alts:[]}); } },40); })]);
     VOICE.onInterim=null; NV.listening=null;
     if(!alive()) return {dead:true};
     const alts=(h.alts||[]).filter(Boolean);
@@ -4968,7 +4969,7 @@ async function vAsk(task,alive){
     if(it&&task.t!=="kana") nGrade(it.id,ok,false);
     const answerJa=task.t==="kana"?it.jp:task.t==="reply"?tk.ans[0]:task.t==="say"?it.jp:null;
     if(ok){ NV.mood=pick(["blush","laugh","happy"]); const pr=pick(VL.right);
-      NV.view=Object.assign({},NV.view,{heard,ru:pr,ans:task.t==="kana"?null:answerJa,bad:false}); vRender(); beep(true);
+      NV.skip=false; NV.view=Object.assign({},NV.view,{heard,ru:pr,ans:task.t==="kana"?null:answerJa,bad:false,canSkip:true}); vRender(); beep(true);
       await speakP(pr,"ru"); return {ok:true}; }
     /* ошибка: коротко, и всё можно пропустить кнопкой «Дальше» */
     NV.mood=h.cmd==="forgot"?"pout":"angry"; beep(false); buzz();
@@ -5385,7 +5386,7 @@ function cDicInit(){
   C_DIC.onFinal(({text})=>{ CD.buf+=text; const el=document.getElementById("vHeard"); if(el) el.textContent=CD.buf.trim(); clearTimeout(CD.t); CD.t=setTimeout(()=>{ if(C_DIC.active()) C_DIC.stop().catch(()=>{}); },1100); });
   C_DIC.onState(({state,reason})=>{ const b=document.getElementById("cdic"); if(b){ b.classList.toggle("on",state!=="idle"); b.innerHTML=state==="idle"?"🎤 ГОВОРИ <small>или пробел</small>":"⏹ ГОТОВО <small>слушаю…</small>"; }
     if(state==="idle"){ clearTimeout(CD.t); if(CD.buf.trim()) CD.text=CD.buf.trim(); else if(reason&&!["stopped","viewer_stopped","hidden"].includes(reason)) CD.err=reason; } });
-  document.addEventListener("keydown",e=>{ if(e.code!=="Space"||!NV||NV.typing) return; const t=e.target; if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="BUTTON")) return; if(!NV.listening||NV.listening==="__t") return; e.preventDefault(); cDicToggle(); });
+  document.addEventListener("keydown",e=>{ if(e.code!=="Space"||!NV||NV.typing) return; if(e.repeat||(CD.lastSp&&Date.now()-CD.lastSp<700)){ if(!(e.target&&e.target.tagName==="INPUT")) e.preventDefault(); return; }  const t=e.target; if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="BUTTON")) return; if(!NV.listening||NV.listening==="__t") return; CD.lastSp=Date.now(); e.preventDefault(); cDicToggle(); });
 }
 /* слушаем через диктовку Claude */
 const _vListen0=vListen;
@@ -5717,9 +5718,9 @@ let WL_SEL=new Set();
 { const _vg3=vGate; vGate=function(s){ _vg3(s); if(s.k!=="free") return; const h2=document.querySelector(".pu-head h2"); if(h2) h2.textContent=`🎯 Выбранные: ${s.ids.length}`;
   const note=document.querySelector(".screen .note"); if(note) note.innerHTML=`Юки гоняет только выбранные слова вразнобой — ${s.dir==="jr"?"она по-японски, ты переводишь":s.dir==="rj"?"она по-русски, ты по-японски":s.dir==="k"?"ты читаешь буквы":"то так, то эдак"}. Бесконечно, пока не нажмёшь <b>«🏁 Закончить»</b>.`;
   const tl=document.querySelector(".screen .tline"); if(tl) tl.textContent="Без кругов и галочек: учишь сколько хочешь."; }; }
-{ const _vr=vRender; vRender=function(){ _vr(); if(!NV||!NV.endless) return; const sk=document.getElementById("vskip"); if(!sk||document.getElementById("vfin")) return;
+{ const _vr=vRender; vRender=function(){ _vr(); if(!NV||!NV.endless) return; const sk=document.querySelector(".nv .vbtns"); if(!sk||document.getElementById("vfin")) return;
   const b=document.createElement("button"); b.id="vfin"; b.className="ghost vfin"; b.textContent=`🏁 Закончить обучение (✓${NV.freeOk||0} ✗${NV.freeBad||0})`;
-  b.onclick=()=>{ NV.finish=true; NV.cmd="skip"; NV.skip=true; try{speechSynthesis.cancel()}catch(e){} stopListen(); }; sk.after(b); }; }
+  b.onclick=()=>{ NV.finish=true; NV.cmd="skip"; NV.skip=true; try{speechSynthesis.cancel()}catch(e){} stopListen(); }; sk.before(b); }; }
 { const _va=vAsk; vAsk=async function(task,alive){ const r=await _va(task,alive); if(NV&&NV.endless&&!NV.finish&&!r.back){ if(r.ok) NV.freeOk=(NV.freeOk||0)+1; else NV.freeBad=(NV.freeBad||0)+1; } return r; }; }
 { const _ve2=vEnd; vEnd=function(info){ if(info.step.k!=="free") return _ve2(info); const s=info.step;
   app.innerHTML=`<section class="screen res"><div class="stage small bg-${s.c.bg}">${sceneDeco(s.c.bg)}<div class="girlwrap">${girlSVG("laugh")}</div></div>
@@ -5766,6 +5767,9 @@ const nSynTip=id=>{ const g=N5_SYNG[id]; if(!g) return ""; const others=[...g.id
   let p=_np(it,n+8).filter(x=>!ex.has(x.id)&&String(x.ru).toLowerCase().split(/[(,—–]/)[0].trim()!==ru0); return p.slice(0,n); }; }
 // подсказка о разнице — везде, где показывается запоминалка
 { const _mb=nMnBox; nMnBox=function(id){ return (N5_SYNG[id]?nSynTip(id):"")+_mb(id); }; }
+
+
+document.addEventListener("keydown",e=>{ if(e.key!=="Enter"||!NV||!NV.view||!NV.view.canSkip) return; const t=e.target; if(t&&t.tagName==="INPUT"&&t.value.trim()) return; if(t&&t.tagName==="TEXTAREA") return; e.preventDefault(); e.stopPropagation(); if(e.repeat) return; const sk=document.getElementById("vskip"); if(sk) sk.click(); },true);
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
