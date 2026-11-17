@@ -3534,7 +3534,7 @@ function progressScreen(){
   document.getElementById("back").onclick=home;
   document.getElementById("copy").onclick=async()=>{ const ta=document.getElementById("expCode"); try{ await navigator.clipboard.writeText(ta.value); document.getElementById("copy").textContent="Скопировано ✓"; }catch(e){ ta.focus(); ta.select(); document.getElementById("copy").textContent="Выделил — скопируй вручную"; } };
   document.getElementById("imp").onclick=()=>{ const r=document.getElementById("impRes"); r.hidden=false;
-    try{ const data=JSON.parse(decodeURIComponent(escape(atob(document.getElementById("impCode").value.trim())))); if(!data||typeof data!=="object"||!("xp" in data)) throw 0; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,data); save(); r.textContent="✅ Прогресс загружен. Обновляю…"; setTimeout(()=>location.reload(),800); }
+    try{ const data=JSON.parse(decodeURIComponent(escape(atob(document.getElementById("impCode").value.trim())))); if(!data||typeof data!=="object"||!("xp" in data)) throw 0; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,data); S._ts=Date.now(); save(); r.textContent="✅ Прогресс загружен."; (async()=>{ try{ if(typeof CLOUD!=="undefined"&&CLOUD.db){ CLOUD.dirty=true; await cloudPush(); } }catch(e){} setTimeout(()=>{ try{ home(); }catch(e){ location.reload(); } },600); })(); }
     catch(e){ r.textContent="❌ Код не подходит. Скопируй его целиком, без пробелов по краям."; } };
 }
 
