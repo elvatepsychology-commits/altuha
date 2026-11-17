@@ -31,6 +31,17 @@
 .gno{font-size:19px;opacity:.75}.gno s{text-decoration-color:#e33;text-decoration-thickness:2px}
 .gyes{font-size:21px;margin:3px 0}
 .gbr small{opacity:.8}
+
+.statscr .scard{display:block;text-align:left;padding:14px;width:100%;box-sizing:border-box}
+.statscr .scard .srow{width:100%}
+.statscr .scard .sbar{width:100%}
+.scap{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.srow{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-top:9px;font-size:14px}
+.srow b{white-space:nowrap}.srow small{color:var(--muted);font-weight:400}
+.sbar{height:7px;border-radius:4px;background:color-mix(in srgb,var(--ink) 9%,transparent);margin-top:4px;overflow:hidden}
+.sbar i{display:block;height:100%;background:var(--pink);border-radius:4px}
+.stbars.s30{grid-template-columns:repeat(30,1fr);gap:2px}
+.hrow span{min-width:0}
 </style>
 <title>Кана, блять</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -6098,6 +6109,57 @@ const nSynTip=id=>{ const g=N5_SYNG[id]; if(!g) return ""; const others=[...g.id
 
 
 document.addEventListener("keydown",e=>{ if(e.key!=="Enter"||!NV||!NV.view||!NV.view.canSkip) return; const t=e.target; if(t&&t.tagName==="INPUT"&&t.value.trim()) return; if(t&&t.tagName==="TEXTAREA") return; e.preventDefault(); e.stopPropagation(); if(e.repeat) return; const sk=document.getElementById("vskip"); if(sk) sk.click(); },true);
+
+/* =================================================================
+   СТАТИСТИКА
+   ================================================================= */
+function statsScreen(){
+  hfStop(); hideSheet();
+  const n=NS(), days=studyDays(), total=Object.values(days).reduce((a,b)=>a+b,0);
+  const act=Object.values(days).filter(s=>s>=60).length;
+  const now=new Date(); const last=[]; for(let i=29;i>=0;i--){ const dd=new Date(now); dd.setDate(now.getDate()-i); last.push({d:dd,s:days[dayKey(dd)]||0}); }
+  const mx=Math.max(600,...last.map(x=>x.s));
+  const all=N5_ALL(), L=t=>nLearned(t.id);
+  const grp=[["Буквы",all.filter(t=>t.kind==="k")],["Слова",all.filter(t=>t.kind==="w")],["Фразы",all.filter(t=>t.kind==="s")]];
+  const les=N5C.flatMap(c=>c.L), lesDone=les.filter(nLesDone).length;
+  const gl=les.filter(l=>l.gram), glDone=gl.filter(nLesDone).length;
+  const chDone=N5C.filter(nChDone).length;
+  const SKN={listen:"🎧 Аудирование",gram:"🧩 Грамматика",read:"📖 Чтение",write:"✍️ Письмо",pron:"🗣 Произношение",vocab:"🧠 Словарь"};
+  const sk=Object.keys(SKN).map(k=>{ const a=n.sk[k]||[0,0]; return {k,name:SKN[k],ok:a[0],all:a[1],p:a[1]?Math.round(a[0]/a[1]*100):null}; });
+  const totAns=sk.reduce((a,b)=>a+b.all,0), totOk=sk.reduce((a,b)=>a+b.ok,0);
+  const errc=n.errc||{}, ew=Object.keys(n.ew||{}).length, errTot=Object.values(errc).reduce((a,b)=>a+b,0);
+  const hard=Object.entries(errc).filter(([id])=>N5I[id]).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const srs=n.srs, strong=Object.values(srs).filter(r=>r.b>=4).length, due=Object.values(srs).filter(r=>r.d<=Date.now()).length;
+  const exams=N5C.filter(c=>(n.ch[c.id]||{}).examBest!=null).map(c=>({t:c.t,b:n.ch[c.id].examBest,call:(n.ch[c.id]||{}).callErr}));
+  const bar=(p)=>`<div class="sbar"><i style="width:${Math.max(0,Math.min(100,p))}%"></i></div>`;
+  const tile=(v,l)=>`<div class="stat"><b>${v}</b><small>${l}</small></div>`;
+  app.innerHTML=`<section class="screen statscr">
+    <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>📊 Статистика</h2></div>
+    <div class="label">Время</div>
+    <div class="stats">${tile(fmtStudy(days[dayKey()]||0),"сегодня")}${tile(fmtStudy(studySum(7)),"неделя")}${tile(fmtStudy(total),"всего")}</div>
+    <div class="card scard"><div class="scap">Последние 30 дней</div>
+      <div class="stbars s30">${last.map(x=>`<div class="stb" title="${x.d.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})}: ${fmtStudy(x.s)}"><i style="height:${Math.round(x.s/mx*100)}%"></i><small>${x.d.getDate()%5===0||x.d.getDate()===1?x.d.getDate():""}</small></div>`).join("")}</div>
+      <div class="fcn">Дней с занятиями (от минуты): <b>${act}</b> · в среднем за такой день: <b>${fmtStudy(act?total/act:0)}</b> · огонёк: <b>🔥 ${liveStreak()}</b> · XP: <b>${S.xp||0}</b></div></div>
+    <div class="label">Что выучено</div>
+    <div class="card scard">${grp.map(([nm,a])=>{ const l=a.filter(L).length; return `<div class="srow"><span>${nm}</span><b>${l}/${a.length}</b></div>${bar(l/Math.max(1,a.length)*100)}`; }).join("")}
+      <div class="srow"><span>Уроки</span><b>${lesDone}/${les.length}</b></div>${bar(lesDone/Math.max(1,les.length)*100)}
+      <div class="srow"><span>📐 Уроки частиц</span><b>${glDone}/${gl.length}</b></div>${bar(glDone/Math.max(1,gl.length)*100)}
+      <div class="srow"><span>Главы закрыты</span><b>${chDone}/${N5C.length}</b></div>${bar(chDone/Math.max(1,N5C.length)*100)}
+      <div class="srow"><span>漢 Кандзи</span><b>${Object.keys(n.kj).length}/${N5K.length}</b></div>${bar(Object.keys(n.kj).length/N5K.length*100)}
+      <div class="fcn">В памяти крепко (повторено 4+ раза): <b>${strong}</b> · пора повторить: <b>${due}</b></div></div>
+    <div class="label">Точность ответов</div>
+    <div class="card scard"><div class="srow"><span>Всего ответов</span><b>${totAns} · ${totAns?Math.round(totOk/totAns*100):0}% верно</b></div>
+      ${sk.map(s=>`<div class="srow"><span>${s.name}</span><b>${s.p==null?"—":s.p+"%"} <small>(${s.ok}/${s.all})</small></b></div>${bar(s.p||0)}`).join("")}</div>
+    <div class="label">Ошибки</div>
+    <div class="card scard"><div class="srow"><span>Всего ошибок</span><b>${errTot}</b></div><div class="srow"><span>В работе над ошибками (3+ раза)</span><b>${ew}</b></div>
+      ${hard.length?`<div class="scap" style="margin-top:10px">Где чаще всего косячишь</div>${hard.map(([id,c])=>{ const it=N5I[id]; return `<div class="srow hrow"><span><span class="${it.kind==="k"?"kfont":"jfont"}">${rb(it.jp)}</span> <small>${esc(it.ru)}</small></span><b>✗${c}</b></div>`; }).join("")}`:`<div class="fcn">Пока чисто.</div>`}</div>
+    ${exams.length||n.mock?`<div class="label">Экзамены</div><div class="card scard">${exams.map(e=>`<div class="srow"><span>${esc(e.t)}</span><b>${e.b}%${e.call!=null?` · созвон ✗${e.call}`:""}</b></div>`).join("")}${n.mock&&n.mock.n?`<div class="srow"><span>Пробник N5</span><b>лучший ${n.mock.best}/180 · попыток ${n.mock.n}</b></div>`:""}</div>`:""}
+    <button class="ghost" id="hm">На главную</button>
+  </section>`;
+  document.getElementById("back").onclick=home; document.getElementById("hm").onclick=home; window.scrollTo(0,0); noMatDom(app);
+}
+{ const _h=home; home=function(){ _h(); if(N5_MENU) return; const tb=document.querySelector(".n5home .tbtns"); if(!tb||document.getElementById("statsBtn")) return;
+  const b=document.createElement("button"); b.className="ghost"; b.id="statsBtn"; b.textContent="📊 Статистика"; b.onclick=statsScreen; tb.after(b); }; }
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
