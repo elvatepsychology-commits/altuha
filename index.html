@@ -5220,7 +5220,7 @@ async function vRun(){
   while(true){
     NV.errs=new Map(); NV.asked=0; NV.hist=[];
     let q=shuffle(NV.tasks); if(NV.kind==="lesson"){ q=q.filter(t=>t.t!=="mean").concat(q.filter(t=>t.t==="mean")); }
-    if(NV.round>1&&NV.lastTicked) { const tk=NV.tasks.filter(t=>NV.lastTicked.has(t.id)); q=q.concat(shuffle(tk)); }
+    if(NV.round>1&&NV.lastTicked) { const tk=NV.tasks.filter(t=>NV.lastTicked.has(t.id)); q=(window.AP&&AP.on)?shuffle(tk.concat(tk)):q.concat(shuffle(tk)); }
     NV.queue=q; const retry=new Map();
     while(NV.queue.length){
       const task=NV.queue.shift();
@@ -6196,7 +6196,37 @@ function apStepNext(){ const n=NS();
   const b=_vb(step); if(AP.on&&b&&b.tasks){ b.tasks=b.tasks.filter(t=>t.t!=="mean"&&!(t.t==="kana"&&!step.c.kana)); } return b; }; }
 { const _vt=vTitle; vTitle=function(){ const s=NV.step; return (AP.on?"🚗 ":"")+((s.k==="errv"||s.k==="apr")?s.l.t:_vt()); }; }
 { const _va=vAsk; vAsk=async function(task,alive){ const r=await _va(task,alive); if(AP.on&&r&&!r.back){ const id=task.it?task.it.id:task.tk?task.tk.id:null; if(id){ if(!r.ok) AP.fail.add(id); AP.seen.add(id); } } return r; }; }
-{ const _vr=vReview; vReview=function(){ if(!AP.on) return _vr(); const ids=new Set([...NV.errs.values()].map(e=>e.task.id)); return speakP(`Ошибок было ${ids.size}. Гоню их ещё раз.`,"ru").then(()=>ids); }; }
+{ const _vr=vReview; vReview=function(){ if(!AP.on) return _vr(); return apReview(); }; }
+const AP_NEXT=/дальше|далее|засчит|правильно|нормально|норм\b|идём|идем|пошли|погнали|next|つぎ|次|だーりしぇ|だりしぇ|ダーリシェ|ダリシェ/i;
+const AP_AGAIN=/заново|занова|ещ[её] раз|повтор|снова|again|もう一度|もういちど|ざのう?ば|ザノーヴァ|ザノバ/i;
+async function apReview(){
+  const list=[...NV.errs.values()]; const ids=new Set(list.map(e=>e.task.id));
+  const jp=t=>t.t==="reply"?t.tk.ans[0]:t.it.jp, ru=t=>t.t==="reply"?t.tk.hint:t.it.ru;
+  let res=null; const done=v=>{ if(!res){ res=v; try{speechSynthesis.cancel()}catch(e){} try{stopListen()}catch(e){} } };
+  app.innerHTML=`<section class="screen nrev">
+    <div class="stage small bg-${NV.bg}">${sceneDeco(NV.bg)}<div class="speech"><span class="akru">Я засчитала ошибки: ${list.length}. Ты реально ошибся — или я не расслышала?</span></div><div class="girlwrap">${girlSVG("pout")}</div></div>
+    <div class="rvlist">${list.map(e=>`<div class="rvi"><span class="tx"><span class="jfont">${rb(jp(e.task))}</span><small>${esc(ru(e.task))}</small>${e.heard?`<small class="hd">услышала: «${esc(e.heard)}»</small>`:""}</span></div>`).join("")}</div>
+    <button class="big" id="apNx" ${pinkBtn}>▶ Я СКАЗАЛ ПРАВИЛЬНО — ИДЁМ ДАЛЬШЕ</button>
+    <button class="big" id="apAg">🔁 ДА, ОШИБСЯ — ЗАНОВО</button>
+    <div class="note">Можно голосом: скажи <b>«дальше»</b> или <b>«заново»</b>.</div></section>`;
+  document.getElementById("apNx").onclick=()=>done("next"); document.getElementById("apAg").onclick=()=>done("again");
+  const lines=list.slice(0,6).map(e=>`${ru(e.task)}`).join(". ");
+  await speakP(`Я засчитала ошибок: ${list.length}. ${lines}. Это ты ошибся, или я не расслышала? Скажи «дальше» — засчитаю. Скажи «заново» — погоню ещё раз.`,"ru");
+  let nudge=Date.now();
+  while(!res&&AP.on&&NV&&!NV.dead){
+    let alts=[];
+    if(!C_MODE){ const h=await listen("ru",12000,()=>!res&&AP.on); alts=(h&&h.alts)||[]; if(!alts.length) await sleep(300); }
+    else { NV.listening="ru"; CD.text=null; const t0=Date.now(); while(!res&&CD.text==null&&Date.now()-t0<12000) await sleep(150); NV.listening=null; if(CD.text){ alts=[CD.text]; CD.text=null; } }
+    if(res) break;
+    const s=alts.join(" ");
+    if(AP_AGAIN.test(s)) done("again"); else if(AP_NEXT.test(s)) done("next");
+    else if(alts.length||Date.now()-nudge>25000){ nudge=Date.now(); await speakP("Скажи: «дальше» или «заново».","ru"); }
+  }
+  if(!res) res="again";
+  const n=NS();
+  if(res==="next"){ ids.forEach(id=>{ const k=id.replace(/#m$/,""); if(n.errc&&n.errc[k]){ n.errc[k]--; if(n.errc[k]<3&&n.ew) delete n.ew[k]; if(n.errc[k]<=0) delete n.errc[k]; } AP.fail.delete(k); }); save();
+    await speakP(pick(["Ладно, верю. Засчитала.","Окей, значит я глухая. Дальше.","Хорошо, засчитано."]),"ru"); return new Set(); }
+  await speakP(pick(["Заново эти. Погнали.","Окей, гоню ошибки ещё раз."]),"ru"); return ids; }
 { const _ve=vEnd; vEnd=function(info){ if(!AP.on) return _ve(info); const st=info.step, n=NS();
     if(st.k==="voice"){ const d=n.done[st.l.id]||(n.done[st.l.id]={}); if(!d.tap) d.tap=Date.now(); }
     if(st.k==="errv"){ (st.ids||[]).forEach(id=>{ if(!AP.fail.has(id)){ delete (n.ew||{})[id]; delete (n.errc||{})[id]; } }); if(!errPool().n) n.les3=0; else n.les3=0; n.errDone=(n.errDone||0)+1; }
