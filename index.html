@@ -47,6 +47,11 @@
 .apbtn small{font-size:11.5px;font-weight:500;opacity:.8;text-transform:none;letter-spacing:0}
 .aplost{position:fixed;inset:0;z-index:999;background:rgba(10,10,30,.82);color:#fff;font-size:24px;font-weight:800;border:0;line-height:1.3}
 .aplost small{font-size:15px;font-weight:500;opacity:.85}
+
+.pconf{position:fixed;inset:0;z-index:1000;background:rgba(10,10,30,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+.pcbox{background:var(--card,#fff);color:var(--ink);border-radius:20px;padding:22px 18px;max-width:380px;width:100%;text-align:center;font-size:18px;line-height:1.35}
+.pcbtns{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.tpass{font-size:18px}
 </style>
 <title>Кана, блять</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -6255,6 +6260,22 @@ function apStart(){
 { const _vl=vListen; vListen=async function(lang,alive){ const r=await _vl(lang,alive); if(AP.on&&r&&r.alts&&r.alts.length&&!r.typed){ const s=r.alts.join(" ").toLowerCase(); if(/^(стоп|хватит|пауза|выключи автопилот)|ストップ|すとっぷ|やめて/.test(s)){ apStop(); NV&&(NV.dead=true); NV=null; setTimeout(()=>{ home(); _speakP0("Автопилот выключен.","ru"); },50); return {dead:true}; } } return r; }; }
 { const _h=home; home=function(){ _h(); if(N5_MENU) return; const sb=document.getElementById("statsBtn"); const tb=document.querySelector(".n5home .tbtns"); const at=sb||tb; if(!at||document.getElementById("apBtn")) return;
   const b=document.createElement("button"); b.className="big apbtn"; b.id="apBtn"; b.innerHTML="🚗 АВТОПИЛОТ<small>без рук и без глаз — она сама ведёт, ты только говоришь</small>"; b.onclick=apStart; at.after(b); }; }
+
+/* «Я уже проходил» — засчитать урок/главу с подтверждением */
+function passConfirm(text,yes){ const o=document.createElement("div"); o.className="pconf"; o.innerHTML=`<div class="pcbox"><b>${esc(text)}</b><div class="pcbtns"><button class="big" id="pcY" ${pinkBtn}>ДА, ЗАСЧИТАТЬ</button><button class="ghost" id="pcN">НЕТ</button></div></div>`; document.body.appendChild(o);
+  o.querySelector("#pcN").onclick=()=>o.remove(); o.querySelector("#pcY").onclick=()=>{ o.remove(); yes(); }; }
+function passStep(st){ const n=NS(), now=Date.now(); const markL=l=>{ const d=n.done[l.id]||(n.done[l.id]={}); if(!d.tap) d.tap=now; if(!d.voice) d.voice=now; l.items.forEach(it=>{ if(!n.srs[it.id]) n.srs[it.id]={b:1,d:now+N_INT[1],t:now}; }); };
+  if(st.l&&(st.k==="voice"||st.k==="tap")) markL(st.l);
+  if(st.k==="call"||st.k==="exam"){ const ch=n.ch[st.c.id]||(n.ch[st.c.id]={}); if(!ch.exam) ch.exam=now; if(st.k==="call"){ ch.call=now; ch.callErr=0; } st.c.L.forEach(markL); }
+  n.les3=(n.les3||0)+(st.k==="voice"||st.k==="call"?1:0); save(); }
+function passLabel(st){ return st.k==="call"?`Засчитать созвон — вся глава «${st.c.t}» будет пройдена?`:st.k==="exam"?`Засчитать экзамен главы «${st.c.t}»?`:`Вы уверены, что можно засчитать урок «${st.l.t}»?`; }
+{ const _r=vRender; vRender=function(){ _r(); if(!NV||!NV.step) return; const st=NV.step; if(!["voice","call"].includes(st.k)) return; const vb=document.querySelector(".nv .vbtns"); if(!vb||document.getElementById("vpass")) return;
+  const b=document.createElement("button"); b.className="mini"; b.id="vpass"; b.textContent="✅ Уже проходил"; vb.appendChild(b);
+  b.onclick=()=>passConfirm(passLabel(st),()=>{ const ap=AP.on; NV.dead=true; try{speechSynthesis.cancel()}catch(e){} try{stopListen()}catch(e){} hfStop(); VOICE.onInterim=null; NV=null; passStep(st); if(st.k==="voice"&&st.c&&!st.c.kana){} if(ap){ AP.on=true; apNext({err:0}); } else home(); }); }; }
+{ const _r=tapRender; tapRender=function(){ _r(); if(!NT||!NT.l&&!NT.c) return; if(!["lesson","exam"].includes(NT.mode)) return; const top=document.querySelector(".nq .top"); if(!top||document.getElementById("tpass")) return;
+  const st=NT.mode==="lesson"?{k:"tap",l:NT.l,c:N5C[NT.l.ci]}:{k:"exam",c:NT.c};
+  const b=document.createElement("button"); b.className="x tpass"; b.id="tpass"; b.textContent="✅"; b.title="Уже проходил"; top.appendChild(b);
+  b.onclick=()=>passConfirm(st.k==="tap"?`Вы уверены, что можно засчитать урок «${st.l.t}»? (засчитаю и руками, и голосом)`:passLabel(st),()=>{ hideSheet(); try{speechSynthesis.cancel()}catch(e){} NT=null; passStep(st); home(); }); }; }
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
