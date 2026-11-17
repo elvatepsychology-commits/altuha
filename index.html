@@ -42,6 +42,11 @@
 .sbar i{display:block;height:100%;background:var(--pink);border-radius:4px}
 .stbars.s30{grid-template-columns:repeat(30,1fr);gap:2px}
 .hrow span{min-width:0}
+
+.apbtn{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--ink)!important;color:var(--bg)!important}
+.apbtn small{font-size:11.5px;font-weight:500;opacity:.8;text-transform:none;letter-spacing:0}
+.aplost{position:fixed;inset:0;z-index:999;background:rgba(10,10,30,.82);color:#fff;font-size:24px;font-weight:800;border:0;line-height:1.3}
+.aplost small{font-size:15px;font-weight:500;opacity:.85}
 </style>
 <title>Кана, блять</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5690,7 +5695,7 @@ const _speakP0=speakP, _sayQ0=sayQ, _say0=say, _hfStop0=hfStop;
 let C_BR=false;
 const cUseClaude=()=>C_TTS&&!(C_BR&&S.cVoiceMode!=="claude");
 function cProbe(){ return new Promise(res=>{ try{ if(!window.speechSynthesis) return res(false); const u=new SpeechSynthesisUtterance("а"); u.lang="ru-RU"; u.volume=0; let ok=false; u.onstart=()=>{ ok=true; res(true); }; u.onend=()=>{ if(!ok){ ok=true; res(true); } }; u.onerror=()=>res(false); speechSynthesis.speak(u); setTimeout(()=>{ if(!ok) { try{speechSynthesis.cancel()}catch(e){} res(false); } },1500); }catch(e){ res(false); } }); }
-async function cSpeakBr(text,lang,rate,pitch){ if(C_DIC&&C_DIC.active()) { try{ await C_DIC.stop(); }catch(e){} } return _speakP0(text,lang,rate,pitch); }
+async function cSpeakBr(text,lang,rate,pitch){ if(C_DIC&&C_DIC.active()&&!(window.AP&&AP.on)) { try{ await C_DIC.stop(); }catch(e){} } return _speakP0(text,lang,rate,pitch); }
 speakP=function(text,lang,rate,pitch){ return !C_MODE?_speakP0(text,lang,rate,pitch):cUseClaude()?cSpeak(text,lang,rate):cSpeakBr(text,lang,rate,pitch); };
 sayQ=function(text,lang){ if(C_MODE&&cUseClaude()){ cSpeak(text,lang); return; } _sayQ0(text,lang); };
 say=function(text,lang="ja"){ if(C_MODE&&cUseClaude()){ cSpeak(text,lang); return; } _say0(text,lang); };
@@ -5721,9 +5726,10 @@ const C_ERR={ja_unavail:"Японская диктовка в Claude для те
   upstream_error:"Микрофон или распознавание сбоит. Проверь, что микрофон не занят другой программой, и нажми ещё раз.",
   stopped:"Остановилось раньше времени — нажми ещё раз."};
 function cDicInit(){
-  C_DIC.onPartial(({text})=>{ const el=document.getElementById("vHeard"); if(el) el.textContent=(CD.buf+" "+text).trim()||"…"; });
-  C_DIC.onFinal(({text})=>{ CD.buf+=text; const el=document.getElementById("vHeard"); if(el) el.textContent=CD.buf.trim(); clearTimeout(CD.t); CD.t=setTimeout(()=>{ if(C_DIC.active()) C_DIC.stop().catch(()=>{}); },1100); });
+  C_DIC.onPartial(({text})=>{ if(window.AP&&AP.on&&!apAccept()) return; const el=document.getElementById("vHeard"); if(el) el.textContent=(CD.buf+" "+text).trim()||"…"; });
+  C_DIC.onFinal(({text})=>{ if(window.AP&&AP.on){ if(!apAccept()) return; CD.buf+=" "+text; clearTimeout(CD.t); CD.t=setTimeout(()=>{ const t=CD.buf.trim(); CD.buf=""; if(t&&apAccept()) CD.text=t; },1000); return; } CD.buf+=text; const el=document.getElementById("vHeard"); if(el) el.textContent=CD.buf.trim(); clearTimeout(CD.t); CD.t=setTimeout(()=>{ if(C_DIC.active()) C_DIC.stop().catch(()=>{}); },1100); });
   C_DIC.onState(({state,reason})=>{ const b=document.getElementById("cdic"); if(b){ b.classList.toggle("on",state!=="idle"); b.innerHTML=state==="idle"?"🎤 ГОВОРИ <small>или пробел</small>":"⏹ ГОТОВО <small>слушаю…</small>"; }
+    if(state==="idle"&&window.AP&&AP.on){ apMicLost(reason); }
     if(state==="idle"){ clearTimeout(CD.t); if(CD.buf.trim()) CD.text=CD.buf.trim(); else if(reason&&!["stopped","viewer_stopped","hidden"].includes(reason)) CD.err=reason; } });
   document.addEventListener("keydown",e=>{ if(e.code!=="Space"||!NV||NV.typing) return; if(e.repeat||(CD.lastSp&&Date.now()-CD.lastSp<700)){ if(!(e.target&&e.target.tagName==="INPUT")) e.preventDefault(); return; }  const t=e.target; if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="BUTTON")) return; if(!NV.listening||NV.listening==="__t") return; CD.lastSp=Date.now(); e.preventDefault(); cDicToggle(); });
 }
@@ -6160,6 +6166,62 @@ function statsScreen(){
 }
 { const _h=home; home=function(){ _h(); if(N5_MENU) return; const tb=document.querySelector(".n5home .tbtns"); if(!tb||document.getElementById("statsBtn")) return;
   const b=document.createElement("button"); b.className="ghost"; b.id="statsBtn"; b.textContent="📊 Статистика"; b.onclick=statsScreen; tb.after(b); }; }
+
+/* =================================================================
+   АВТОПИЛОТ: без рук и без глаз — она сама ведёт по курсу
+   ================================================================= */
+var AP={on:false,spk:0,quiet:0,lost:false,fail:new Set(),seen:new Set()};
+function apAccept(){ return AP.spk===0&&Date.now()>AP.quiet&&NV&&NV.listening&&NV.listening!=="__t"; }
+{ const _sp=speakP; speakP=async function(t,l,r,p){ if(!AP.on) return _sp(t,l,r,p); AP.spk++; CD.buf=""; try{ return await _sp(t,l,r,p); } finally{ AP.spk=Math.max(0,AP.spk-1); AP.quiet=Date.now()+1100; } }; }
+function apDicStart(){ if(!C_MODE||!C_DIC) return true; if(C_DIC.active()) return true;
+  try{ C_DIC.start({language:"ja"}).then(()=>{ AP.lost=false; const o=document.getElementById("apLost"); if(o) o.remove(); }).catch(e=>{ AP.lost=true; apMicLost(e&&e.code); }); }catch(e){ AP.lost=true; } return false; }
+function apMicLost(reason){ if(!AP.on||AP.lostShown) return; AP.lostShown=true;
+  setTimeout(()=>{ AP.lostShown=false; if(!AP.on||(C_DIC&&C_DIC.active())) return;
+    if(!document.getElementById("apLost")){ const o=document.createElement("button"); o.id="apLost"; o.className="aplost"; o.innerHTML="🎤 Микрофон отвалился<br><small>тапни куда угодно — и дальше без рук</small>"; document.body.appendChild(o); }
+    _speakP0(S.noMat?"Микрофон отключился. Тапни по экрану один раз.":"Блять, микрофон отвалился. Тапни по экрану один раз.","ru"); },700); }
+document.addEventListener("pointerdown",()=>{ if(AP.on&&C_MODE&&C_DIC&&!C_DIC.active()) apDicStart(); },true);
+function apStepNext(){ const n=NS();
+  if(errGate()){ const p=errPool(); return {k:"errv",c:N5C.find(c=>!c.kana),l:{t:"Работа над ошибками"},items:p.items,talk:p.talk,ids:p.ids}; }
+  const due=nOld(40).filter(t=>t.kind!=="k"&&n.srs[t.id]&&n.srs[t.id].d<=Date.now());
+  if(due.length>=8&&!AP.revDone){ AP.revDone=true; return {k:"apr",c:N5C.find(c=>!c.kana),l:{t:"Быстрый повтор"},items:due.slice(0,15)}; }
+  for(const c of N5C){ if(c.kana||nChDone(c)) continue;
+    for(const l of c.L){ const d=n.done[l.id]||{}; if(!d.voice) return {k:"voice",c,l}; if(!d.tap){ d.tap=Date.now(); } }
+    return {k:"call",c}; }
+  return null; }
+{ const _vb=vBuild; vBuild=function(step){
+  if(step.k==="errv"||step.k==="apr"){ const tasks=[]; (step.items||[]).forEach(it=>tasks.push(it.kind==="k"?{t:"kana",it,id:it.id}:{t:"say",it,id:it.id})); (step.talk||[]).forEach(tk=>tasks.push({t:"reply",tk,id:tk.id})); return {kind:"lesson",tasks,teach:[]}; }
+  const b=_vb(step); if(AP.on&&b&&b.tasks){ b.tasks=b.tasks.filter(t=>t.t!=="mean"&&!(t.t==="kana"&&!step.c.kana)); } return b; }; }
+{ const _vt=vTitle; vTitle=function(){ const s=NV.step; return (AP.on?"🚗 ":"")+((s.k==="errv"||s.k==="apr")?s.l.t:_vt()); }; }
+{ const _va=vAsk; vAsk=async function(task,alive){ const r=await _va(task,alive); if(AP.on&&r&&!r.back){ const id=task.it?task.it.id:task.tk?task.tk.id:null; if(id){ if(!r.ok) AP.fail.add(id); AP.seen.add(id); } } return r; }; }
+{ const _vr=vReview; vReview=function(){ if(!AP.on) return _vr(); const ids=new Set([...NV.errs.values()].map(e=>e.task.id)); return speakP(`Ошибок было ${ids.size}. Гоню их ещё раз.`,"ru").then(()=>ids); }; }
+{ const _ve=vEnd; vEnd=function(info){ if(!AP.on) return _ve(info); const st=info.step, n=NS();
+    if(st.k==="voice"){ const d=n.done[st.l.id]||(n.done[st.l.id]={}); if(!d.tap) d.tap=Date.now(); }
+    if(st.k==="errv"){ (st.ids||[]).forEach(id=>{ if(!AP.fail.has(id)){ delete (n.ew||{})[id]; delete (n.errc||{})[id]; } }); if(!errPool().n) n.les3=0; else n.les3=0; n.errDone=(n.errDone||0)+1; }
+    save(); AP.fail=new Set(); apNext(info); }; }
+{ const _h=home; home=function(){ if(AP.on&&!AP.inNext){ apStop(); } _h(); }; }
+function apStop(){ AP.on=false; const o=document.getElementById("apLost"); if(o) o.remove(); try{ if(C_DIC&&C_DIC.active()) C_DIC.stop().catch(()=>{}); }catch(e){} wakeOff(); }
+async function apNext(prev){
+  if(!AP.on) return;
+  const s=apStepNext();
+  if(!s){ apStop(); await speakP("Всё. Курс пройден голосом. Остался экзамен — его глазами.","ru"); return home(); }
+  const lbl=s.k==="voice"?`${s.l.gram?"Урок частицы: ":"Урок: "}${s.l.t}`:s.k==="call"?`Созвон по главе «${s.c.t}». Вся глава голосом.`:s.k==="errv"?"Стоп. Сначала работа над ошибками.":"Сначала быстрый повтор старого.";
+  app.innerHTML=`<section class="screen live-screen nv"><div class="stage bg-${s.c.bg}">${sceneDeco(s.c.bg)}<div class="callbadge">🚗 Автопилот</div><div class="speech"><span class="akru">${esc(lbl)}</span></div><div class="girlwrap">${girlSVG("happy")}</div></div><div class="vbtns"><button class="mini" id="apStop">⏹ Остановить автопилот</button></div></section>`;
+  document.getElementById("apStop").onclick=()=>{ apStop(); home(); };
+  const pre=prev?(prev.err?pick(["Готово. Дальше.","Закрыли. Едем дальше.","Сделано, хоть и с косяками. Дальше."]):pick(["Чисто. Дальше.","Красава. Следующее.","Готово. Погнали дальше."]))+" ":"";
+  await speakP(pre+lbl,"ru"); if(!AP.on) return;
+  AP.fail=new Set(); vStart(s);
+}
+function apStart(){
+  AP.on=true; AP.revDone=false; AP.fail=new Set();
+  if(C_MODE&&C_DIC){ CD.buf=""; CD.text=null; apDicStart(); }
+  else { S.voice=true; voicePrime(); }
+  NS().showTxt=NS().showTxt; save(); wakeOn();
+  apNext(null);
+}
+/* «стоп» голосом — выйти из автопилота */
+{ const _vl=vListen; vListen=async function(lang,alive){ const r=await _vl(lang,alive); if(AP.on&&r&&r.alts&&r.alts.length&&!r.typed){ const s=r.alts.join(" ").toLowerCase(); if(/^(стоп|хватит|пауза|выключи автопилот)|ストップ|すとっぷ|やめて/.test(s)){ apStop(); NV&&(NV.dead=true); NV=null; setTimeout(()=>{ home(); _speakP0("Автопилот выключен.","ru"); },50); return {dead:true}; } } return r; }; }
+{ const _h=home; home=function(){ _h(); if(N5_MENU) return; const sb=document.getElementById("statsBtn"); const tb=document.querySelector(".n5home .tbtns"); const at=sb||tb; if(!at||document.getElementById("apBtn")) return;
+  const b=document.createElement("button"); b.className="big apbtn"; b.id="apBtn"; b.innerHTML="🚗 АВТОПИЛОТ<small>без рук и без глаз — она сама ведёт, ты только говоришь</small>"; b.onclick=apStart; at.after(b); }; }
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
