@@ -4915,8 +4915,19 @@ function tapStart(cfg){ // cfg: {mode:"lesson"|"exam"|"review"|"kanji", title, i
     const isK=cfg.items[0].kind==="k"; const old=nOld(40,ex).filter(t=>isK?t.kind==="k":t.kind!=="k").slice(0,5);
     const kjOld=Object.keys(n.kj).map(k=>N5K.find(x=>x.k===k)).filter(Boolean); const kj2=shuffle(kjOld).slice(0,2);
     if(old.length||kj2.length){ qs.push({say:"Быстрый повтор старого — чтоб не протухло. Тыкай быстро."}); old.forEach(t=>qs.push(nQ(t,pick(nTypesFor(t,2))))); kj2.forEach(k=>qs.push(nKjQ(k,pick(["km","kd"])))); qs.push({say:"Разогрелся. Теперь новое."}); }
-    const items=cfg.items; const later=[];
-    items.forEach((it,i)=>{ qs.push({intro:it}); qs.push(nQ(it,pick(nTypesFor(it,1)))); if(i%3===2){ shuffle(items.slice(Math.max(0,i-2),i+1)).forEach(x=>qs.push(nQ(x,pick(nTypesFor(x,2))))); } else later.push(it); });
+    /* порциями по 4: знакомство → каждое слово вспомнить в обе стороны → повтор всех прошлых порций → финал вразнобой */
+    const items=cfg.items, np=Math.max(1,Math.ceil(items.length/4)), parts=[]; { let k=0; for(let i=0;i<np;i++){ const sz=Math.floor(items.length/np)+(i<items.length%np?1:0); parts.push(items.slice(k,k+sz)); k+=sz; } }
+    const two=it=>{ const t=shuffle(nTypesFor(it,2).slice()); return [t[0],t[1]||t[0]]; };
+    const seen=[];
+    parts.forEach((pt,pi)=>{
+      if(parts.length>1) qs.push({say:`Порция ${pi+1} из ${parts.length}: ${pt.length} ${pt.length<5?"слова":"слов"}. Не больше — так влезает в голову.`});
+      pt.forEach(it=>{ qs.push({intro:it}); qs.push(nQ(it,pick(nTypesFor(it,1)))); });
+      const dr=[]; pt.forEach(it=>{ const [a,b]=two(it); dr.push(nQ(it,a)); dr.push(nQ(it,b)); });
+      qs.push({say:"Теперь вспоминай сам — вразнобой, в обе стороны."}); shuffle(dr).forEach(q=>qs.push(q));
+      if(seen.length){ qs.push({say:"А теперь прошлые — чтоб не вылетели."}); shuffle(seen).forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2))))); }
+      seen.push(...pt);
+    });
+    qs.push({say:"Финал: все слова урока вразнобой."});
     shuffle(items).forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2)))));
   } else if(cfg.mode==="exam"){
     shuffle(cfg.items).forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2)))));
