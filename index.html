@@ -3519,7 +3519,7 @@ function voiceScreen(){
 }
 function progressScreen(){
   hfStop(); hideSheet();
-  let code=""; try{ code=btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }catch(e){}
+  let code=""; try{ const b=btoa(unescape(encodeURIComponent(JSON.stringify(Object.assign({xp:0},S))))); code="KANA."+b.length+"."+b+".END"; }catch(e){}
   app.innerHTML=`<section class="screen">
     <div class="pu-head"><button class="x" id="back" aria-label="Назад">←</button><h2>Мой прогресс</h2></div>
     <div class="note">Прогресс живёт в этом браузере. Почистишь Safari — пропадёт. Скопируй код и сохрани в заметки, или вставь его на другом устройстве, чтобы перенести всё: буквы, слова, экзамены, огонёк.</div>
@@ -3534,8 +3534,11 @@ function progressScreen(){
   document.getElementById("back").onclick=home;
   document.getElementById("copy").onclick=async()=>{ const ta=document.getElementById("expCode"); try{ await navigator.clipboard.writeText(ta.value); document.getElementById("copy").textContent="Скопировано ✓"; }catch(e){ ta.focus(); ta.select(); document.getElementById("copy").textContent="Выделил — скопируй вручную"; } };
   document.getElementById("imp").onclick=()=>{ const r=document.getElementById("impRes"); r.hidden=false;
-    try{ const data=JSON.parse(decodeURIComponent(escape(atob(document.getElementById("impCode").value.trim())))); if(!data||typeof data!=="object"||!("xp" in data)) throw 0; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,data); S._ts=Date.now(); save(); r.textContent="✅ Прогресс загружен."; (async()=>{ try{ if(typeof CLOUD!=="undefined"&&CLOUD.db){ CLOUD.dirty=true; await cloudPush(); } }catch(e){} setTimeout(()=>{ try{ home(); }catch(e){ location.reload(); } },600); })(); }
-    catch(e){ r.textContent="❌ Код не подходит. Скопируй его целиком, без пробелов по краям."; } };
+    let raw=document.getElementById("impCode").value.replace(/\s+/g,""), want=0;
+    const m=raw.match(/^KANA\.(\d+)\.(.*)$/); if(m){ want=+m[1]; raw=m[2].replace(/\.END$/,""); if(!/\.END$/.test(m[2])||raw.length!==want){ r.textContent=`❌ Код обрезался при копировании: вставилось ${raw.length} из ${want} символов. Скопируй ещё раз кнопкой «Скопировать код» (или выдели ВСЁ поле экспорта).`; return; } }
+    raw=raw.replace(/-/g,"+").replace(/_/g,"/"); while(raw.length%4) raw+="=";
+    try{ const data=JSON.parse(decodeURIComponent(escape(atob(raw)))); if(!data||typeof data!=="object"||!(("xp" in data)||data.n5||data._ts)) throw 0; if(data.xp==null) data.xp=0; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,data); S._ts=Date.now(); save(); r.textContent="✅ Прогресс загружен."; (async()=>{ try{ if(typeof CLOUD!=="undefined"&&CLOUD.db){ CLOUD.dirty=true; await cloudPush(); } }catch(e){} setTimeout(()=>{ try{ home(); }catch(e){ location.reload(); } },600); })(); }
+    catch(e){ r.textContent=`❌ Код не читается (вставилось ${document.getElementById("impCode").value.length} символов) — похоже, скопировался не целиком. Скопируй заново кнопкой «Скопировать код».`; } };
 }
 
 /* =================================================================
