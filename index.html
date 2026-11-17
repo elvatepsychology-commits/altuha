@@ -4789,6 +4789,7 @@ function vStart(step){
 }
 function vTitle(){ const s=NV.step; return s.k==="oral"?"Экзамен Юки · N5":s.k==="call"?`📞 ${s.c.t}`:`🎤 ${s.l.t}`; }
 function vRender(){
+  const _pv=document.getElementById("vti"), _pval=_pv?_pv.value:"", _pfoc=_pv&&document.activeElement===_pv;
   const v=NV.view||{}, total=NV.queue.length+NV.asked, pct=total?Math.round(NV.asked/total*100):0;
   const showTxt=NS().showTxt;
   let bub="";
@@ -4800,7 +4801,7 @@ function vRender(){
     <div class="stage bg-${NV.bg}">${sceneDeco(NV.bg)}<div class="callbadge">${esc(vTitle())} · ${fmtClock(Date.now()-NV.t0)}</div>${bub}<div class="girlwrap ${v.bad?"shake":""}">${girlSVG(NV.mood)}</div></div>
     ${listening?`<div class="micbar"><span class="mdot"></span><span class="mtx"><b>${listening==="ru"?"Скажи по-русски":listening==="kana"?"Читай букву вслух":listening==="rep"?"Повтори вслух":"Говори по-японски"} <small>· слушаю, сколько надо</small></b><span id="vHeard">${esc(NV.heardTxt||"…")}</span></span></div>`:""}
     ${SR&&S.voice&&VOICE.denied?`<div class="micerr">🎤 ${esc(voiceNote())} Пока можешь отвечать текстом.</div>`:!SR&&NV.asked===0&&NV.round===1?`<div class="micerr">🎤 ${esc(voiceErrText())} Отвечай текстом — латиницей, она сама станет японским.</div>`:""}
-    ${(NV.typing||!nVoiceOn())&&NV.wantInput?`<form class="typebox vtype" id="vtf" autocomplete="off"><input id="vti" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${NV.wantInput==="ru"?"по-русски":"латиницей: arigatou"}"><div class="nkana" id="vtk">&nbsp;</div><button class="big" type="submit">ОТВЕТИТЬ</button></form>`:""}
+    ${NV.wantInput&&(NV.typing||!nVoiceOn()||NV.listening)?`<form class="typebox vtype" id="vtf" autocomplete="off"><input id="vti" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${NV.wantInput==="ru"?"по-русски":"латиницей: arigatou"}"><div class="nkana" id="vtk">&nbsp;</div><button class="big" type="submit">ОТВЕТИТЬ</button></form>`:""}
     <button class="big vskip" id="vskip" ${pinkBtn}>⏭ ДАЛЬШЕ</button>
     <div class="vbtns"><button class="mini" id="vback" ${(NV.hist||[]).length?"":"disabled"}>← Назад</button><button class="mini" id="vrep">🔁 Повтори</button><button class="mini" id="vdk">🤷 Не знаю</button>${SR?`<button class="mini" id="vty">${NV.typing?"🎤 Голосом":"⌨️ Текстом"}</button>`:""}<button class="mini" id="vtx">${showTxt?"🙈 Без текста":"👀 Текст"}</button></div>
   </section>`;
@@ -4812,7 +4813,7 @@ function vRender(){
   g("vdk").onclick=()=>{ NV.cmd="forgot"; stopListen(); };
   if(g("vty")) g("vty").onclick=()=>{ NV.typing=!NV.typing; if(!NV.typing) voicePrime(); NV.cmd="switch"; stopListen(); };
   g("vtx").onclick=()=>{ const n=NS(); n.showTxt=!n.showTxt; save(); vRender(); };
-  const f=g("vtf"); if(f){ const inp=g("vti"), tk=g("vtk"); setTimeout(()=>inp.focus(),60);
+  const f=g("vtf"); if(f){ const inp=g("vti"), tk=g("vtk"); if(_pval&&NV.typed==null){ inp.value=_pval; } if(_pfoc||NV.typing||!nVoiceOn()) setTimeout(()=>inp.focus(),30);
     if(NV.wantInput!=="ru") inp.oninput=()=>{ tk.textContent=NV.wantInput==="kana"?inp.value:(r2k(inp.value)||" "); };
     f.onsubmit=e=>{ e.preventDefault(); const val=inp.value.trim(); if(!val) return; NV.typed=val; stopListen(); }; }
 }
