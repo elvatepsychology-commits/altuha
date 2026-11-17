@@ -623,6 +623,14 @@ rt{font-size:.5em;font-weight:500;letter-spacing:0}
 .wlc i{font-style:normal;opacity:.8}
 .wlr{font-size:14.5px;font-weight:700}
 .sbl{color:var(--ink)}
+.wlchk{flex:none;width:28px;height:28px;border-radius:8px;border:2px solid var(--line);background:var(--bg);font-weight:900;color:#fff}
+.wlchk.on{background:var(--pink);border-color:var(--pink)}
+.wlsel{display:flex;flex-direction:column;gap:8px;position:sticky;top:0;z-index:3;background:var(--bg);padding:6px 0}
+.wlsh{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px}
+.wlgo{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.wlgo .big{font-size:14px;padding:12px 6px}
+.errn{margin-left:auto;color:var(--bad);font-size:14px}
+.errbtn{font-size:13.5px;padding:10px;border-color:var(--bad)}
+.vfin{padding:10px;font-size:14px}
 .chc.skip{border-style:dashed;opacity:.75}
 .chc.skip .chp{color:var(--gold)}
 .chh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px}
@@ -4593,6 +4601,11 @@ function tapStart(cfg){ // cfg: {mode:"lesson"|"exam"|"review"|"kanji", title, i
     shuffle(cfg.items).forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2)))));
     (cfg.talk||[]).forEach(tk=>qs.push(nTalkQ(tk)));
     for(let i=qs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [qs[i],qs[j]]=[qs[j],qs[i]]; }
+  } else if(cfg.mode==="errors"){
+    shuffle(cfg.items).forEach(it=>{ const ty=nTypesFor(it,2); qs.push(nQ(it,pick(ty))); });
+    (cfg.talk||[]).forEach(tk=>qs.push(nTalkQ(tk)));
+    (cfg.kanji||[]).forEach(k=>qs.push(nKjQ(k,pick(["km","kd"]))));
+    for(let i=qs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [qs[i],qs[j]]=[qs[j],qs[i]]; }
   } else if(cfg.mode==="review"){
     cfg.items.forEach(it=>qs.push(nQ(it,pick(nTypesFor(it,2)))));
     (cfg.kanji||[]).forEach(k=>qs.push(nKjQ(k,pick(["km","kd"]))));
@@ -4688,11 +4701,11 @@ function tapAnswer(ok,typed){
     beep(true); stampIt(NT.combo>=5?"神":"良",true);
     const t=COMBO[NT.combo]||pick(RIGHT);
     showSheet(true,NT.typeNote?"ПОЧТИ, ЗАСЧИТАНО":t,right+(NT.typeNote?`<br><small>${NT.typeNote}</small>`:""),"ДАЛЬШЕ",()=>{ NT.i++; tapNext(); }); NT.typeNote=null;
-  } else { NT.bad++; NT.combo=0;
+  } else { NT.bad++; NT.combo=0; nErr(key);
     if(q.it) { nGrade(q.it.id,false,false); if(!NT.wrong.includes(q.it)) NT.wrong.push(q.it); }
     if(q.tk&&!NT.wrong.includes(q.tk)) NT.wrong.push(q.tk);
     beep(false); buzz(); stampIt("駄",false);
-    if(NT.mode!=="exam"&&!q._rq){ q._rq=1; // вернётся в конце, другим типом
+    if(NT.mode!=="exam"&&(!q._rq||NT.mode==="errors")){ q._rq=1; // вернётся в конце, другим типом
       let nq=null; if(q.it){ const types=nTypesFor(q.it,2).filter(t=>t!==q.type); nq=nQ(q.it,pick(types.length?types:[q.type])); } else if(q.kj) nq=nKjQ(q.kj,q.type==="km"?"kd":"km"); else if(q.tk) nq=nTalkQ(q.tk);
       if(nq){ NT.qs.splice(Math.min(NT.qs.length,NT.i+3+Math.floor(Math.random()*3)),0,nq); NT.total++; }
     }
@@ -4707,10 +4720,21 @@ function tapEnd(){
   nLog(NT.newL,secs); S.xp+=NT.xp; nMark();
   let pass=true;
   if(NT.mode==="lesson"){ const d=n.done[NT.l.id]||(n.done[NT.l.id]={}); d.tap=Date.now(); NT.items.forEach(it=>{ if(!n.srs[it.id]){ n.srs[it.id]={b:1,d:Date.now()+N_INT[1],t:Date.now()}; NT.newL++; } }); }
-  if(NT.mode==="exam"){ pass=acc>=85; const ch=n.ch[NT.c.id]||(n.ch[NT.c.id]={}); ch.examBest=Math.max(ch.examBest||0,acc); if(pass) ch.exam=Date.now(); }
+  if(NT.mode==="exam"){ pass=acc>=85; const ch=n.ch[NT.c.id]||(n.ch[NT.c.id]={}); ch.examBest=Math.max(ch.examBest||0,acc); if(pass){ if(!ch.exam) n.les3=(n.les3||0)+1; ch.exam=Date.now(); } }
+  if(NT.mode==="errors"){ pass=acc>=95; if(pass){ (NT.ids||[]).forEach(id=>{ delete (n.ew||{})[id]; delete (n.errc||{})[id]; }); n.les3=0; n.errDone=(n.errDone||0)+1; } }
   if(NT.mode==="kanji"){ const d=dayKey(); NT.kanji.forEach(k=>{ if(!n.kj[k.k]){ n.kj[k.k]=Date.now(); n.kjd[d]=(n.kjd[d]||0)+1; } }); }
   save();
   const T=NT, wrong=T.wrong;
+  if(T.mode==="errors"){
+    app.innerHTML=`<section class="screen res"><div class="stage small bg-scold">${sceneDeco("scold")}<div class="girlwrap">${girlSVG(pass?"blush":"angry")}</div></div>
+      <h2>${pass?"ВОТ ТЕПЕРЬ МОЖНО":"НЕ, ХУЙ ТАМ"}</h2>
+      <p>${pass?`Точность ${acc}%. Ошибки исправлены и убраны из истории. Курс снова открыт.`:`Точность ${acc}%, а нужно 95%. Работа над ошибками заново — пока не исправишь.`}</p>
+      <div class="stats"><div class="stat"><b>${acc}%</b><small>точность</small></div><div class="stat"><b>${T.ids.length}</b><small>слов</small></div><div class="stat"><b>${fmtClock(secs*1000)}</b><small>время</small></div></div>
+      ${pass?`<button class="big" id="hm2" ${pinkBtn}>▶ ДАЛЬШЕ ПО КУРСУ</button>`:`<button class="big" id="again2" ${pinkBtn}>🩹 ЕЩЁ РАЗ, СУКА</button>`}<button class="ghost" id="hm">На главную</button></section>`;
+    const a2=document.getElementById("again2"); if(a2) a2.onclick=()=>errStart();
+    const h2=document.getElementById("hm2"); if(h2) h2.onclick=()=>{ const nx=nNext(); nx?nRunStep(nx):home(); };
+    document.getElementById("hm").onclick=home; NT=null; window.scrollTo(0,0); return;
+  }
   const title=T.mode==="exam"?(pass?(acc===100?"ЕБАТЬ ТЫ МАШИНА":"ЭКЗАМЕН СДАН"):"НЕ СДАЛ, ЛОШАРА"):acc===100?"ИМПЕРАТОР ЯПОНИИ":acc>=80?"КРАСАВА":acc>=55?"НУ ПОЙДЁТ":"ПИЗДЕЦ";
   const sub=T.mode==="exam"?(pass?`Чтобы сдать, нужно 85%. У тебя ${acc}%. Теперь созвон — там всё то же самое, только голосом.`:`Нужно 85%, у тебя ${acc}%. Подучи ошибки и пересдай.`):T.mode==="lesson"?"Урок рук пройден. Теперь то же самое голосом — без рук и без глаз.":T.mode==="kanji"?"Кандзи записаны. Они будут всплывать в быстрых повторах.":"Повтор готов.";
   app.innerHTML=`<section class="screen res">
@@ -4873,17 +4897,20 @@ async function vRun(){
     while(NV.queue.length){
       const task=NV.queue.shift();
       const r=await vAsk(task,alive); if(!alive()) return;
+      if(NV.finish) break;
       NV.hist=NV.hist||[];
       if(r.back){ NV.queue.unshift(task); if(NV.hist.length){ NV.queue.unshift(NV.hist.pop()); NV.asked=Math.max(0,NV.asked-1); } await speakP(pick(["Ладно, назад.","Окей, отматываю.","Назад так назад."]),"ru"); continue; }
       NV.hist.push(task); if(NV.hist.length>30) NV.hist.shift();
       NV.asked++;
-      if(!r.ok){
+      if(!r.ok) nErr(task.it?task.it.id:task.tk?task.tk.id:null);
+      if(NV.endless&&!NV.queue.length) NV.queue=shuffle(NV.tasks).filter((t,i,a)=>!(i===0&&t===task&&a.length>1)||true);
+      if(!r.ok&&!NV.endless){
         const prev=NV.errs.get(task.id); if(!prev) NV.errs.set(task.id,{task,heard:r.heard||"",fixed:false}); NV.totalErr++;
         const rc=(retry.get(task.id)||0)+1; retry.set(task.id,rc);
         if(rc<=2){ NV.queue.splice(Math.min(NV.queue.length,2+Math.floor(Math.random()*4)),0,task); NV.asked--; }
       } else if(NV.errs.has(task.id)) NV.errs.get(task.id).fixed=true;
     }
-    if(!NV.errs.size) break;
+    if(NV.finish||NV.endless||!NV.errs.size) break;
     wakeOff();
     const ticked=await vReview(); if(!NV||NV.dead) return; akBoot();
     if(!ticked.size){ if(!await say(pick(VL.notick),"blush")) return; break; }
@@ -4893,14 +4920,16 @@ async function vRun(){
   /* финал */
   const n=NS(); const share=NV.totalErr/Math.max(1,NV.tasks.length);
   const end=NV.totalErr===0?pick(VL.endClean):share>.2||NV.round>2?pick(VL.endTired):pick(VL.endOk);
-  if(!await say(end,NV.totalErr===0?"blush":share>.2?"pout":"laugh")) return;
+  if(!NV.endless&&!await say(end,NV.totalErr===0?"blush":share>.2?"pout":"laugh")) return;
   const secs=(Date.now()-NV.t0)/1000; nLog(0,secs); S.xp+=NV.tasks.length*5; nMark();
   const st=NV.step;
+  if(st.k==="voice"||st.k==="call") n.les3=(n.les3||0)+1;
+  if(st.k==="errv"){ }
   if(st.k==="voice"){ const d=n.done[st.l.id]||(n.done[st.l.id]={}); d.voice=Date.now(); st.l.items.forEach(it=>{ if(!n.srs[it.id]) n.srs[it.id]={b:1,d:Date.now()+N_INT[1],t:Date.now()}; }); }
   if(st.k==="call"){ const ch=n.ch[st.c.id]||(n.ch[st.c.id]={}); ch.call=Date.now(); ch.callErr=NV.totalErr; if(!ch.exam) ch.exam=Date.now(); st.c.L.forEach(l=>{ const d=n.done[l.id]||(n.done[l.id]={}); if(!d.tap) d.tap=Date.now(); if(!d.voice) d.voice=Date.now(); l.items.forEach(it=>{ if(!n.srs[it.id]) n.srs[it.id]={b:1,d:Date.now()+N_INT[1],t:Date.now()}; }); }); }
   if(st.k==="oral"){ n.oral=Date.now(); n.oralErr=NV.totalErr; if(!n.win) n.win=Date.now(); }
   save(); wakeOff();
-  const info={kind:NV.kind,step:st,err:NV.totalErr,rounds:NV.round,secs,n:NV.tasks.length}; NV=null;
+  const info={kind:NV.kind,step:st,err:NV.totalErr,rounds:NV.round,secs,n:NV.tasks.length,ok:NV.freeOk,bad:NV.freeBad}; NV=null;
   if(st.k==="oral") return n5Win(); vEnd(info);
 }
 async function vAsk(task,alive){
@@ -5627,6 +5656,74 @@ function wordList(l){
     <div class="stats"><div class="stat"><b>${info.n}</b><small>слов</small></div><div class="stat"><b>${info.err}</b><small>ошибок</small></div><div class="stat"><b>${fmtClock(info.secs*1000)}</b><small>время</small></div></div>
     <button class="big" id="again" ${pinkBtn}>🔁 ЕЩЁ РАЗ</button><button class="ghost" id="list">📋 К списку слов</button><button class="ghost" id="hm">На главную</button></section>`;
   document.getElementById("again").onclick=()=>vStart(info.step); document.getElementById("list").onclick=()=>wordList(l); document.getElementById("hm").onclick=home; window.scrollTo(0,0); }; }
+
+
+/* =================================================================
+   ИСТОРИЯ ОШИБОК: 3+ ошибки на одном слове → «работа над ошибками».
+   Каждые 3 урока курс блокируется, пока не исправишь всё на 95%+.
+   ================================================================= */
+function nErr(id){ if(!id) return; const n=NS(); n.errc=n.errc||{}; n.errc[id]=(n.errc[id]||0)+1; if(n.errc[id]>=3){ n.ew=n.ew||{}; if(!n.ew[id]) n.ew[id]=Date.now(); } }
+function errPool(){ const n=NS(), ew=n.ew||{}; const items=[], talk=[], kanji=[], ids=[];
+  Object.keys(ew).forEach(id=>{ if(id.startsWith("kj:")){ const k=N5K.find(x=>x.k===id.slice(3)); if(k){ kanji.push(k); ids.push(id); } return; }
+    if(N5I[id]){ items.push(N5I[id]); ids.push(id); return; }
+    for(const c of N5C) for(const tk of c.T||[]) if(tk.id===id){ talk.push(tk); ids.push(id); } });
+  return {items,talk,kanji,ids,n:ids.length}; }
+const errGate=()=>(NS().les3||0)>=3&&errPool().n>0;
+function errStart(){ const p=errPool(); if(!p.n){ NS().les3=0; save(); home(); return; }
+  tapStart({mode:"errors",title:"Работа над ошибками",items:p.items,talk:p.talk,kanji:p.kanji,ids:p.ids}); NT.ids=p.ids; }
+function errScreen(){
+  hfStop(); hideSheet(); const p=errPool();
+  app.innerHTML=`<section class="screen"><div class="pu-head"><button class="x" id="back">←</button><h2>🩹 Работа над ошибками</h2></div>
+    <div class="stage small bg-scold">${sceneDeco("scold")}<div class="speech"><span class="akru">${errGate()?"А ВОТ ХУЙ ТАМ! Сначала работа над ошибками.":"Твои вечные косяки. Давай добьём."}</span></div><div class="girlwrap">${girlSVG("angry")}</div></div>
+    <div class="note">Сюда попадает всё, на чём ты ошибся <b>3 раза и больше</b> — буквы, слова, фразы, кандзи, ответы в созвонах. ${errGate()?"Прошло 3 урока — дальше курс не пустит, пока не исправишь.":`Обязательная проверка будет после каждых 3 уроков (сейчас пройдено ${NS().les3||0} из 3).`}<br><br>Неправильные ответы возвращаются, пока не ответишь всё верно. Чтобы засчитали, нужно набрать <b>95%+</b>, иначе заново.</div>
+    <div class="wlist">${p.items.map(it=>`<div class="wl"><div class="wlm"><span class="wlj ${it.kind==="k"?"kfont":"jfont"}">${rb(it.jp)}</span><span class="wlr">${esc(it.ru)}</span></div><b class="errn">×${(NS().errc||{})[it.id]||3}</b></div>`).join("")}${p.talk.map(tk=>`<div class="wl"><div class="wlm"><span class="wlj jfont">${esc(tk.ans[0])}</span><span class="wlr">${esc(tk.hint)}</span></div><b class="errn">×${(NS().errc||{})[tk.id]||3}</b></div>`).join("")}${p.kanji.map(k=>`<div class="wl"><div class="wlm"><span class="wlj jfont">${k.k}</span><span class="wlr">${esc(k.ru)}</span></div><b class="errn">×${(NS().errc||{})["kj:"+k.k]||3}</b></div>`).join("")}</div>
+    ${p.n?`<button class="big" id="go" ${pinkBtn}>🩹 ИСПРАВЛЯТЬ (${p.n})</button>`:`<div class="tline">Пока нечего исправлять — ни одного слова с 3+ ошибками.</div>`}</section>`;
+  document.getElementById("back").onclick=()=>{ if(errGate()){ home(); } else home(); };
+  const g=document.getElementById("go"); if(g) g.onclick=errStart; window.scrollTo(0,0);
+}
+{ const _rs=nRunStep; nRunStep=function(s){ if(s&&s.k!=="errors"&&errGate()) return errScreen(); return _rs(s); }; }
+{ const _vg2=vGate; vGate=function(s){ if(s&&(s.k==="voice"||s.k==="call"||s.k==="oral")&&errGate()) return errScreen(); return _vg2(s); }; }
+{ const _h=home; home=function(){ _h(); if(N5_MENU) return; const today=document.querySelector(".n5home .today"); if(!today) return; const p=errPool();
+  if(errGate()){ const nb=document.getElementById("tNext"); if(nb){ nb.innerHTML="🩹 А ВОТ ХУЙ ТАМ — СНАЧАЛА РАБОТА НАД ОШИБКАМИ"; nb.onclick=errScreen; } }
+  const tb=today.querySelector(".tbtns"); if(tb&&p.n){ const b=document.createElement("button"); b.className="ghost errbtn"; b.innerHTML=`🩹 Работа над ошибками · ${p.n} ${errGate()?"· <b>обязательно</b>":`· через ${Math.max(0,3-(NS().les3||0))} ур.`}`; b.onclick=errScreen; tb.after(b); } }; }
+
+/* =================================================================
+   ВЫБРАННЫЕ СЛОВА: отметил галочками — учишь только их вразнобой, пока не нажмёшь «Закончить»
+   ================================================================= */
+let WL_SEL=new Set();
+{ const _wl=wordList; wordList=function(l){ _wl(l); WL_SEL=new Set();
+  const rows=[...app.querySelectorAll(".wlist .wl")];
+  rows.forEach((r,i)=>{ const it=l.items[i]; if(!it) return; const cb=document.createElement("button"); cb.className="wlchk"; cb.setAttribute("aria-label","Выбрать"); cb.dataset.id=it.id; r.prepend(cb);
+    cb.onclick=()=>{ WL_SEL.has(it.id)?WL_SEL.delete(it.id):WL_SEL.add(it.id); cb.classList.toggle("on",WL_SEL.has(it.id)); cb.textContent=WL_SEL.has(it.id)?"✓":""; upd(); }; });
+  const bar=document.createElement("div"); bar.className="wlsel"; app.querySelector(".wlist").before(bar);
+  const c=N5C[l.ci];
+  const upd=()=>{ const k=WL_SEL.size;
+    bar.innerHTML=`<div class="wlsh"><b>${k?`Выбрано: ${k}`:"Отметь слова галочкой — и учи только их"}</b><button class="mini" id="wlAll">${k===l.items.length?"Снять все":"Выбрать все"}</button></div>${k?(c.kana?`<button class="big" id="fK" ${pinkBtn}>🎯 УЧИТЬ ВЫБРАННЫЕ БУКВЫ</button>`:`<div class="wlgo"><button class="big" id="fJR" ${pinkBtn}>🎯 🇯🇵→🇷🇺</button><button class="big" id="fRJ" ${pinkBtn}>🎯 🇷🇺→🇯🇵</button><button class="big" id="fMX" ${pinkBtn}>🎯 Вразнобой</button></div>`):""}`;
+    bar.querySelector("#wlAll").onclick=()=>{ const all=WL_SEL.size!==l.items.length; WL_SEL=new Set(all?l.items.map(x=>x.id):[]); app.querySelectorAll(".wlchk").forEach(b=>{ const on=WL_SEL.has(b.dataset.id); b.classList.toggle("on",on); b.textContent=on?"✓":""; }); upd(); };
+    const go=dir=>vGate({k:"free",dir,c,l,ids:[...WL_SEL]});
+    [["fK","k"],["fJR","jr"],["fRJ","rj"],["fMX","mx"]].forEach(([id,d])=>{ const b=bar.querySelector("#"+id); if(b) b.onclick=()=>go(d); }); };
+  upd(); }; }
+{ const _vb2=vBuild; vBuild=function(step){ if(step.k!=="free") return _vb2(step);
+  const its=step.ids.map(id=>N5I[id]).filter(Boolean); const tasks=[];
+  its.forEach(it=>{ if(it.kind==="k"||step.dir==="k"){ tasks.push({t:"kana",it,id:it.id}); return; }
+    if(step.dir==="jr"||step.dir==="mx") tasks.push({t:"mean",it,id:it.id+"#m"});
+    if(step.dir==="rj"||step.dir==="mx") tasks.push({t:"say",it,id:it.id}); });
+  return {kind:"free",tasks,teach:[]}; }; }
+{ const _vs=vStart; vStart=function(step){ _vs(step); if(NV&&step.k==="free"){ NV.endless=true; NV.freeOk=0; NV.freeBad=0; } }; }
+{ const _vt2=vTitle; vTitle=function(){ const s=NV.step; if(s.k==="free") return `🎯 ${s.l.t} · ${s.ids.length} сл.`; return _vt2(); }; }
+{ const _vg3=vGate; vGate=function(s){ _vg3(s); if(s.k!=="free") return; const h2=document.querySelector(".pu-head h2"); if(h2) h2.textContent=`🎯 Выбранные: ${s.ids.length}`;
+  const note=document.querySelector(".screen .note"); if(note) note.innerHTML=`Юки гоняет только выбранные слова вразнобой — ${s.dir==="jr"?"она по-японски, ты переводишь":s.dir==="rj"?"она по-русски, ты по-японски":s.dir==="k"?"ты читаешь буквы":"то так, то эдак"}. Бесконечно, пока не нажмёшь <b>«🏁 Закончить»</b>.`;
+  const tl=document.querySelector(".screen .tline"); if(tl) tl.textContent="Без кругов и галочек: учишь сколько хочешь."; }; }
+{ const _vr=vRender; vRender=function(){ _vr(); if(!NV||!NV.endless) return; const sk=document.getElementById("vskip"); if(!sk||document.getElementById("vfin")) return;
+  const b=document.createElement("button"); b.id="vfin"; b.className="ghost vfin"; b.textContent=`🏁 Закончить обучение (✓${NV.freeOk||0} ✗${NV.freeBad||0})`;
+  b.onclick=()=>{ NV.finish=true; NV.cmd="skip"; NV.skip=true; try{speechSynthesis.cancel()}catch(e){} stopListen(); }; sk.after(b); }; }
+{ const _va=vAsk; vAsk=async function(task,alive){ const r=await _va(task,alive); if(NV&&NV.endless&&!NV.finish&&!r.back){ if(r.ok) NV.freeOk=(NV.freeOk||0)+1; else NV.freeBad=(NV.freeBad||0)+1; } return r; }; }
+{ const _ve2=vEnd; vEnd=function(info){ if(info.step.k!=="free") return _ve2(info); const s=info.step;
+  app.innerHTML=`<section class="screen res"><div class="stage small bg-${s.c.bg}">${sceneDeco(s.c.bg)}<div class="girlwrap">${girlSVG("laugh")}</div></div>
+    <h2>ЗАКОНЧИЛИ</h2><p>Выбранные слова «${esc(s.l.t)}».</p>
+    <div class="stats"><div class="stat"><b>${info.ok||0}</b><small>верно</small></div><div class="stat"><b>${info.bad||0}</b><small>ошибок</small></div><div class="stat"><b>${fmtClock(info.secs*1000)}</b><small>время</small></div></div>
+    <button class="big" id="again" ${pinkBtn}>🎯 ЕЩЁ</button><button class="ghost" id="list">📋 К списку слов</button><button class="ghost" id="hm">На главную</button></section>`;
+  document.getElementById("again").onclick=()=>vStart(s); document.getElementById("list").onclick=()=>wordList(s.l); document.getElementById("hm").onclick=home; window.scrollTo(0,0); }; }
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
