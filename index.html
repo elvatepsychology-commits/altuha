@@ -6422,6 +6422,10 @@ function memeGet(k){ if(!MEME_BLOB[k]&&MEME_B64[k]){ try{ const s=atob(MEME_B64[
 function memeFill(v){ if(v.dataset.mf) return; v.dataset.mf=1; const k=v.dataset.mk; const snd=MEME_SND.has(k)&&memeSndOk()&&v.dataset.snd!=="0";
   v.muted=!snd; v.defaultMuted=!snd; if(!snd) v.setAttribute("muted",""); else { v.removeAttribute("muted"); v.loop=false; v.onended=()=>{ v.muted=true; v.loop=true; try{ v.play().catch(()=>{}); }catch(e){} }; }
   memeGet(k).then(u=>{ v.src=u; try{ const p=v.play(); p&&p.catch(()=>{ v.muted=true; v.loop=true; v.play().catch(()=>{}); }); }catch(e){} }); }
+function memeKill(){ document.querySelectorAll(".memePop").forEach(x=>{ const v=x.querySelector("video"); if(v){ try{ v.pause(); }catch(e){} v.removeAttribute("src"); } x.remove(); }); }
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("button"); if(b&&!b.closest(".memePop")) memeKill(); },true);
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" ") memeKill(); },true);
+{ const _tn=tapNext; tapNext=function(){ memeKill(); return _tn.apply(this,arguments); }; }
 function memeHush(){ document.querySelectorAll("video[data-mk]").forEach(v=>{ v.muted=true; }); }
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(x=>{ if(x.nodeType!==1) return; if(x.matches&&x.matches("video[data-mk]")) memeFill(x); x.querySelectorAll&&x.querySelectorAll("video[data-mk]").forEach(memeFill); }))).observe(document.body,{childList:true,subtree:true});
 setTimeout(()=>{ if(!S.noMeme) Object.keys(MEME_DUR).forEach((k,i)=>setTimeout(()=>memeGet(k),i*150)); },2500);
