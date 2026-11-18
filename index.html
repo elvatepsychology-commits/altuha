@@ -10,6 +10,15 @@
 <meta name="theme-color" content="#17183A">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+.memePop{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;z-index:80;width:min(240px,62vw);border-radius:18px;overflow:hidden;background:#000;box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 0 3px #fff;transform:translateX(-50%) scale(.5) rotate(-6deg);opacity:0;transition:transform .25s cubic-bezier(.3,1.6,.5,1),opacity .2s;cursor:pointer}
+.memePop.big{width:min(340px,86vw);top:20vh}
+.memePop.show{transform:translateX(-50%) scale(1) rotate(-1.5deg);opacity:1}
+.memePop video,.memeIn video{display:block;width:100%;max-height:46vh;object-fit:contain;background:#000}
+.memeCap{background:#000;color:#fff;font:900 15px/1.2 Impact,"Arial Black",system-ui,sans-serif;text-transform:uppercase;text-align:center;padding:7px 10px 9px;letter-spacing:.02em}
+.memeIn{margin:10px auto 14px;max-width:300px;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.memeIn video{max-height:280px}
+.memeDay{margin:14px 0}
+.memeDay .memeIn{max-width:260px}
 .gslide{text-align:center;padding-top:18px}
 .gpic{font-size:52px;line-height:1.1;margin:4px 0 14px;animation:gbob 2.4s ease-in-out infinite}
 @keyframes gbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
@@ -6292,7 +6301,7 @@ async function apReview(){
     if(res) break;
     const s=alts.join(" ");
     if(AP_NEXT.test(s)) done("next");
-    if(Date.now()-t00>20000) done("next");
+    if(Date.now()-t00>20000){ done("next"); try{ meme("green_stare","Молчание — знак согласия. Засчитано.",{force:true}); }catch(e){} }
   }
   if(!res) res="next";
   const n=NS();
@@ -6397,6 +6406,91 @@ function errFailFlash(){ hideSheet(); try{speechSynthesis.cancel()}catch(e){}
   speakP(S.noMat?"Две ошибки. Начинаем заново.":"Две ошибки. Всё, заново, с самого начала.","ru"); NT=null; setTimeout(()=>errStart(),1800); }
 { const _r=tapRender; tapRender=function(){ _r(); if(!NT||NT.mode!=="errors") return; const top=document.querySelector(".nq .top"); if(!top||top.querySelector(".hearts")) return;
   const s=document.createElement("span"); s.className="hearts"; s.innerHTML=heartsHTML(NT.hearts==null?2:NT.hearts); top.appendChild(s); }; }
+
+/* ===== МЕМЫ ===== */
+const MEME_DUR={gorilla_hood:4200,gorilla_nepon:3200,gorilla_think:2900,gorilla_judge:4000,green_stare:3500,gorilla_stare:4200,mell_omg:3600,mell_turn:3600,fisher_scream:4500,cat_judge:4200,dog_serious:5200,acc_disabled:5200,nihuya:3800,cone_girl:6500,unichtozheno:5200,satomi:5000,green_dance:4800};
+const MM={badRow:0,okRow:0,last:0,seenCat:{},lastGram:null};
+function memeSrc(k){ return "memes/"+k+".mp4"; }
+function memeVid(k,cls){ return `<video class="${cls||""}" src="${memeSrc(k)}" autoplay muted loop playsinline preload="auto" disablepictureinpicture></video>`; }
+function meme(k,cap,o){ o=o||{}; if(S.noMeme) return; const now=Date.now(); if(!o.force&&now-MM.last<5500) return; MM.last=now;
+  document.querySelectorAll(".memePop").forEach(x=>x.remove());
+  const d=document.createElement("div"); d.className="memePop"+(o.big?" big":""); d.innerHTML=memeVid(k)+(cap?`<div class="memeCap">${esc(cap)}</div>`:"");
+  document.body.appendChild(d); const v=d.querySelector("video"); try{ const p=v.play(); p&&p.catch(()=>{}); }catch(e){}
+  requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add("show")));
+  const close=()=>{ d.classList.remove("show"); setTimeout(()=>d.remove(),260); };
+  d.onclick=close; setTimeout(close,o.dur||MEME_DUR[k]||4000); }
+function memeInline(k,cap){ document.querySelectorAll(".memePop").forEach(x=>x.remove()); if(S.noMeme) return; const sec=document.querySelector("#app .res")||document.querySelector("#app .screen"); if(!sec||sec.querySelector(".memeIn")) return;
+  const d=document.createElement("div"); d.className="memeIn"; d.innerHTML=memeVid(k)+(cap?`<div class="memeCap">${esc(cap)}</div>`:"");
+  const h=sec.querySelector("h2"); (h||sec.firstChild)?(h||sec.firstElementChild).after(d):sec.appendChild(d); if(S.noMat) noMatDom(d); }
+const MEME_WORDS=[
+  {re:/好き|すき|彼女|かのじょ|恋|こい|デート|かわい|可愛|きれい|綺麗|美人|結婚|けっこん|愛|あい[しす]|女の子|おんなのこ/,k:"satomi",cap:()=>pick(["Вот ради неё ты это и учишь","Представь: она говорит тебе это слово","Мотивация на N3 загружена","Выучишь — скажешь ей лично"]),cat:"love"},
+  {re:/酒|さけ|ビール|酔|よ[うっ]|二日酔/,k:"cone_girl",cap:()=>pick(["Кабукичо, 3 часа ночи. Вот что делает お酒","Японский после второй бутылки","Это слово в действии"]),cat:"drink"},
+  {re:/猫|ねこ|ネコ/,k:"cat_judge",cap:()=>"猫 (ねこ) смотрит на тебя с осуждением",cat:"cat"},
+  {re:/犬|いぬ/,k:"dog_serious",cap:()=>"犬 (いぬ). Сначала милый. Потом — серьёзный разговор",cat:"dog"},
+  {re:/魚|さかな|釣/,k:"fisher_scream",cap:()=>"魚!!! САКАНА!!! АКТИВНО!!!",cat:"fish"},
+  {re:/分か[らり]ない|わからない|分かりません|わかりません/,k:"gorilla_nepon",cap:()=>"わかりません = НЕ ПОНИМАЮ.",cat:"wakaranai"},
+  {re:/考え|かんがえ/,k:"gorilla_think",cap:()=>"考える — думать. Вот так:",cat:"think"},
+  {re:/踊|おど[るり]|ダンス/,k:"green_dance",cap:()=>"踊る — танцевать. Наглядно:",cat:"dance"},
+  {re:/怒|おこ[るっ]/,k:"mell_turn",cap:()=>"怒る — злиться. Вот так злятся:",cat:"angry"},
+  {re:/びっくり|驚|おどろ/,k:"mell_omg",cap:()=>"びっくり — OH MY GOD",cat:"omg"},
+  {re:/壊|こわ[れす]/,k:"acc_disabled",cap:()=>"壊す — сломать. Клавиатура подтверждает",cat:"break"},
+  {re:/転|ころ[ぶん]/,k:"cone_girl",cap:()=>"転ぶ — упасть. Наглядно:",cat:"fall"},
+  {re:/見る|みる|見て|みて/,k:"gorilla_stare",cap:()=>"見る — смотреть. Горилла смотрит. На тебя.",cat:"look"},
+];
+function memeWord(it){ if(!it||!it.jp) return false; const s=it.jp+" "+(it.kana||""); for(const w of MEME_WORDS){ if(MM.seenCat[w.cat]) continue; if(w.re.test(s)){ MM.seenCat[w.cat]=1; meme(w.k,w.cap(),{force:true}); return true; } } return false; }
+function memeRight(it,combo){ MM.okRow++; const br=MM.badRow; MM.badRow=0; const c=combo!=null?combo:MM.okRow;
+  if(c===5) return meme("mell_omg","OH MY GOD — 5 подряд",{force:true});
+  if(c===10) return meme("green_dance","10 подряд. Танцуй, сука",{force:true});
+  if(c===15) return meme("fisher_scream","15 ПОДРЯД — АКТИВНО!!!",{force:true});
+  if(c===20) return meme("unichtozheno","20 подряд. Японский уничтожен нахуй",{force:true});
+  if(c>20&&c%10===0) return meme(pick(["unichtozheno","fisher_scream","green_dance","mell_omg"]),`${c} подряд. Ты кто такой вообще?`,{force:true});
+  if(br>=2) return meme(pick(["green_stare","dog_serious"]),pick(["…ну наконец-то, блять","С третьей попытки. Гений.","Ладно. Засчитано. Но я всё видел."]),{force:true});
+  if(memeWord(it)) return;
+  if(Math.random()<.07) meme(pick(["mell_omg","green_dance"]),pick(["Неплохо, сука","Смотри-ка, знает","OH MY GOD, правильно"])); }
+function memeWrong(it,o){ o=o||{}; MM.badRow++; MM.okRow=0; const b=MM.badRow;
+  if(o.dunno) return meme(pick(["gorilla_hood","gorilla_think","nihuya"]),pick(["Думай. Думай. Думай.","Ты сейчас:","«Не знаю» — ахуенный ответ"]),{force:true});
+  if(b===1){ if(o.voice&&Math.random()<.7) return meme("gorilla_nepon",pick(["НЕ ПОНИМАЮ. — Юки","Юки услышала это:","Что ты сказал, блять?"]),{force:true});
+    if(Math.random()<.5) meme(pick(["gorilla_nepon","nihuya","gorilla_think"]),pick(["НЕ ПОНИМАЮ.","Хм. А может всё-таки нет?","Нихуя не понял, но очень интересно"])); return; }
+  if(b===2) return meme(pick(["gorilla_judge","cat_judge","mell_turn"]),pick(["Опять?","Кот осуждает","Чё, бля?","Ещё раз так сделаешь…"]),{force:true});
+  if(b===3) return meme(pick(["gorilla_stare","green_stare"]),pick(["…","Я просто смотрю на тебя","Три подряд. Молча осуждаю."]),{force:true});
+  return meme(pick(["fisher_scream","cone_girl","acc_disabled"]),pick(["ААААААААА","Твой японский прямо сейчас","Мозг: account disabled",`${b} ошибки подряд. Пиздец.`]),{force:true}); }
+
+/* тап-режим */
+{ const _ta=tapAnswer; tapAnswer=function(ok,typed){ const q=NT&&NT.cur; MM.inTap=1; try{ _ta(ok,typed); } finally{ MM.inTap=0; } try{ if(!q||!NT) return;
+  if(NT.mode==="errors"&&!ok){ const h=NT.hearts==null?2:NT.hearts; if(h===1) return meme("mell_turn","Минус сердечко. Ещё одно — и заново",{force:true}); if(h<=0) return; }
+  if(ok) memeRight(q.it,NT.combo); else memeWrong(q.it,{dunno:typed===""}); }catch(e){} }; }
+/* долго думает над вопросом */
+{ const _r=tapRender; tapRender=function(){ _r(); try{ if(!NT) return; const q=NT.cur, i=NT.i; if(q&&q.gslide&&q.gi===0&&MM.lastGram!==q.g){ MM.lastGram=q.g; setTimeout(()=>{ if(NT&&NT.cur===q) meme("nihuya","Новое правило. Ты сейчас:",{force:true}); },900); }
+  if(!q||q.gslide||q.gbad||q.intro||q.kintro||q.say) return;
+  setTimeout(()=>{ if(NT&&NT.i===i&&NT.cur===q&&!NT.locked&&!document.hidden) meme(pick(["gorilla_think","gorilla_hood"]),pick(["Думает…","15 секунд думает. Гений.","Процесс пошёл…","Ну? Ну?? НУ???"]),{force:true}); },15000); }catch(e){} }; }
+/* итоги */
+{ const _te=tapEnd; tapEnd=function(){ const T=NT; const tot=T?T.ok+T.bad:0, acc=T?Math.round(T.ok/Math.max(1,tot)*100):0, mode=T&&T.mode, hearts=T&&T.hearts; _te(); try{
+  if(mode==="errors"){ (hearts==null?2:hearts)>0?memeInline("green_dance","Ошибки исправлены. Танец победы"):memeInline("acc_disabled","Account disabled. Заново."); return; }
+  if(mode==="exam"){ if(acc===100) memeInline("unichtozheno","Экзамен уничтожен нахуй"); else if(acc>=85) memeInline("green_dance","СДАЛ, БЛЯТЬ"); else memeInline("cone_girl","Ты на экзамене:"); return; }
+  if(acc===100) memeInline("unichtozheno","Урок уничтожен нахуй");
+  else if(acc>=80) memeInline("mell_omg","OH MY GOD, красава");
+  else if(acc>=55) memeInline("dog_serious","Ну… пойдёт. Но я запомнил.");
+  else memeInline(pick(["cone_girl","acc_disabled"]),"Этот урок прошёл примерно так:"); }catch(e){} }; }
+{ const _ve=vEnd; vEnd=function(info){ _ve(info); try{ if(info.err===0) memeInline("fisher_scream","ЧИСТО!!! АКТИВНО!!!"); else if(info.rounds>2) memeInline("gorilla_hood","Дожал. Долго думал, но дожал."); else memeInline("mell_omg","Засчитано. OH MY GOD"); }catch(e){} }; }
+{ const _rs=result; result=function(dead){ const acc=Math.round(L.right/Math.max(1,L.right+L.wrong)*100); _rs(dead); try{ if(dead) memeInline("acc_disabled","Жизни: account disabled"); else if(acc===100) memeInline("unichtozheno","Кана уничтожена нахуй"); else if(acc>=80) memeInline("mell_omg","OH MY GOD"); else memeInline("nihuya","Нихуя не понял, но очень интересно"); }catch(e){} }; }
+{ const _ef=errFailFlash; errFailFlash=function(){ _ef(); meme("acc_disabled","Сердечки всё. Account disabled.",{force:true,big:true,dur:3000}); }; }
+/* голосовой режим: ловим ошибки по звуку провала */
+{ const _b=beep; beep=function(ok){ _b(ok); try{ if(MM.inTap||!NV||!NV.cur||!document.querySelector("#app .nv")) return; const it=NV.cur.it||null;
+  if(ok){ if(NV.view&&NV.view.bad===false&&MM.badRow>=2) { MM.badRow=0; return meme("green_stare","…ну наконец-то",{force:true}); } memeRight(it,null); }
+  else { if(MM.badRow>=4&&MM.badRow%2===0) return meme("acc_disabled","Микрофон: account disabled. Говори чётче",{force:true}); memeWrong(it,{voice:true}); } }catch(e){} }; }
+/* «Уже проходил» */
+{ const _pc=passConfirm; passConfirm=function(text,yes){ _pc(text,yes); meme("gorilla_judge","Ну да. Конечно. Проходил.",{force:true}); }; }
+/* статистика */
+{ const _ss=statsScreen; statsScreen=function(){ _ss(); try{ const n=NS(); let ok=0,bad=0; Object.values(n.sk||{}).forEach(v=>{ ok+=(v[0]||0); bad+=((v[1]||0)-(v[0]||0)); }); const a=ok+bad?ok/(ok+bad):0;
+  if(!(ok+bad)) memeInline("gorilla_stare","Статистика пустая. Горилла ждёт."); else if(a>=.9) memeInline("unichtozheno","Статистика: уничтожено нахуй"); else if(a>=.7) memeInline("gorilla_think","Неплохо. Но горилла думает, что можно лучше"); else memeInline("cat_judge","Кот посмотрел твою статистику"); }catch(e){} }; }
+/* главная: давно не заходил / сбежал с урока / мем дня */
+{ const _h=home; home=function(){ const quit=NT&&NT.qs&&NT.i>0&&NT.i<NT.qs.length; _h(); try{ if(N5_MENU) return;
+  const now=Date.now(), last=S.memeSeen||0; S.memeSeen=now; save();
+  const set=document.querySelector(".n5home details.settings"); if(set&&!document.getElementById("sMeme")){ const lab=document.createElement("label"); lab.className="switch"; lab.innerHTML=`<input type="checkbox" id="sMeme" ${S.noMeme?"":"checked"}><span><b>🦍 Мемы</b><small>${S.noMeme?"Выключены":"Включены — горилла следит за каждым ответом"}</small></span>`; set.querySelector("summary").after(lab); lab.querySelector("input").onchange=e=>{ S.noMeme=!e.target.checked; save(); home(); }; }
+  if(quit) return setTimeout(()=>meme("mell_turn","Ты куда съебался посреди урока?",{force:true}),400);
+  if(last&&now-last>36*3600e3) return setTimeout(()=>meme("dog_serious",`Где ты был ${Math.floor((now-last)/86400e3)} дн.? Юки ждала.`,{force:true,dur:5500}),500);
+  const h=document.querySelector(".n5home"); if(h&&!S.noMeme&&!h.querySelector(".memeDay")){ const M=[["green_dance","Настроение перед уроком"],["gorilla_hood","Ты, когда видишь кандзи"],["nihuya","Ты на уроке грамматики"],["gorilla_think","Ты вспоминаешь は или が"],["mell_omg","Ты, когда понял японца"],["cat_judge","Юки, когда ты пропускаешь день"],["fisher_scream","Ты после 20 правильных подряд"],["cone_girl","Твой японский без повторений"],["satomi","Цель: поговорить с ней на N3"],["acc_disabled","Мозг после 3 уроков подряд"],["gorilla_judge","Юки слушает твоё произношение"],["dog_serious","Ты: «ещё 5 минут и начну»"],["unichtozheno","Ты после экзамена главы"],["gorilla_stare","Горилла ждёт, когда ты начнёшь урок"],["green_stare","Ты, когда тебе сказали «ありがとう»"],["mell_turn","Ты, когда Юки говорит «ещё раз»"],["gorilla_nepon","Ты, когда японец говорит быстро"]]; const d=new Date(); const m=M[(d.getDate()*7+d.getMonth()*3+Math.floor(d.getHours()/6))%M.length];
+    const box=document.createElement("div"); box.className="memeDay"; box.innerHTML=`<div class="label">🦍 Мем дня</div><div class="memeIn">${memeVid(m[0])}<div class="memeCap">${esc(m[1])}</div></div>`; const at=document.getElementById("apBtn")||document.querySelector(".n5home .tbtns"); at?at.after(box):h.appendChild(box); if(S.noMat) noMatDom(box); } }catch(e){} }; }
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
