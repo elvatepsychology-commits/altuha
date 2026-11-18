@@ -72,6 +72,10 @@
 .lvpg summary{cursor:pointer;font-weight:700;font-size:13px;padding:6px 0}
 .lvpg div div{font-size:13px;padding:2px 0}
 .lvpnote{font-size:11px;color:var(--muted);text-align:center}
+
+.nq .top .hearts{display:flex;gap:2px;font-size:18px;margin-left:6px}
+.hrt.off{opacity:.45;animation:hbreak .5s ease}
+@keyframes hbreak{0%{transform:scale(1.6)}100%{transform:scale(1)}}
 </style>
 <title>Кана, блять</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4986,6 +4990,7 @@ function tapStart(cfg){ // cfg: {mode:"lesson"|"exam"|"review"|"kanji", title, i
 }
 function tapNext(){
   hideSheet();
+  if(NT&&NT.mode==="errors"&&NT.hearts!=null&&NT.hearts<=0){ errFailFlash(); return; }
   if(NT.i>=NT.qs.length) return tapEnd();
   const q=NT.qs[NT.i]; NT.cur=q; NT.locked=false;
   if(q.say){ NT.i++; return tapNext(); }
@@ -5082,6 +5087,7 @@ function tapAnswer(ok,typed){
     const t=COMBO[NT.combo]||pick(RIGHT);
     showSheet(true,NT.typeNote?"ПОЧТИ, ЗАСЧИТАНО":t,right+(NT.typeNote?`<br><small>${NT.typeNote}</small>`:""),"ДАЛЬШЕ",()=>{ NT.i++; tapNext(); }); NT.typeNote=null;
   } else { NT.bad++; NT.combo=0; if(key!=="x") nErr(key);
+    if(NT.mode==="errors"){ NT.hearts=(NT.hearts==null?2:NT.hearts)-1; const hb=document.querySelector(".nq .hearts"); if(hb) hb.innerHTML=heartsHTML(NT.hearts); }
     if(q.it) { nGrade(q.it.id,false,false); if(!NT.wrong.includes(q.it)) NT.wrong.push(q.it); }
     if(q.tk&&!NT.wrong.includes(q.tk)) NT.wrong.push(q.tk);
     beep(false); buzz(); stampIt("駄",false);
@@ -5101,14 +5107,14 @@ function tapEnd(){
   let pass=true;
   if(NT.mode==="lesson"){ const d=n.done[NT.l.id]||(n.done[NT.l.id]={}); d.tap=Date.now(); NT.items.forEach(it=>{ if(!n.srs[it.id]){ n.srs[it.id]={b:1,d:Date.now()+N_INT[1],t:Date.now()}; NT.newL++; } }); }
   if(NT.mode==="exam"){ pass=acc>=85; const ch=n.ch[NT.c.id]||(n.ch[NT.c.id]={}); ch.examBest=Math.max(ch.examBest||0,acc); if(pass){ if(!ch.exam) n.les3=(n.les3||0)+1; ch.exam=Date.now(); } }
-  if(NT.mode==="errors"){ pass=acc>=95; if(pass){ (NT.ids||[]).forEach(id=>{ delete (n.ew||{})[id]; delete (n.errc||{})[id]; }); n.les3=0; n.errDone=(n.errDone||0)+1; } }
+  if(NT.mode==="errors"){ pass=(NT.hearts==null?2:NT.hearts)>0; if(pass){ (NT.ids||[]).forEach(id=>{ delete (n.ew||{})[id]; delete (n.errc||{})[id]; }); n.les3=0; n.errDone=(n.errDone||0)+1; } }
   if(NT.mode==="kanji"){ const d=dayKey(); NT.kanji.forEach(k=>{ if(!n.kj[k.k]){ n.kj[k.k]=Date.now(); n.kjd[d]=(n.kjd[d]||0)+1; } }); }
   save();
   const T=NT, wrong=T.wrong;
   if(T.mode==="errors"){
     app.innerHTML=`<section class="screen res"><div class="stage small bg-scold">${sceneDeco("scold")}<div class="girlwrap">${girlSVG(pass?"blush":"angry")}</div></div>
       <h2>${pass?"ВОТ ТЕПЕРЬ МОЖНО":"НЕ, ХУЙ ТАМ"}</h2>
-      <p>${pass?`Точность ${acc}%. Ошибки исправлены и убраны из истории. Курс снова открыт.`:`Точность ${acc}%, а нужно 95%. Работа над ошибками заново — пока не исправишь.`}</p>
+      <p>${pass?`Ошибки исправлены и убраны из истории. Курс снова открыт.`:`Сердечки кончились. Работа над ошибками заново — пока не исправишь.`}</p>
       <div class="stats"><div class="stat"><b>${acc}%</b><small>точность</small></div><div class="stat"><b>${T.ids.length}</b><small>слов</small></div><div class="stat"><b>${fmtClock(secs*1000)}</b><small>время</small></div></div>
       ${pass?`<button class="big" id="hm2" ${pinkBtn}>▶ ДАЛЬШЕ ПО КУРСУ</button>`:`<button class="big" id="again2" ${pinkBtn}>🩹 ЕЩЁ РАЗ, СУКА</button>`}<button class="ghost" id="hm">На главную</button></section>`;
     const a2=document.getElementById("again2"); if(a2) a2.onclick=()=>errStart();
@@ -6088,12 +6094,12 @@ function errPool(){ const n=NS(), ew=n.ew||{}; const items=[], talk=[], kanji=[]
   return {items,talk,kanji,ids,n:ids.length}; }
 const errGate=()=>(NS().les3||0)>=3&&errPool().n>0;
 function errStart(){ const p=errPool(); if(!p.n){ NS().les3=0; save(); home(); return; }
-  tapStart({mode:"errors",title:"Работа над ошибками",items:p.items,talk:p.talk,kanji:p.kanji,ids:p.ids}); NT.ids=p.ids; }
+  tapStart({mode:"errors",title:"Работа над ошибками",items:p.items,talk:p.talk,kanji:p.kanji,ids:p.ids}); NT.ids=p.ids; NT.hearts=2; const hb=document.querySelector(".nq .hearts"); if(hb) hb.innerHTML=heartsHTML(2); }
 function errScreen(){
   hfStop(); hideSheet(); const p=errPool();
   app.innerHTML=`<section class="screen"><div class="pu-head"><button class="x" id="back">←</button><h2>🩹 Работа над ошибками</h2></div>
     <div class="stage small bg-scold">${sceneDeco("scold")}<div class="speech"><span class="akru">${errGate()?"А ВОТ ХУЙ ТАМ! Сначала работа над ошибками.":"Твои вечные косяки. Давай добьём."}</span></div><div class="girlwrap">${girlSVG("angry")}</div></div>
-    <div class="note">Сюда попадает всё, на чём ты ошибся <b>3 раза и больше</b> — буквы, слова, фразы, кандзи, ответы в созвонах. ${errGate()?"Прошло 3 урока — дальше курс не пустит, пока не исправишь.":`Обязательная проверка будет после каждых 3 уроков (сейчас пройдено ${NS().les3||0} из 3).`}<br><br>Неправильные ответы возвращаются, пока не ответишь всё верно. Чтобы засчитали, нужно набрать <b>95%+</b>, иначе заново.</div>
+    <div class="note">Сюда попадает всё, на чём ты ошибся <b>3 раза и больше</b> — буквы, слова, фразы, кандзи, ответы в созвонах. ${errGate()?"Прошло 3 урока — дальше курс не пустит, пока не исправишь.":`Обязательная проверка будет после каждых 3 уроков (сейчас пройдено ${NS().les3||0} из 3).`}<br><br>Неправильные ответы возвращаются, пока не ответишь всё верно. У тебя <b>2 сердечка</b>: ошибся — минус одно. Ошибся второй раз — всё начинается заново, с первого слова.</div>
     <div class="wlist">${p.items.map(it=>`<div class="wl"><div class="wlm"><span class="wlj ${it.kind==="k"?"kfont":"jfont"}">${rb(it.jp)}</span><span class="wlr">${esc(it.ru)}</span></div><b class="errn">×${(NS().errc||{})[it.id]||3}</b></div>`).join("")}${p.talk.map(tk=>`<div class="wl"><div class="wlm"><span class="wlj jfont">${esc(tk.ans[0])}</span><span class="wlr">${esc(tk.hint)}</span></div><b class="errn">×${(NS().errc||{})[tk.id]||3}</b></div>`).join("")}${p.kanji.map(k=>`<div class="wl"><div class="wlm"><span class="wlj jfont">${k.k}</span><span class="wlr">${esc(k.ru)}</span></div><b class="errn">×${(NS().errc||{})["kj:"+k.k]||3}</b></div>`).join("")}</div>
     ${p.n?`<button class="big" id="go" ${pinkBtn}>🩹 ИСПРАВЛЯТЬ (${p.n})</button>`:`<div class="tline">Пока нечего исправлять — ни одного слова с 3+ ошибками.</div>`}</section>`;
   document.getElementById("back").onclick=()=>{ if(errGate()){ home(); } else home(); };
@@ -6383,6 +6389,14 @@ if(LVL!=="n5"){ const fix=root=>{ const w=document.createTreeWalker(root,NodeFil
   new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(nd=>{ if(nd.nodeType===1) fix(nd); else if(nd.nodeType===3&&/N5/.test(nd.nodeValue)&&!(nd.parentElement&&nd.parentElement.closest(".lvkeep"))) nd.nodeValue=nd.nodeValue.replace(/N5/g,LVLN); }))).observe(document.body,{childList:true,subtree:true});
   fix(document.body);
   const _sp2=speakP; speakP=function(t,l,r,p){ return _sp2(typeof t==="string"?t.replace(/N5/g,LVLN):t,l,r,p); }; }
+
+/* сердечки в работе над ошибками */
+function heartsHTML(n){ return [0,1].map(i=>`<span class="hrt ${i<n?"":"off"}">${i<n?"❤️":"🖤"}</span>`).join(""); }
+function errFailFlash(){ hideSheet(); try{speechSynthesis.cancel()}catch(e){}
+  app.innerHTML=`<section class="screen res"><div class="stage small bg-scold">${sceneDeco("scold")}<div class="girlwrap">${girlSVG("angry")}</div></div><h2>💔 СЕРДЕЧКИ ВСЁ</h2><p>Две ошибки — начинаем с самого начала. Заново, сука.</p></section>`;
+  speakP(S.noMat?"Две ошибки. Начинаем заново.":"Две ошибки. Всё, заново, с самого начала.","ru"); NT=null; setTimeout(()=>errStart(),1800); }
+{ const _r=tapRender; tapRender=function(){ _r(); if(!NT||NT.mode!=="errors") return; const top=document.querySelector(".nq .top"); if(!top||top.querySelector(".hearts")) return;
+  const s=document.createElement("span"); s.className="hearts"; s.innerHTML=heartsHTML(NT.hearts==null?2:NT.hearts); top.appendChild(s); }; }
 
 if(!NS().init){ NS().init=1; if(SR) S.voice=true; save(); }
 { const n=NS(); N5C.filter(c=>(n.ch[c.id]||{}).skipped).forEach(c=>{ const ch=n.ch[c.id]; if(ch.call&&ch.call===ch.skipped){ delete ch.call; delete ch.exam; c.L.forEach(l=>{ const d=n.done[l.id]; if(d&&d.tap===ch.skipped) delete d.tap; if(d&&d.voice===ch.skipped) delete d.voice; l.items.forEach(it=>{ delete n.srs[it.id]; }); }); } }); save(); }
