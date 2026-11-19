@@ -198,7 +198,7 @@ def units(jp):
             if len(seg)<n: continue
             ss=''.join(x.s for x in seg)
             if any(x.pos in ('補助記号','空白') for x in seg): continue
-            if any(x.pos in ('助詞','助動詞') for x in seg) and ss not in SETP and not ((i==0) and (ss in VOC) and not any(x.pos=='動詞' for x in seg) and (n==len(us) or us[i+n].pos in ('助詞','補助記号','助動詞'))): continue
+            if any(x.pos in ('助詞','助動詞') for x in seg) and ss not in SETP and not ((i==0) and (ss in VOC) and not any(x.pos=='動詞' for x in seg) and n<len(us) and us[i+n].pos in ('助詞','補助記号','助動詞')): continue
             if ss in VOC or ss in GL: best=(n,ss); break
         if best:
             n,ss=best; seg=us[i:i+n]
@@ -335,11 +335,17 @@ def breakdown(jp,cid=None):
                 sc=bad*10+len(c)
                 if best is None or sc<best[0]: best=(sc,cand)
             jp=best[1]
-    ch=brk(jp); r=post([row(c) for c in ch])
+    parts=[x for x in re.split(r'(?<=[。！？!?])',jp) if re.sub(r'[\s。！？!?、]','',x)]
+    r=[]
+    for n,part in enumerate(parts):
+        if n: r.append(['。','новое предложение','','s'])
+        r+=post([row(c) for c in brk(part)])
     k=plain(jp).replace(' ','')
     if k in NOTE: r.append(['💡',NOTE[k],'','n'])
     return r
 GL.update({'痛い':'больно, болит','住む':'жить (где-то)','徐々':'постепенно','常':'всегда, обычно','要する':'требовать (要するに — «короче говоря»)','知れる':'(かもしれない = «может быть»)','けれど':'но','けれども':'но','ほんの':'всего лишь','頂く':'получать (скромно); いただきます — «приятного аппетита»'});
+GL.update({'実':'правда, суть (実は — «на самом деле»)','本当':'правда','ほんとう':'правда'});
+GL.update({'そう':'так (そうですか — «вот как?»)'});
 GL.update({'とおり':'как, согласно (…のとおり); ещё — улица'});
 GL.update({'時給':'почасовая оплата','残業':'сверхурочная работа','終電':'последняя электричка','口座':'банковский счёт','試着':'примерка','動画':'видео','画面':'экран','救急':'экстренная (помощь)','救急車':'скорая помощь (машина)','びっくり':'испуг, удивление','ご覧':'смотреть (уважительно)','寿司':'суши','納豆':'натто (бродившие соевые бобы)','カラオケ':'караоке','メール':'сообщение, e-mail','ごめん':'прости','ちょっと':'немного, минутку («ちょっと…» с паузой — мягкий отказ)','違う':'отличаться; «не так»','時':'время, когда'})
 SUF.update({'車':'машина','国':'страна','違い':'разница','にくい':'трудно (делать)','やすい':'легко (делать)','やすかっ':'легко (делать)','ら':'(мн. число)'})
@@ -385,6 +391,7 @@ if __name__=='__main__':
         seen.add(k); r=breakdown(jp,cid)
         if kind=='w' and len([x for x in r if x[3]!='n'])>1 and k not in NOTE: continue
         if any((x[3]=='c' and not x[1]) or (x[3]=='p' and x[1]=='частица') for x in r): continue
+        if r and r[-1][3]=='s': r.pop()
         if len(r)>=2 or (len(r)==1 and r[0][2]): out[k]=r
     pj={}
     for (sf,t),(a,b) in P.items():
