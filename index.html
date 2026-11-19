@@ -1,10 +1,3 @@
-{ const _te=tapEnd; tapEnd=function(){ const T=NT; const tot=T?T.ok+T.bad:0, acc=T?Math.round(T.ok/Math.max(1,tot)*100):0, mode=T&&T.mode, hearts=T&&T.hearts; _te(); MM.fullRun=0; try{
-  if(mode==="errors"){ if((hearts==null?2:hearts)>0){ if(Math.random()<.7) mmInline(["money_cars","boss","green_dance","dance"],"Ошибки исправлены. Можно жить",{big:true}); } else if(Math.random()<.6) mmInline(["acc_disabled","posidim","pizda"],"Заново. Ну нормально, ещё посидим"); return; }
-  if(mode==="exam"){ const jp=T.c&&/Япони/i.test(T.c.t||""); if(acc>=85&&jp) mmInline("beijing","Прилетел в Японию. Экзамен сдан",{big:true}); else if(acc>=85) mmInline(["angel","money_call","money_cars","dance","boss","unichtozheno"],k=>acc===100?"Экзамен на 100%. Профит.":"СДАЛ, БЛЯТЬ",{big:true}); else if(Math.random()<.6) mmInline(["pizda","acc_disabled","posidim"],"Экзамен прошёл примерно так:"); return; }
-  if(acc===100){ if(Math.random()<.6) mmInline(["dance","unichtozheno","boss","green_dance","mell_omg"],k=>pick(["100%. Ни одной ошибки","Урок уничтожен нахуй","100%. Ты просто начальник"]),{big:true}); }
-  else if(acc>=80){ if(Math.random()<.35) mmInline(["mell_omg","green_dance","boss"],"Красава, почти без ошибок"); }
-  else if(acc>=55){ if(Math.random()<.35) mmInline(["dog_serious","gorilla_think"],"Ну… пойдёт. Но я запомнил."); }
-  else if(Math.random()<.5) mmInline(["acc_disabled","pizda","nelzya","posidim"],"Этот урок прошёл примерно так:"); }catch(e){} }; }
 <!doctype html>
 <html lang="ru">
 <head>
@@ -6535,13 +6528,13 @@ function memeWrong(it,o){ o=o||{}; MM.badRow++; MM.okRow=0; const b=MM.badRow;
   if(!q||q.gslide||q.gbad||q.intro||q.kintro||q.say) return;
   setTimeout(()=>{ if(NT&&NT.i===i&&NT.cur===q&&!NT.locked&&!document.hidden&&mmOk(3)&&Math.random()<.4){ const k=mmPick(["bystree","gorilla_think","gorilla_hood"]); mmShow(k,k==="bystree"?"20 секунд думаешь. БЫСТРЕЕ!":pick(["Думает…","20 секунд думает. Гений.","Процесс пошёл…","Ну? Ну?? НУ???"])); } },20000); }catch(e){} }; }
 /* итоги */
-{ const _te=tapEnd; tapEnd=function(){ const T=NT; const tot=T?T.ok+T.bad:0, acc=T?Math.round(T.ok/Math.max(1,tot)*100):0, mode=T&&T.mode, hearts=T&&T.hearts; _te(); try{
-  if(mode==="errors"){ (hearts==null?2:hearts)>0?memeInline("money_cars","Ошибки исправлены. Можно жить",{big:true}):memeInline(pick(["acc_disabled","posidim"]),"Заново. Ну нормально, ещё посидим"); return; }
-  if(mode==="exam"){ const jp=T.c&&/Япони/i.test(T.c.t||""); if(acc>=85&&jp) memeInline("beijing","Прилетел в Японию. Экзамен сдан",{big:true}); else if(acc===100) memeInline("angel","Экзамен на 100%. Профит.",{big:true}); else if(acc>=85) memeInline(pick(["money_call","money_cars"]),"СДАЛ, БЛЯТЬ",{big:true}); else memeInline(pick(["pizda","acc_disabled"]),"Экзамен прошёл примерно так:"); return; }
-  if(acc===100){ if(Math.random()<.5) memeInline("dance","100%. Танцуй, сука",{big:true}); else memeInline(pick(["unichtozheno","boss"]),pick(["Урок уничтожен нахуй","100%. Ты просто начальник"])); }
-  else if(acc>=80) memeInline("mell_omg","OH MY GOD, красава");
-  else if(acc>=55) memeInline("dog_serious","Ну… пойдёт. Но я запомнил.");
-  else memeInline(pick(["acc_disabled","pizda","nelzya"]),"Этот урок прошёл примерно так:"); }catch(e){} }; }
+{ const _te=tapEnd; tapEnd=function(){ const T=NT; const tot=T?T.ok+T.bad:0, acc=T?Math.round(T.ok/Math.max(1,tot)*100):0, mode=T&&T.mode, hearts=T&&T.hearts; _te(); MM.fullRun=0; try{
+  if(mode==="errors"){ if((hearts==null?2:hearts)>0){ if(Math.random()<.7) mmInline(["money_cars","boss","green_dance","dance"],"Ошибки исправлены. Можно жить",{big:true}); } else if(Math.random()<.6) mmInline(["acc_disabled","posidim","pizda"],"Заново. Ну нормально, ещё посидим"); return; }
+  if(mode==="exam"){ const jp=T.c&&/Япони/i.test(T.c.t||""); if(acc>=85&&jp) mmInline("beijing","Прилетел в Японию. Экзамен сдан",{big:true}); else if(acc>=85) mmInline(["angel","money_call","money_cars","dance","boss","unichtozheno"],k=>acc===100?"Экзамен на 100%. Профит.":"СДАЛ, БЛЯТЬ",{big:true}); else if(Math.random()<.6) mmInline(["pizda","acc_disabled","posidim"],"Экзамен прошёл примерно так:"); return; }
+  if(acc===100){ if(Math.random()<.6) mmInline(["dance","unichtozheno","boss","green_dance","mell_omg"],k=>pick(["100%. Ни одной ошибки","Урок уничтожен нахуй","100%. Ты просто начальник"]),{big:true}); }
+  else if(acc>=80){ if(Math.random()<.35) mmInline(["mell_omg","green_dance","boss"],"Красава, почти без ошибок"); }
+  else if(acc>=55){ if(Math.random()<.35) mmInline(["dog_serious","gorilla_think"],"Ну… пойдёт. Но я запомнил."); }
+  else if(Math.random()<.5) mmInline(["acc_disabled","pizda","nelzya","posidim"],"Этот урок прошёл примерно так:"); }catch(e){} }; }
 { const _ve=vEnd; vEnd=function(info){ _ve(info); try{ if(info.err===0&&info.step&&info.step.k==="call") return mmInline(["money_call","angel"],"Созвон без единой ошибки",{big:true}); if(Math.random()<.5) return; if(info.err===0) mmInline(["boss","unichtozheno","mell_omg"],"ЧИСТО. Без ошибок"); else if(info.rounds>2) mmInline(["gorilla_hood","posidim"],"Дожал. Долго, но дожал."); }catch(e){} }; }
 { const _rs=result; result=function(dead){ const acc=Math.round(L.right/Math.max(1,L.right+L.wrong)*100); _rs(dead); try{ if(dead) memeInline("acc_disabled","Жизни: account disabled"); else if(acc===100) memeInline("unichtozheno","Кана уничтожена нахуй"); else if(acc>=80) memeInline("mell_omg","OH MY GOD"); else memeInline("nihuya","Нихуя не понял, но очень интересно"); }catch(e){} }; }
 { const _ef=errFailFlash; errFailFlash=function(){ _ef(); meme("pizda","Сердечки всё. Ну всё, пизда.",{force:true,big:true,dur:5600}); }; }
