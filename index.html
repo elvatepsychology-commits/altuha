@@ -18,10 +18,11 @@
 .memeIn{margin:10px auto 14px;max-width:300px;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 6px 24px rgba(0,0,0,.25)}
 .memeIn video{max-height:280px}
 .memeDay{margin:14px 0}
-.memePop.full{left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));bottom:calc(120px + env(safe-area-inset-bottom,0px));width:auto;max-width:none;transform:scale(.85);display:flex;flex-direction:column;border-radius:20px}
+.memePop.full{left:0;right:0;top:calc(8px + env(safe-area-inset-top,0px));bottom:calc(118px + env(safe-area-inset-bottom,0px));width:auto;max-width:none;background:transparent;box-shadow:none;border-radius:0;overflow:visible;display:flex;align-items:center;justify-content:center;transform:scale(.85)}
 .memePop.full.show{transform:none}
-.memePop.full video{flex:1;min-height:0;max-height:none;height:100%;object-fit:cover}
-.memePop.full video[data-mk="universal"],.memePop.full video[data-mk="angel"],.memePop.full video[data-mk="dance"]{object-fit:contain}
+.memePop.full .fbox{border-radius:18px;overflow:hidden;background:#000;box-shadow:0 10px 40px rgba(0,0,0,.5),0 0 0 3px #fff;display:flex;flex-direction:column}
+.memePop.full video{display:block;max-height:none;object-fit:contain;background:#000}
+.memeIn.memeBig{max-width:min(560px,100%)}.memeIn.memeBig video{max-height:62vh}
 .sbtns{display:flex;gap:10px}.sbtns>button{flex:1;margin:0}
 .tfast{display:inline-block;margin:0 auto 6px;padding:3px 10px;border-radius:99px;background:rgba(255,120,80,.18);color:#ff8a5c;font-weight:800;font-size:13px}
 .tsit{margin-top:10px;font-size:15px;font-weight:700;opacity:.85}
@@ -6436,19 +6437,21 @@ document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closes
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" ") memeKill(); },true);
 { const _tn=tapNext; tapNext=function(){ memeKill(); return _tn.apply(this,arguments); }; }
 new MutationObserver(()=>{ const now=Date.now(); document.querySelectorAll(".memePop.full").forEach(x=>{ if(now-(+x.dataset.t||0)>400){ const v=x.querySelector("video"); if(v){ try{ v.pause(); }catch(e){} } x.remove(); } }); }).observe(document.getElementById("app"),{childList:true});
+function memeFit(d){ const v=d.querySelector("video"); const fit=()=>{ if(!d.isConnected) return window.removeEventListener("resize",fit); const vw=v.videoWidth||9, vh=v.videoHeight||16; const cap=d.querySelector(".memeCap"); const ch=cap?cap.offsetHeight||34:0; const aw=d.clientWidth-16, ah=d.clientHeight-ch; const s=Math.min(aw/vw,ah/vh); v.style.width=Math.floor(vw*s)+"px"; v.style.height=Math.floor(vh*s)+"px"; };
+  v.addEventListener("loadedmetadata",fit); window.addEventListener("resize",fit); requestAnimationFrame(fit); }
 function memeHush(){ document.querySelectorAll("video[data-mk]").forEach(v=>{ v.muted=true; }); }
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(x=>{ if(x.nodeType!==1) return; if(x.matches&&x.matches("video[data-mk]")) memeFill(x); x.querySelectorAll&&x.querySelectorAll("video[data-mk]").forEach(memeFill); }))).observe(document.body,{childList:true,subtree:true});
 setTimeout(()=>{ if(!S.noMeme) Object.keys(MEME_DUR).forEach((k,i)=>setTimeout(()=>memeGet(k),i*150)); },2500);
 function memeVid(k,cls,snd){ return `<video class="${cls||""}" data-mk="${k}" ${snd===0?'data-snd="0"':""} ${snd==="loop"?'data-loop="1"':""} autoplay muted loop playsinline preload="auto" disablepictureinpicture></video>`; }
 function meme(k,cap,o){ o=o||{}; if(S.noMeme) return; const now=Date.now(); if(!o.force&&now-MM.last<5500) return; MM.last=now;
   document.querySelectorAll(".memePop").forEach(x=>x.remove());
-  const d=document.createElement("div"); d.className="memePop"+(o.big?" big":"")+(o.full?" full":""); d.innerHTML=memeVid(k,"",o.full?"loop":undefined)+(cap?`<div class="memeCap">${esc(cap)}</div>`:"");
+  const d=document.createElement("div"); d.className="memePop"+(o.big?" big":"")+(o.full?" full":""); const inner=memeVid(k,"",o.full?"loop":undefined)+(cap?`<div class="memeCap">${esc(cap)}</div>`:""); d.innerHTML=o.full?`<div class="fbox">${inner}</div>`:inner; if(o.full) memeFit(d);
   d.dataset.t=Date.now(); document.body.appendChild(d); memeFill(d.querySelector("video"));
   requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add("show")));
   const close=()=>{ d.classList.remove("show"); setTimeout(()=>d.remove(),260); };
   d.onclick=close; if(!o.full) setTimeout(close,o.dur||MEME_DUR[k]||4000); }
-function memeInline(k,cap){ document.querySelectorAll(".memePop").forEach(x=>x.remove()); if(S.noMeme) return; const sec=document.querySelector("#app .res")||document.querySelector("#app .screen"); if(!sec||sec.querySelector(".memeIn")) return;
-  const d=document.createElement("div"); d.className="memeIn"; d.innerHTML=memeVid(k)+(cap?`<div class="memeCap">${esc(cap)}</div>`:"");
+function memeInline(k,cap,o){ o=o||{}; document.querySelectorAll(".memePop").forEach(x=>x.remove()); if(S.noMeme) return; const sec=document.querySelector("#app .res")||document.querySelector("#app .screen"); if(!sec||sec.querySelector(".memeIn")) return;
+  const d=document.createElement("div"); d.className="memeIn"+(o.big?" memeBig":""); d.innerHTML=memeVid(k,"",o.big?"loop":undefined)+(cap?`<div class="memeCap">${esc(cap)}</div>`:"");
   const h=sec.querySelector("h2"); (h||sec.firstChild)?(h||sec.firstElementChild).after(d):sec.appendChild(d); if(S.noMat) noMatDom(d); }
 const MEME_WORDS=[
   {re:/好き|すき|彼女|かのじょ|恋|こい|デート|かわい|可愛|きれい|綺麗|美人|結婚|けっこん|愛|あい[しす]|女の子|おんなのこ/,k:"satomi",cap:()=>pick(["Вот ради неё ты это и учишь","Представь: она говорит тебе это слово","Мотивация на N3 загружена","Выучишь — скажешь ей лично"]),cat:"love"},
@@ -6503,13 +6506,13 @@ function memeWrong(it,o){ o=o||{}; MM.badRow++; MM.okRow=0; const b=MM.badRow;
   setTimeout(()=>{ if(NT&&NT.i===i&&NT.cur===q&&!NT.locked&&!document.hidden){ if(Math.random()<.6) meme("bystree","20 секунд думаешь. БЫСТРЕЕ!",{force:true}); else meme(pick(["gorilla_think","gorilla_hood"]),pick(["Думает…","20 секунд думает. Гений.","Процесс пошёл…","Ну? Ну?? НУ???"]),{force:true}); } },20000); }catch(e){} }; }
 /* итоги */
 { const _te=tapEnd; tapEnd=function(){ const T=NT; const tot=T?T.ok+T.bad:0, acc=T?Math.round(T.ok/Math.max(1,tot)*100):0, mode=T&&T.mode, hearts=T&&T.hearts; _te(); try{
-  if(mode==="errors"){ (hearts==null?2:hearts)>0?setTimeout(()=>meme("money_cars","Ошибки исправлены. Можно жить",{force:true,full:true}),300):memeInline(pick(["acc_disabled","posidim"]),"Заново. Ну нормально, ещё посидим"); return; }
-  if(mode==="exam"){ const jp=T.c&&/Япони/i.test(T.c.t||""); if(acc>=85&&jp) setTimeout(()=>meme("beijing","Прилетел в Японию. Экзамен сдан",{force:true,full:true}),300); else if(acc===100) setTimeout(()=>meme("angel","Экзамен на 100%. Профит.",{force:true,full:true}),300); else if(acc>=85) setTimeout(()=>meme(pick(["money_call","money_cars"]),"СДАЛ, БЛЯТЬ",{force:true,full:true}),300); else memeInline(pick(["pizda","acc_disabled"]),"Экзамен прошёл примерно так:"); return; }
-  if(acc===100){ if(Math.random()<.5) setTimeout(()=>meme("dance","100%. Танцуй, сука",{force:true,full:true}),300); else memeInline(pick(["unichtozheno","boss"]),pick(["Урок уничтожен нахуй","100%. Ты просто начальник"])); }
+  if(mode==="errors"){ (hearts==null?2:hearts)>0?memeInline("money_cars","Ошибки исправлены. Можно жить",{big:true}):memeInline(pick(["acc_disabled","posidim"]),"Заново. Ну нормально, ещё посидим"); return; }
+  if(mode==="exam"){ const jp=T.c&&/Япони/i.test(T.c.t||""); if(acc>=85&&jp) memeInline("beijing","Прилетел в Японию. Экзамен сдан",{big:true}); else if(acc===100) memeInline("angel","Экзамен на 100%. Профит.",{big:true}); else if(acc>=85) memeInline(pick(["money_call","money_cars"]),"СДАЛ, БЛЯТЬ",{big:true}); else memeInline(pick(["pizda","acc_disabled"]),"Экзамен прошёл примерно так:"); return; }
+  if(acc===100){ if(Math.random()<.5) memeInline("dance","100%. Танцуй, сука",{big:true}); else memeInline(pick(["unichtozheno","boss"]),pick(["Урок уничтожен нахуй","100%. Ты просто начальник"])); }
   else if(acc>=80) memeInline("mell_omg","OH MY GOD, красава");
   else if(acc>=55) memeInline("dog_serious","Ну… пойдёт. Но я запомнил.");
   else memeInline(pick(["acc_disabled","pizda","nelzya"]),"Этот урок прошёл примерно так:"); }catch(e){} }; }
-{ const _ve=vEnd; vEnd=function(info){ _ve(info); try{ if(info.err===0&&info.step&&info.step.k==="call") return setTimeout(()=>meme("money_call","Созвон без единой ошибки",{force:true,full:true}),300); if(info.err===0) memeInline("boss","ЧИСТО. Ты просто босс"); else if(info.rounds>2) memeInline("gorilla_hood","Дожал. Долго думал, но дожал."); else memeInline("mell_omg","Засчитано. OH MY GOD"); }catch(e){} }; }
+{ const _ve=vEnd; vEnd=function(info){ _ve(info); try{ if(info.err===0&&info.step&&info.step.k==="call") return memeInline("money_call","Созвон без единой ошибки",{big:true}); if(info.err===0) memeInline("boss","ЧИСТО. Ты просто босс"); else if(info.rounds>2) memeInline("gorilla_hood","Дожал. Долго думал, но дожал."); else memeInline("mell_omg","Засчитано. OH MY GOD"); }catch(e){} }; }
 { const _rs=result; result=function(dead){ const acc=Math.round(L.right/Math.max(1,L.right+L.wrong)*100); _rs(dead); try{ if(dead) memeInline("acc_disabled","Жизни: account disabled"); else if(acc===100) memeInline("unichtozheno","Кана уничтожена нахуй"); else if(acc>=80) memeInline("mell_omg","OH MY GOD"); else memeInline("nihuya","Нихуя не понял, но очень интересно"); }catch(e){} }; }
 { const _ef=errFailFlash; errFailFlash=function(){ _ef(); meme("pizda","Сердечки всё. Ну всё, пизда.",{force:true,big:true,dur:5600}); }; }
 /* голосовой режим: ловим ошибки по звуку провала */
