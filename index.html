@@ -5951,6 +5951,22 @@ noMatDom(document.body);
 /* =================================================================
    ОБЛАКО: прогресс хранится в базе Claude (как в «Штабе»)
    ================================================================= */
+/* слияние прогресса двух устройств: ничего не теряем */
+function kMerge(a,b,newerB){
+  if(a===undefined) return b; if(b===undefined) return a;
+  if(typeof a==="number"&&typeof b==="number") return Math.max(a,b);
+  if(Array.isArray(a)||Array.isArray(b)){
+    if(Array.isArray(a)&&Array.isArray(b)&&a.length===2&&b.length===2&&typeof a[0]==="number"&&typeof b[1]==="number") return (b[1]>a[1]?b:a).slice(); // sk [ok,all]
+    return JSON.parse(JSON.stringify(newerB?b:a)); }
+  if(a&&b&&typeof a==="object"&&typeof b==="object"){
+    if("b" in a&&"d" in a&&"t" in a&&"b" in b&&"t" in b) return JSON.parse(JSON.stringify((b.t||0)>(a.t||0)||((b.t||0)===(a.t||0)&&(b.b||0)>(a.b||0))?b:a)); // srs-запись целиком
+    const o={}; new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>{ o[k]=kMerge(a[k],b[k],newerB); }); return o; }
+  if(a===null) return b; if(b===null) return a;
+  return newerB?b:a; }
+function kMergeS(a,b){ a=a||{}; b=b||{}; const newerB=(b._ts||0)>=(a._ts||0); const o=kMerge(a,b,newerB); o._ts=Math.max(a._ts||0,b._ts||0); return o; }
+function kBackup(){ try{ const k=LS+"_bak"; const a=JSON.parse(localStorage.getItem(k)||"[]"); a.push({at:Date.now(),s:S}); while(a.length>3) a.shift(); localStorage.setItem(k,JSON.stringify(a)); }catch(e){} }
+function kApplyRemote(rm,rn){ const r=Object.assign({},rm&&rm.s||{}); if(rn&&rn.n5) r.n5=rn.n5; if(!r._ts) r._ts=rm&&rm.ts||0;
+  kBackup(); const m=kMergeS(r,JSON.parse(JSON.stringify(S))); Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,m); try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){} }
 const CLOUD={db:null,state:"off",timer:null,chain:Promise.resolve(),dirty:false};
 const CLOUD_LOCAL_TS0=S._ts||0; // время локального прогресса ДО любых сохранений на этой загрузке
 { const _save0=save; save=function(){ S._ts=Date.now(); _save0(); if(CLOUD.db&&CLOUD.state!=="loading"){ CLOUD.dirty=true; clearTimeout(CLOUD.timer); CLOUD.timer=setTimeout(cloudPush,2000); } }; }
@@ -5959,9 +5975,12 @@ function cloudPush(){ if(!CLOUD.db||!CLOUD.dirty) return CLOUD.chain; CLOUD.dirt
   const {main,n5}=cloudSplit();
   CLOUD.chain=CLOUD.chain.then(async()=>{ try{ cloudMark("saving");
       /* кто-то (другое устройство / перенос) записал облако новее, чем мы видели — берём его, не затираем */
-      try{ const m=await CLOUD.db.doc("kana/main").get(); const rm=m.exists?m.data():null; if(rm&&CLOUD.known!=null&&(rm.ts||0)>CLOUD.known&&(rm.ts||0)!==main.ts){ const n=await CLOUD.db.doc("kana/n5").get(); const rn=n.exists?n.data():null;
-        Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,JSON.parse(JSON.stringify(rm.s||{}))); if(rn&&rn.n5) S.n5=JSON.parse(JSON.stringify(rn.n5)); CLOUD.known=rm.ts; try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){} cloudMark("ok"); if(!NV&&!NT&&!MK){ N5_MENU=false; if((S.lvl||"n5")!==LVL){ try{ location.reload(); }catch(e){} } home(); } return; } }catch(e){}
-      await CLOUD.db.doc("kana/main").set(main); await CLOUD.db.doc("kana/n5").set(n5); CLOUD.known=main.ts; cloudMark("ok"); }
+      if(CLOUD.known==null){ CLOUD.dirty=true; return; } // облако ещё не прочитано — ничего не пишем, чтобы не затереть
+      let M=main,N=n5;
+      const m=await CLOUD.db.doc("kana/main").get(); const rm=m.exists?m.data():null;
+      if(rm&&(rm.ts||0)>CLOUD.known&&(rm.ts||0)!==main.ts){ const n=await CLOUD.db.doc("kana/n5").get(); const rn=n.exists?n.data():null;
+        kApplyRemote(rm,rn); const sp=cloudSplit(); M=sp.main; N=sp.n5; if(!NV&&!NT&&!MK){ N5_MENU=false; setTimeout(()=>{ try{ home(); }catch(e){} },0); } }
+      await CLOUD.db.doc("kana/main").set(M); await CLOUD.db.doc("kana/n5").set(N); CLOUD.known=M.ts; cloudMark("ok"); }
     catch(e){ const c=e&&e.code; if(c==="unavailable"){ CLOUD.dirty=true; clearTimeout(CLOUD.timer); CLOUD.timer=setTimeout(cloudPush,4000+Math.random()*2000); } cloudMark(c==="revoked"||c==="not_granted"?"off":"err"); } });
   return CLOUD.chain; }
 function cloudMark(st){ CLOUD.state=st; let el=document.getElementById("cloudSt"); if(!el){ const hs=document.querySelector(".n5home .hstats"); if(hs){ el=document.createElement("span"); el.id="cloudSt"; el.className="cloudst"; hs.appendChild(el); } } if(el) el.innerHTML=cloudBadge(); }
@@ -5971,20 +5990,15 @@ async function cloudInit(){
     if(!(window.claude&&typeof window.claude.use==="function")) return;
     const db=await window.claude.use("db"); if(!db) return;
     CLOUD.db=db; cloudMark("loading");
-    const to=new Promise(r=>setTimeout(()=>r("timeout"),10000));
+    const to=new Promise(r=>setTimeout(()=>r("timeout"),20000));
     const got=await Promise.race([Promise.all([db.doc("kana/main").get(),db.doc("kana/n5").get()]),to]);
-    if(got==="timeout"){ cloudMark("err"); CLOUD.state="ok"; return; }
+    if(got==="timeout"){ cloudMark("err"); CLOUD.state="loading"; setTimeout(cloudInit,6000); return; } // не читали облако — не пишем, пробуем ещё
     const [m,n]=got; const rm=m.exists?m.data():null, rn=n.exists?n.data():null;
-    const localTs=CLOUD_LOCAL_TS0, remoteTs=rm&&rm.ts||0;
-    CLOUD.known=Math.max(remoteTs,localTs);
-    if(rm&&remoteTs>localTs){
-      const keep={}; Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,JSON.parse(JSON.stringify(rm.s||{})));
-      if(rn&&rn.n5) S.n5=JSON.parse(JSON.stringify(rn.n5));
-      try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){}
-      CLOUD.state="ok"; cloudMark("ok");
-      if(!NV&&!NT&&!MK){ N5_MENU=false; if((S.lvl||"n5")!==LVL){ try{ location.reload(); }catch(e){} } home(); }
-    } else { CLOUD.state="ok"; CLOUD.dirty=true; cloudPush(); }
-  }catch(e){ CLOUD.state="err"; }
+    if(rm){ const lvl0=S.lvl||"n5"; kApplyRemote(rm,rn); CLOUD.known=rm.ts||0;
+      if(!NV&&!NT&&!MK){ N5_MENU=false; if((S.lvl||"n5")!==LVL&&(S.lvl||"n5")!==lvl0){ try{ location.reload(); }catch(e){} } setTimeout(()=>{ try{ if(!NV&&!NT&&!MK) home(); }catch(e){} },0); } }
+    else CLOUD.known=0;
+    CLOUD.state="ok"; cloudMark("ok"); CLOUD.dirty=true; cloudPush(); // сохраняем слитый прогресс обратно
+  }catch(e){ window.__cerr=String(e&&e.stack||e); CLOUD.state="loading"; setTimeout(cloudInit,8000); }
 }
 window.addEventListener("pagehide",()=>{ if(CLOUD.dirty) cloudPush(); });
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&CLOUD.dirty) cloudPush(); });
